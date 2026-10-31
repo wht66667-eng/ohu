@@ -23,7 +23,7 @@
 - 当前 Capacitor Android 插件列表同时包含 Talsec freeRASP 和 Capgo updater。freeRASP 插件仓库的桥接层为 MIT，但它会从 Talsec Maven 仓库依赖 `TalsecSecurity-Community-Capacitor:19.2.3`；Capgo updater 还依赖 `com.google.android.gms:play-services-tasks`、`com.google.android.play:app-update`／`app-update-ktx`。官方政策明确排除专有 Google Play Services／Firebase 等库；因此 F-Droid 学生 variant 必须同时从 Web bundle 与原生依赖图中移除这些插件，不能只隐藏“检查更新”按钮。
 - Android `build.gradle` 声明 Google Services 插件，但只有存在 `google-services.json` 时才应用；仓库不应依赖私有 Firebase 配置。尚未在 F-Droid 环境验证该条件构建。
 - 源码搜索没有发现 Firebase Analytics、Crashlytics、广告或常见商业统计 SDK 的应用调用；这只是初步搜索，不替代完整依赖扫描。
-- MIT 代码许可证和范围说明已加入；素材逐项权利核验、`fastlane/metadata/android` 商店资料、F-Droid 构建元数据或已验证的可复现构建记录仍未完成。
+- MIT 代码许可证和范围说明已加入；`fastlane/metadata/android/zh-CN/` 已加入名称、短／完整介绍和 versionCode 146 更新日志，明确后端依赖、AI 输入处理和 F-Droid 更新方式。素材逐项权利核验、商店图标／真实截图／联系资料、F-Droid 构建元数据或已验证的可复现构建记录仍未完成。
 - 新增自动盘点脚本 `tools/fdroid-license-inventory.mjs` 及报告 [`F-DROID-LICENSE-INVENTORY.md`](./F-DROID-LICENSE-INVENTORY.md)：锁定 396 个 npm 包中有 2 个缺少 `license` 元数据（`@cloudbase/signature-nodejs`、`@cloudbase/wx-cloud-client-sdk`），66 个包根目录未见常见许可证文件名，另有包声明多许可证选项；192 个 `public/` 文件逐项列入素材清单但均待人工核验来源与再分发权。报告仅作自动初筛，不能作为合法授权证明。
 - `public/` 下有 192 个文件；未发现统一的插图、品牌图、地图数据、词库和字体来源／许可证清册。应用当前使用的狐狸形象和校园宣传图需确认著作权及分发授权；不能只依赖代码许可证覆盖素材。
 - 当前 `git tag --list` 与 GitHub Releases 均未发现版本标签／发行记录；提交前需建立与源码及 APK versionCode 对应的不可变上游版本标签。
@@ -47,7 +47,7 @@
 | F-Droid 专用学生构建变体 | **本地实现并构建通过；F-Droid buildserver 待验** | 学生包 `userFdroid` 不含管理端、不含签名；Web 与 staging Android 副本移除 Capgo/Talsec；显示 F-Droid 构建不使用哦狐热更新；本地 unsigned 产物及 hash 已记录 |
 | F-Droid 构建配方 | 未开始 | `fdroiddata` build metadata 与 npm/Gradle 离线依赖来源未准备；需从干净检出在 F-Droid buildserver 完成配方和可复现性验证 |
 | 版本标签与上游源码归档 | 未开始 | 发布不可变 Git tag，源码归档、版本号、versionCode 和产物身份一致 |
-| 商店文案及截图 | 未开始 | 完成 `fastlane/metadata/android` 文案、图标、真实截图、更新日志与联系方式 |
+| 商店文案及截图 | **中文商店文案初稿已加入；截图／联系资料待补** | `fastlane/metadata/android/zh-CN/` 已有名称、短介绍、完整介绍和 146 更新日志；仍需补经核验的图标、真实截图、开发者联系资料及其他所需语言 |
 | GitLab 提交身份 | **阻塞：本机未配置 GitLab CLI 登录** | 用户登录 GitLab 后，由已授权账号提交公开 RFP issue 或 fdroiddata MR |
 | F-Droid 审核与发布 | 未开始 | 维护者接受打包、构建与政策审核后合并并发布；时间由 F-Droid 决定 |
 
@@ -66,7 +66,7 @@
 1. 解决上面的许可证和来源清单阻塞。
 2. 完成仅包含学生端、无私密配置的 F-Droid build variant；不改变现有用户 APK 的签名、包名或发布通道。当前已有本地 unsigned 产物，不代表 F-Droid 签名或正式发行。
 3. 在 Linux/ASCII 路径下使用 F-Droid buildserver 做干净构建；解决 npm/Gradle 依赖的离线获取方式，记录工具版本、完整日志、APK SHA-256，并检查生成包的包名／versionCode／权限／依赖。
-4. 完成应用商店文案、图标、截图和来源标注。
+4. 已完成中文文案初稿；补齐商店图标、真实截图、联系资料和来源标注后再提交。
 5. 使用 GitLab 账号向 [Requests for Packaging](https://gitlab.com/fdroid/rfp/-/issues/) 提交学生端打包请求；或准备 [fdroiddata](https://gitlab.com/fdroid/fdroiddata) 元数据合并请求。
 6. 按维护者意见修复问题；审核完成并进入官方仓库前，官网只能写“申请中”，不得写“已上架”。
 
