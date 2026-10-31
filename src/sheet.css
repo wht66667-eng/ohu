@@ -178,6 +178,14 @@
   outline: none;
 }
 
+textarea.field-input {
+  min-height: 88px;
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
 .field-input:focus {
   border-color: var(--green);
 }

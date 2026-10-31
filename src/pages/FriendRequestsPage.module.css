@@ -56,6 +56,9 @@
   overflow-wrap:anywhere;
   color:var(--text-2)
 }
+.profileMotto { margin:14px 0 0; color:var(--green-text); font-size:14px; font-weight:650; line-height:1.6; overflow-wrap:anywhere; }
+.profileIntro { margin:7px 0 0; color:var(--text-2); font-size:13px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+.profileIntro b { display:block; margin-bottom:3px; color:var(--text); font-size:12px; }
 .actions {
   display:flex;
   justify-content:flex-end;

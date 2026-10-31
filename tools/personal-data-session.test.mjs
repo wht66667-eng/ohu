@@ -255,7 +255,11 @@ test('stale academic writes and storage failures cannot replace saved rows or re
 })
 
 test('todo mirrors do not auto-claim old cached rows, and a late reply cannot populate another UID', () => {
-  const f = fixture(), api = f.load('src/lib/todo-remind.ts', { './personal-reminders': {}, './reminder-presentation': {} })
+  const f = fixture(), api = f.load('src/lib/todo-remind.ts', {
+    './personal-reminders': {}, './reminder-presentation': {},
+    './todo': { fetchTodoReminderCandidates: async () => { throw new Error('Todo queries are not configured in this local-cache fixture') } },
+    './todo-data-events': f.load('src/lib/todo-data-events.ts'),
+  })
   const rows = [{ id: 8, title: '本人待办', due_at: new Date(Date.now() + 3600000).toISOString(), done: false }]
   f.storage.set('todo.remind.cache.v1', JSON.stringify(rows)); assert.equal(api.loadTodoRemindCache().length, 0)
   const old = f.session(); assert.equal(api.syncTodoRemindCache(rows, old), true)

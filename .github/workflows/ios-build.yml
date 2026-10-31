@@ -8,6 +8,8 @@ on:
       - "src/**"
       - "public/**"
       - "android/**"
+      - "ios/**"
+      - "patches/**"
       - "capacitor.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -61,12 +63,24 @@ jobs:
           NODE
 
       - name: Build student web bundle
-        run: npm run build:app -- --shell user
+        run: npm run build:app -- --shell user --no-sync
+
+      - name: Verify CocoaPods
+        run: |
+          if ! command -v pod >/dev/null 2>&1; then
+            brew install cocoapods
+          fi
+          pod --version
 
       - name: Generate and sync Capacitor iOS project
         run: |
-          npx cap add ios
+          if [ ! -d ios/App ]; then
+            npx cap add ios
+          fi
           npx cap sync ios
+          test -d ios/App/App.xcworkspace
+          sips -s format png -z 1024 1024 public/download/student-icon.png \
+            --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
 
       - name: Build unsigned iPhone app
         env:
@@ -74,7 +88,7 @@ jobs:
           APP_BUILD: ${{ steps.identity.outputs.build }}
         run: |
           xcodebuild \
-            -project ios/App/App.xcodeproj \
+            -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
@@ -95,6 +109,16 @@ jobs:
         run: |
           APP_PATH="$RUNNER_TEMP/ohu-derived/Build/Products/Release-iphoneos/App.app"
           test -d "$APP_PATH"
+          # Vendored frameworks can retain vendor signatures even when app signing is disabled.
+          # Remove them from this generated build so the distributable can be signed as one bundle.
+          while IFS= read -r -d '' FRAMEWORK_PATH; do
+            if codesign -dv "$FRAMEWORK_PATH" >/dev/null 2>&1; then
+              codesign --remove-signature "$FRAMEWORK_PATH"
+            fi
+          done < <(find "$APP_PATH" -type d -name '*.framework' -print0)
+          if codesign -dv "$APP_PATH" >/dev/null 2>&1; then
+            codesign --remove-signature "$APP_PATH"
+          fi
           IPA_NAME="Ohhu-user-${APP_VERSION}-${APP_BUILD}-unsigned.ipa"
           PACKAGE_ROOT="$RUNNER_TEMP/ohu-ipa"
           mkdir -p "$PACKAGE_ROOT/Payload" "$GITHUB_WORKSPACE/ios-release"

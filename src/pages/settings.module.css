@@ -35,4 +35,16 @@
 .page > section:not(.menu) > button > span:nth-child(2) > span { font-size: 13px; line-height: 1.65; }
 .page > section:not(.menu) > button > span:last-child { color: var(--text-2); font-size: 13px; }
 .page > section button:disabled { opacity: .55; cursor: default; }
+.pluginCatalog { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 14px 0; }
+.pluginCard { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--page-mid); }
+.pluginCardTop { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pluginIcon { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border-radius: 14px; background: var(--mint); color: var(--green-text); }
+.pluginBadge { padding: 5px 9px; border-radius: 999px; background: var(--mint); color: var(--green-text); font-size: 11px; font-weight: 650; }
+.pluginCard h4 { margin: 12px 0 6px; color: var(--text); font-size: 16px; }
+.pluginCard p, .pluginNotice p { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.65; }
+.pluginMeta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 12px 0; color: var(--text-2); font-size: 12px; }
+.pluginLink { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; color: var(--green-text); font-size: 14px; font-weight: 650; text-decoration: none; }
+.pluginLink:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; border-radius: 6px; }
+.pluginNotice { margin: 14px 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--mint); }
+.pluginNotice b { display: block; margin-bottom: 6px; color: var(--green-text); font-size: 14px; }
 @media (max-width: 360px) { .menu { padding-inline: 12px; } .menuRow { gap: 10px; } }

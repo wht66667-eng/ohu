@@ -1,4 +1,4 @@
-/** Production local-secret, credentials and identity store against synthetic accounts only. */
+/** Production credential storage and identity store against synthetic accounts only. */
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -24,10 +24,10 @@ function fixture() {
     return module.exports
   }
   const qbank = load('src/lib/qbank.ts', { './cb': {} })
-  const secret = load('src/lib/local-secret.ts', {})
+  const secret = load('src/lib/credential-storage.ts', {})
   const store = load('src/lib/campus-credential-store.ts', { './qbank': qbank })
-  const schedule = load('src/lib/schedule-credentials.ts', { './local-secret': secret, './campus-credential-store': store })
-  const campus = load('src/lib/campus-account.ts', { './local-secret': secret, './campus-credential-store': store, './schedule-credentials': schedule })
+  const schedule = load('src/lib/schedule-credentials.ts', { './credential-storage': secret, './campus-credential-store': store })
+  const campus = load('src/lib/campus-account.ts', { './credential-storage': secret, './campus-credential-store': store, './schedule-credentials': schedule })
   return { values, flags, qbank, schedule, campus, switchUid: uid => qbank.setQbankUid(uid) }
 }
 const plain = value => JSON.parse(JSON.stringify(value))

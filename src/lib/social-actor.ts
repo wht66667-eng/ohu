@@ -11,6 +11,8 @@ export interface SocialActor {
   uid: string
   name: string
   avatar: string
+  motto: string
+  intro: string
 }
 
 /** 当前登录用户；游客 / 未登录 / 读取异常一律返回 null（调用方给出「请先登录」） */
@@ -28,6 +30,8 @@ export function currentActor(): SocialActor | null {
         avatar_url?: unknown
         avatarUrl?: unknown
         picture?: unknown
+        profile_motto?: unknown
+        profile_intro?: unknown
       }
     } | null | undefined
     if (!raw) return null
@@ -38,6 +42,8 @@ export function currentActor(): SocialActor | null {
       uid,
       name: str(meta.username) || str(meta.nickName) || str(meta.nickname) || str(meta.name),
       avatar: str(meta.avatar_url) || str(meta.avatarUrl) || str(meta.picture),
+      motto: str(meta.profile_motto).slice(0, 40),
+      intro: str(meta.profile_intro).slice(0, 160),
     }
   } catch {
     return null

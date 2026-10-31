@@ -43,6 +43,7 @@ import { getLauncherMoodError, isLauncherMoodEnabled, LAUNCHER_MOOD_STATUS_EVENT
 import { scheduleTestReminder } from '../lib/reminder-self-test'
 import { ReminderDisplaySettings } from '../components/ReminderDisplaySettings'
 import { CourseReminderSettings } from '../components/CourseReminderSettings'
+import { PluginMarketplace } from '../components/PluginMarketplace'
 import { ExamReminderSettings } from '../components/ExamReminderSettings'
 import { rescheduleClassReminders } from '../lib/class-remind'
 import { getReminderPresentation } from '../lib/reminder-presentation'
@@ -784,15 +785,9 @@ function SettingsForAccount() {
       <section className={styles.sec} style={{ paddingTop: 10 }}>
         <h3>哦狐科技</h3>
         <div className={styles.hint}>
-          <b>插件共创与接入审核</b><br />
-          欢迎用户和开发者提交自研插件方案。请通过下方入口提交用途、功能说明、代码仓库或演示地址，以及权限和数据处理说明。管理员会先审核安全、隐私、稳定性与校园适用性；审核通过并完成接入核验后，插件才会进入哦狐。审核不代表对第三方服务或插件内容作全面担保。<br />
-          当前服务页的“我的网页快捷入口”只在本机保存 HTTPS 网址，不会执行外部代码，也不是公共插件市场。
+          插件内容会标明官方或非官方；审核通过的轻量模块随 App 发布。开源项目链接仅供参考，不会自动安装。
         </div>
-        <button type="button" className={styles.setRow} onClick={() => nav('/contact?topic=plugin')}>
-          <span className={styles.setIc} style={{ background: '#e8fff0' }}><CampusIcon name="box" /></span>
-          <span className={styles.setGrow}><b>提交插件接入方案</b><span>管理员审核后回复；请勿提交密码、密钥或真实用户数据</span></span>
-          <span className={styles.setArrow}>›</span>
-        </button>
+        <PluginMarketplace />
         <h3 style={{ marginTop: 22 }}>版本与更新</h3>
         <p className={styles.hint}>界面版本 v{webVersion}{IS_NATIVE ? nativeVersion ? ` · 安装包 v${nativeVersion.version}（${nativeVersion.build}）` : versionLoaded ? ' · 安装包版本暂时无法读取' : ' · 正在读取安装包版本…' : ' · 电脑网页版'}</p>
         <button type="button" className={styles.setRow} onClick={onCheckUpdate} disabled={updateBusy || !IS_NATIVE}>

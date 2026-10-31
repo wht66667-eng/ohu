@@ -2,7 +2,7 @@
  * 教务凭据仅归属当前真实 App 账号。游客不回填、不保存；历史全局凭据保留，
  * 不自动认领给首位登录者。密码仍使用本机随机密钥混淆；默认只记住学号。
  */
-import { openSecret, sealSecret } from './local-secret'
+import { openSecret, sealSecret } from './credential-storage'
 import {
   credentialSession, currentCredentialSession, readCampusCredentials,
   updateCampusCredentials, type CredentialSession,

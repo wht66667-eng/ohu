@@ -34,6 +34,10 @@ export interface AuthUser {
   phone: string
   /** 自定义头像地址（空串表示用默认头像） */
   avatarUrl: string
+  /** 主动设置的名言，仅随好友申请快照发送 */
+  profileMotto: string
+  /** 主动设置的个人介绍，仅随好友申请快照发送 */
+  profileIntro: string
   isAnonymous: boolean
   /** 账号密码登录用的用户名（auth user_metadata.username；与展示昵称可能不同） */
   loginName: string
@@ -138,6 +142,8 @@ export interface AuthApi {
   saveProfile: (p: AuthProfile) => Promise<string | null>
   /** 更换头像：url 为空串表示恢复默认头像 */
   saveAvatar: (url: string) => Promise<string | null>
+  /** 保存好友申请中展示的个人名言与介绍 */
+  savePersonalIntro: (motto: string, intro: string) => Promise<string | null>
   /** 修改昵称（写 profiles.username） */
   rename: (username: string) => Promise<string | null>
   openProfile: () => void
@@ -202,6 +208,8 @@ function toUser(raw: unknown): AuthUser | null {
       avatar_url?: unknown
       avatarUrl?: unknown
       picture?: unknown
+      profile_motto?: unknown
+      profile_intro?: unknown
       hasPassword?: unknown
       has_password?: unknown
     }
@@ -216,6 +224,8 @@ function toUser(raw: unknown): AuthUser | null {
     phone: String(r.phone || m.phone || ''),
     // 头像可能落在 metadata 的三个键上（写入用 avatar_url，历史数据是 avatarUrl / picture）
     avatarUrl: String(m.avatar_url || m.avatarUrl || m.picture || ''),
+    profileMotto: String(m.profile_motto || ''),
+    profileIntro: String(m.profile_intro || ''),
     isAnonymous: !!r.is_anonymous,
     // 登录用户名单独取 username：改名只同步 nickname，不会动它
     loginName: String(m.username || ''),
@@ -752,6 +762,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user],
   )
 
+  const savePersonalIntro = useCallback(
+    async (motto: string, intro: string): Promise<string | null> => {
+      if (!user) return '请先登录'
+      const nextMotto = motto.trim().slice(0, 40)
+      const nextIntro = intro.trim().slice(0, 160)
+      try {
+        // CloudBase Auth persists custom user metadata such as avatar_url although
+        // its SDK UserAttributes declaration only lists built-in profile fields.
+        const updateUser = cbAuth().updateUser as unknown as (attributes: Record<string, unknown>) => Promise<{ error?: unknown }>
+        const result = await updateUser({ profile_motto: nextMotto, profile_intro: nextIntro })
+        if (result?.error) return errText(result.error)
+        if (sessionRead.current.uid !== user.uid) return '账号已变化，请重新登录'
+        setUser((previous) => previous?.uid === user.uid && sessionRead.current.uid === user.uid
+          ? { ...previous, profileMotto: nextMotto, profileIntro: nextIntro }
+          : previous)
+        return null
+      } catch (error) {
+        return errText(error)
+      }
+    },
+    [user],
+  )
+
   /** 修改昵称：沿用 saveProfile 写 profiles.username，并尽力同步账号昵称 */
   const rename = useCallback(
     async (username: string): Promise<string | null> => {
@@ -901,6 +934,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     askProfile,
     saveProfile,
     saveAvatar,
+    savePersonalIntro,
     rename,
     openProfile,
     dismissProfile,

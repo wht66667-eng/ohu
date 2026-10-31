@@ -16,7 +16,9 @@
  *   1007=课表解析失败 / 1010=服务端 OCR 未启用（应回退手输验证码）
  */
 
-const RAW = (import.meta.env.VITE_TIMETABLE_API ?? 'http://127.0.0.1:8090').toString().trim()
+// A clean checkout (including GitHub iOS builds) must use the public gateway.
+// Local Flask development remains an explicit VITE_TIMETABLE_API override.
+const RAW = (import.meta.env.VITE_TIMETABLE_API ?? 'https://jou-d4gq7a3cqf51e6caa-1394316826.ap-shanghai.app.tcloudbase.com').toString().trim()
 /** 去掉末尾的 `/`，避免拼接出 `//api/...` */
 export const TIMETABLE_API_BASE = RAW.replace(/\/+$/, '')
 

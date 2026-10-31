@@ -4,19 +4,21 @@ import { assertOutputPath } from './release-common.mjs'
 import { verifiedIosDownload } from './ios-download-release.mjs'
 
 /** The public landing page and its legacy JSON use the very same verified APK artifact. */
-export function studentDownloadRelease(manifest, identity) {
-  const asset = manifest.flavors?.user?.androidArm64 || manifest.assets?.androidArm64
+export function studentDownloadRelease(manifest, identity, shell = 'user') {
+  if (!['user', 'admin'].includes(shell)) throw Error('Unknown Android shell')
+  const flavor = shell === 'admin' ? 'Admin' : 'User'
+  const asset = manifest.flavors?.[shell]?.androidArm64 || (shell === 'user' ? manifest.assets?.androidArm64 : undefined)
   let url
   try { url = new URL(asset?.url) } catch { throw Error('Verified student download URL required') }
   if (manifest.latestVersion !== identity.nativeVersion || manifest.latestBuild !== identity.nativeBuild
     || url.protocol !== 'https:' || url.username || url.password || url.search || url.hash
-    || url.pathname !== `/downloads/SunshineCampus-User-${identity.nativeVersion}.apk`
+    || url.pathname !== `/downloads/SunshineCampus-${flavor}-${identity.nativeVersion}.apk`
     || !/^[a-f0-9]{64}$/.test(asset.sha256) || !Number.isSafeInteger(asset.size) || asset.size < 1) {
     throw Error('Student download page does not match the verified APK release')
   }
-  return { app: '哦狐', shell: 'user', packageName: 'com.sunshinecampus.app', nativeVersion: identity.nativeVersion,
+  return { app: '哦狐', shell, packageName: shell === 'admin' ? 'com.sunshinecampus.admin' : 'com.sunshinecampus.app', nativeVersion: identity.nativeVersion,
     nativeBuild: identity.nativeBuild, clientVersion: identity.version, clientBuild: identity.webBuild,
-    url: url.href, downloadPage: new URL('/download/student.html', url).href, size: asset.size, sha256: asset.sha256,
+    url: url.href, downloadPage: new URL(`/download/${shell === 'admin' ? 'admin' : 'student'}.html`, url).href, size: asset.size, sha256: asset.sha256,
     abi: 'arm64-v8a', minSdkVersion: 23 }
 }
 
@@ -60,5 +62,15 @@ export function prepareStudentDownload(root, output, manifest, identity) {
       `$1${JSON.stringify(release).replaceAll('<', '\\u003c')}$2`)
   writeFileSync(join(directory, 'student.html'), html)
   writeFileSync(join(directory, 'student-latest.json'), JSON.stringify(release, null, 2) + '\n')
+  const adminTemplate = join(root, 'public/download/admin.html')
+  if (existsSync(adminTemplate) && manifest.flavors?.admin?.androidArm64) {
+    const admin = studentDownloadRelease(manifest, identity, 'admin')
+    const adminHtml = readFileSync(adminTemplate, 'utf8')
+      .replace(/(<p class="meta" id="release-meta">)[^<]*(<\/p>)/, `$1安装包 ${admin.nativeVersion} · ${(admin.size / 1024 / 1024).toFixed(1)} MB$2`)
+      .replace(/<a class="download" id="download"[^>]*>[^<]*<\/a>/, `<a class="download" id="download" href="${admin.url}" download="${new URL(admin.url).pathname.split('/').at(-1)}">一键下载管理端</a>`)
+      .replace(/(<script id="download-release" type="application\/json">)[\s\S]*?(<\/script>)/, `$1${JSON.stringify(admin).replaceAll('<', '\\u003c')}$2`)
+    writeFileSync(join(directory, 'admin.html'), adminHtml)
+    writeFileSync(join(directory, 'admin-latest.json'), JSON.stringify(admin, null, 2) + '\n')
+  }
   return release
 }

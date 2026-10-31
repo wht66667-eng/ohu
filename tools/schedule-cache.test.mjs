@@ -15,7 +15,10 @@ function scheduleApi() {
   const events = []
   const modules = new Map()
   let writesBlocked = false
-  const globals = { Date, Event, localStorage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => { if (writesBlocked) throw new Error('quota'); storage.set(key, value) }, removeItem: (key) => storage.delete(key) }, window: { dispatchEvent: (event) => { events.push(event.type); return true } } }
+  const window = new EventTarget()
+  const dispatch = window.dispatchEvent.bind(window)
+  window.dispatchEvent = (event) => { events.push(event.type); return dispatch(event) }
+  const globals = { Date, Event, localStorage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => { if (writesBlocked) throw new Error('quota'); storage.set(key, value) }, removeItem: (key) => storage.delete(key) }, window }
   const read = (name) => {
     if (name === './cb') return {}
     if (modules.has(name)) return modules.get(name)
@@ -192,7 +195,7 @@ test('the mounted homepage signals readiness while its task and listing requests
   const ready = []
   const jsx = (type, props) => ({ type, props })
   const actual = scheduleApi()
-  const prefs = { campus: '', services: ['schedule', 'grades', 'english', 'tasks', 'market', 'food'] }
+  const prefs = { campus: '', services: ['schedule', 'grades', 'english', 'tasks', 'market', 'food'], cards: ['schedule', 'tasks', 'services', 'community'] }
   const options = prefs.services.map((id) => ({ id, label: id, artwork: id, to: `/${id}` }))
   const mocks = {
     'react': { lazy: (loader) => loader, Suspense: 'div', useEffect: (effect) => effects.push(effect), useMemo: (read) => read(), useRef: (value) => ({ current: value }), useState: (value) => [typeof value === 'function' ? value() : value, () => {}] },
@@ -208,7 +211,7 @@ test('the mounted homepage signals readiness while its task and listing requests
     '../lib/theme': { getStoredTheme: () => 'light' },
     '../lib/fox-dock-pref': { isFoxDockOn: () => false },
     '../lib/animations': { fadeUp: () => ({}) },
-    './home/home-preferences': { DEFAULT_HOME_SERVICE_IDS: prefs.services, HOME_SERVICE_OPTIONS: options, loadHomePreferences: () => prefs },
+    './home/home-preferences': { DEFAULT_HOME_SERVICE_IDS: prefs.services, HOME_SERVICE_OPTIONS: options, DEFAULT_HOME_CARD_IDS: prefs.cards, HOME_CARD_OPTIONS: prefs.cards.map(id => ({ id, label: id })), loadHomePreferences: () => prefs },
     './home/home-data': { nearestOpenTodo: () => null },
     '../lib/fox-art': { foxAssetUrl: () => 'fox.png' },
     '../lib/ui-variant': { useUiVariant: () => 'classic', foxCampusAssetUrl: () => '', themeAssetUrl: () => '', isFoxFreeVariant: () => false },

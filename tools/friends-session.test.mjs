@@ -107,6 +107,38 @@ test('guest friend reads and mutations never access the database; inbox excludes
   assert.deepEqual(f.calls[0].filters, [['to_uid', 'A'], ['status', 'pending']])
 })
 
+test('profile snapshots fall back only on missing optional columns and never serialize undefined', async () => {
+  const f = service()
+  f.flags.failure = call => call.action === 'insert' && Object.hasOwn(call.value, 'from_motto')
+    ? { code: '42703', message: 'column "from_motto" does not exist' } : null
+  const result = await f.api.sendFriendRequest('B', 'hello', { motto: '向前走', intro: '合成个人介绍' })
+  assert.equal(result.error, null)
+  assert.match(result.notice, /暂不支持/)
+  assert.equal(f.calls.length, 2)
+  assert.equal(f.tables.friend_requests.length, 1)
+  assert.equal(Object.hasOwn(f.calls[1].value, 'from_motto'), false)
+  const empty = service()
+  assert.equal((await empty.api.sendFriendRequest('B')).error, null)
+  assert.equal(empty.calls[0].value.from_motto, '')
+  assert.equal(empty.calls[0].value.from_intro, '')
+})
+
+test('friend requests do not retry permission/network errors or a schema rejection from an old identity', async () => {
+  for (const error of [{ code: '42501', message: 'from_motto permission denied' }, { message: 'network timeout' }]) {
+    const f = service()
+    f.flags.failure = () => error
+    assert.equal((await f.api.sendFriendRequest('B')).error, error.message)
+    assert.equal(f.calls.length, 1)
+  }
+  const f = service(), wait = deferred()
+  f.flags.before = () => wait.promise
+  f.flags.failure = () => ({ code: '42703', message: 'column "from_intro" does not exist' })
+  const pending = f.api.sendFriendRequest('B'); await flush()
+  f.select('C'); wait.resolve()
+  assert.match((await pending).error, /账号已变化/)
+  assert.equal(f.calls.length, 1)
+})
+
 test('an atomic acceptance failure leaves no friend edge, and retry confirms the request and edge together', async () => {
   const f = service({ requests: [request()] })
   f.flags.edgeFailure = true

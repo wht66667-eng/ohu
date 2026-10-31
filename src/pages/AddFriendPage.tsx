@@ -68,10 +68,13 @@ function AddFriendContent() {
     if (!work) { setError('登录状态正在同步，请稍后重试。'); return }
     operation.current = work; setBusy('send'); setError('')
     try {
-      const result = await sendFriendRequest(target, message.trim())
+      const result = await sendFriendRequest(target, message.trim(), {
+        motto: auth.user?.profileMotto || '',
+        intro: auth.user?.profileIntro || '',
+      })
       if (!current(work)) return
       if (result.error) setError(result.error)
-      else { toast.ok('好友申请已发送'); nav('/contacts') }
+      else { toast.ok(result.notice || '好友申请已发送'); nav('/contacts') }
     } catch {
       if (current(work)) setError('申请未能发送，请保留好友码后重试。')
     } finally {
@@ -91,7 +94,8 @@ function AddFriendContent() {
       <form className={styles.card} onSubmit={event => void submit(event)} aria-busy={busy === 'send'}>
         <h2>添加对方</h2><p>向对方获取准确的好友码，再发送申请。</p>
         <label className={styles.field} htmlFor="friend-code">对方的好友码<input id="friend-code" name="friend-code" type="text" autoComplete="off" autoCapitalize="none" spellCheck={false} enterKeyHint="send" placeholder="粘贴对方的好友码" value={code} disabled={busy === 'send'} onChange={event => setCode(event.target.value)} /></label>
-        <label className={styles.field} htmlFor="friend-message">验证消息 <span>选填</span><textarea id="friend-message" name="friend-message" rows={3} maxLength={200} placeholder="介绍一下自己，方便对方认出你" value={message} disabled={busy === 'send'} onChange={event => setMessage(event.target.value)} /></label>
+        <p className={styles.profilePrivacy}>你设置的个人名言和介绍会随申请展示给对方；如果还没设置，可以到“我的 → 编辑资料”补充。</p>
+        <label className={styles.field} htmlFor="friend-message">验证消息 <span>选填</span><textarea id="friend-message" name="friend-message" rows={3} maxLength={200} placeholder="补充说明你是谁，方便对方认出你" value={message} disabled={busy === 'send'} onChange={event => setMessage(event.target.value)} /></label>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
         <button type="submit" className={styles.primary} disabled={!!busy}>{busy === 'send' ? '正在发送…' : '发送好友申请'}</button>
       </form>

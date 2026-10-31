@@ -820,8 +820,8 @@
   .composer { transition: none; }
 }
 /* V7 community surfaces, using the existing application semantic colors. */
-.page { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; background:var(--page-mid); color:var(--text); }
-.chatPage { height:100%; min-height:0; }
+.page { display:flex; flex-direction:column; height:auto; min-height:100%; overflow:visible; background:var(--page-mid); color:var(--text); }
+.chatPage { height:100%; min-height:0; overflow:hidden; }
 .head { flex-wrap:nowrap; gap:10px; flex-shrink:0; min-height:92px; padding:15px 14px 13px; }
 .titleBlock { flex:1; min-width:0; }
 .eyebrow { display:block; color:var(--green-text); font-size:9px; letter-spacing:.14em; font-weight:800; }
@@ -830,16 +830,7 @@
 .titleBlock>span:not(.eyebrow) { color:var(--text-3); font-size:11px; line-height:1.5; }
 .headActions { display:flex; align-items:center; gap:6px; flex:none; }
 .momentsAction { display:grid; place-items:center; width:42px; height:44px; border:1px solid var(--line); border-radius:50%; background:var(--green-soft); color:var(--green-text); }
-.communityHero { position:relative; display:flex; align-items:center; min-height:181px; flex-shrink:0; overflow:hidden; margin:0 14px 11px; padding:20px 18px; border-radius:23px; background:linear-gradient(120deg,color-mix(in srgb,var(--green-soft) 90%,var(--leaf)),var(--service-amber)); box-shadow:var(--shadow-sm); }
-.communityHero>div { position:relative; z-index:1; max-width:70%; }
-.communityHero>div>span { color:var(--green-text); font-size:10px; font-weight:750; }
-.communityHero h2 { margin:13px 0 5px; color:var(--green-ink); font-size:21px; line-height:1.3; font-weight:850; letter-spacing:-.03em; }
-.communityHero h2 i { color:var(--orange); font-style:normal; }
-.communityHero p { margin:0 0 13px; color:var(--text-2); font-size:11px; }
-.communityHero button { min-height:44px; padding:0 15px; border:0; border-radius:14px; background:var(--green); color:var(--on-primary); font-size:12px; font-weight:750; box-shadow:var(--shadow-sm); }
-.communityHero>svg { position:absolute; right:8px; bottom:7px; width:122px; height:122px; object-fit:contain;  }
 .communityScene { aspect-ratio:800/317; flex-shrink:0; overflow:hidden; margin:0 14px 11px; border-radius:17px; background:var(--green-soft); }
-.communityScene img { display:block; width:100%; height:auto; aspect-ratio:800/317; object-fit:contain; }
 .communityLinks { display:flex; gap:8px; flex-shrink:0; margin:0 14px 11px; }
 .communityLinks a { display:inline-flex; align-items:center; min-height:44px; padding:0 13px; border:1px solid var(--line); border-radius:18px; background:var(--card); color:var(--green-text); font-size:11px; font-weight:650; text-decoration:none; }
 .tabs { flex-shrink:0; gap:5px; margin:0 14px 14px; padding:5px; border:1px solid var(--line); border-radius:17px; background:var(--card); }
@@ -848,7 +839,9 @@
 .tabOn { background:var(--green); color:var(--on-primary); }
 .tabs img { width:19px; height:19px; object-fit:contain; border-radius:5px; }
 .tabOn img { background:#f7f9ef; }
-.feedList { flex:1 1 auto; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; }
+.feedList { flex:0 0 auto; min-height:auto; overflow:visible; padding-bottom:calc(var(--tab-h, 64px) + 24px); }
+.backTop { position:fixed; right:max(18px,calc((100vw - var(--phone-w, 430px))/2 + 18px)); bottom:calc(var(--tab-h, 64px) + 20px + var(--safe-bottom, 0px)); z-index:30; display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 14px; border:1px solid color-mix(in srgb,var(--green) 20%,var(--line)); border-radius:999px; background:color-mix(in srgb,var(--card) 92%,transparent); color:var(--green-text); box-shadow:0 8px 24px color-mix(in srgb,var(--green-ink) 18%,transparent); font:inherit; font-size:12px; font-weight:750; backdrop-filter:blur(12px); }
+.backTop span { font-size:18px; line-height:1; }
 .loadMore { display:block; width:100%; min-height:44px; margin:4px 0 12px; border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--green-text); font:inherit; font-size:12px; font-weight:700; }
 .loadMore:disabled { opacity:.65; }
 .loadMoreError { margin:8px 4px; color:var(--danger); font-size:12px; line-height:1.5; text-align:center; }
@@ -870,13 +863,12 @@
 .cardActs .views { display:inline-flex; align-items:center; gap:5px; background:transparent; color:var(--text-3); }
 .cardActs .dm { margin-left:auto; }
 .page :is(a,button):focus-visible { outline:2px solid var(--green); outline-offset:3px; }
-:global([data-theme=dark]) .communityHero>svg { mix-blend-mode:normal; border-radius:16px; }
 :global([data-theme=dark]) .communityScene img { filter:brightness(.78); }
-@media(max-width:355px) { .head { padding-inline:11px; gap:5px; } .titleBlock h1 { font-size:23px; } .eyebrow { font-size:8px; } .headActions { gap:3px; } .momentsAction { width:38px; } .communityHero { min-height:166px; margin-inline:11px; padding:16px 13px; } .communityHero h2 { font-size:19px; } .communityHero>svg { width:105px; height:105px; } .communityScene,.communityLinks,.tabs { margin-inline:11px; } .tabs { gap:3px; } .tab,.tabOn { font-size:11px; gap:3px; } }
-@media(prefers-reduced-motion:reduce) { .communityHero button,.communityLinks a { transition:none; transform:none; } }
+@media(max-width:355px) { .head { padding-inline:11px; gap:5px; } .titleBlock h1 { font-size:23px; } .eyebrow { font-size:8px; } .headActions { gap:3px; } .momentsAction { width:38px; } .communityScene,.communityLinks,.tabs { margin-inline:11px; } .tabs { gap:3px; } .tab,.tabOn { font-size:11px; gap:3px; } }
+@media(prefers-reduced-motion:reduce) { .communityLinks a,.backTop { scroll-behavior:auto; transition:none; } }
 
 /* Keep conversation and send controls in view while the system keyboard is open. */
-:global(:root[data-keyboard-open]) .chatPage :is(.communityHero,.communityScene,.communityLinks) { display:none; }
+:global(:root[data-keyboard-open]) .chatPage .communityLinks { display:none; }
 :global(:root[data-keyboard-open]) .chatPage .head { min-height:58px; padding-block:8px; }
 :global(:root[data-keyboard-open]) .chatPage .titleBlock h1 { font-size:22px; }
 :global(:root[data-keyboard-open]) .chatPage .titleBlock>span { display:none; }

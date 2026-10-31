@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
@@ -14,6 +14,8 @@ import { foxPoseForState } from '../lib/fox-sheet'
 import { isFoxFreeVariant, useUiVariant } from '../lib/ui-variant'
 import { pressFeedback } from '../lib/animations'
 import { useUiMotion } from '../lib/motion-pref'
+import { fetchMoments, type Moment } from '../lib/moments'
+import { fetchHotPosts, type PlazaPost } from '../lib/plaza'
 import { FocusThemeToggle } from '../components/focus/FocusInteractions'
 import styles from './profile.module.css'
 
@@ -55,6 +57,61 @@ function ProfileRow({ to, icon, title, detail }: { to: string; icon: ProfileIcon
     <span className={styles.rowText}><b>{title}</b>{detail ? <span>{detail}</span> : null}</span>
     <span className={styles.arrow}><ProfileIcon name="arrow" /></span>
   </Link>
+}
+
+function randomItem<T extends { id: number }>(rows: T[], previousId?: number): T | null {
+  if (!rows.length) return null
+  const choices = rows.length > 1 && previousId !== undefined ? rows.filter(row => row.id !== previousId) : rows
+  return choices[Math.floor(Math.random() * choices.length)] || rows[0]
+}
+
+function ProfileRecommendations({ uid }: { uid: string }) {
+  const [moment, setMoment] = useState<Moment | null>(null)
+  const [hotPost, setHotPost] = useState<PlazaPost | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [momentFailed, setMomentFailed] = useState(false)
+  const [hotFailed, setHotFailed] = useState(false)
+  const [refresh, setRefresh] = useState(0)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    void Promise.all([
+      uid ? fetchMoments(60) : Promise.resolve({ rows: [], error: null } as { rows: Moment[]; error: string | null }),
+      fetchHotPosts(8),
+    ]).then(([moments, posts]) => {
+      if (!active) return
+      const otherMoments = moments.error ? [] : moments.rows.filter(row => row.creator_uid !== uid)
+      setMoment(previous => randomItem(otherMoments, previous?.id))
+      setHotPost(previous => randomItem(posts.error ? [] : posts.rows, previous?.id))
+      setMomentFailed(!!moments.error)
+      setHotFailed(!!posts.error)
+      setLoading(false)
+    }).catch(() => {
+      if (!active) return
+      setMoment(null)
+      setHotPost(null)
+      setMomentFailed(true)
+      setHotFailed(true)
+      setLoading(false)
+    })
+    return () => { active = false }
+  }, [uid, refresh])
+
+  const momentLabel = !uid ? '登录后发现好友动态' : loading ? '正在挑选一条动态…' : moment?.body || (momentFailed ? '好友动态暂时不可用' : moment?.media_urls?.length ? '分享了校园生活图片' : '还没有可推荐的好友动态')
+  const hotLabel = loading ? '正在挑选热门帖子…' : hotPost?.body || (hotFailed ? '热门内容暂时不可用' : '暂时没有热门帖子')
+
+  return <div className={styles.recommendations}>
+    <div className={styles.recommendHead}><b>随手发现</b><button type="button" onClick={() => setRefresh(value => value + 1)} disabled={loading} aria-label="换一组推荐">{loading ? '挑选中…' : '换一组 ↻'}</button></div>
+    <div className={styles.recommendGrid}>
+      <Link to={moment ? `/moments?moment=${moment.id}` : '/moments'} className={styles.recommendCard} aria-label={`打开朋友圈推荐：${moment?.creator_name || '查看朋友圈'}`}>
+        <span>随机朋友圈</span><strong>{moment?.creator_name || (uid ? '好友近况' : '好友动态')}</strong><p>{momentLabel}</p><small>打开朋友圈 ›</small>
+      </Link>
+      <Link to="/plaza?tab=hot" className={styles.recommendCard} aria-label={`打开热门帖子推荐：${hotPost?.body?.slice(0, 36) || '热门榜'}`}>
+        <span>热门帖子</span><strong>{hotPost?.tag || '校园广场'}</strong><p>{hotLabel}</p><small>查看热门榜 ›</small>
+      </Link>
+    </div>
+  </div>
 }
 
 export function ProfilePage() {
@@ -113,7 +170,13 @@ export function ProfilePage() {
       </motion.button>
       </div>
       {!signed ? <p className={styles.loginHint}>手机验证码或账号密码登录</p> : null}
-      {showFoxArt ? <div className={styles.companion}><FoxSheetPose className={styles.accountFox} pose="waving" /><div><b>{signed ? '今天也有小美好' : '你的校园小伙伴'}</b><p>{signed ? '和阿狐打个招呼，继续你的校园日常。' : '先逛逛校园，发现喜欢的生活。'}</p></div></div> : null}
+      {showFoxArt || signed ? <div className={`${styles.companion} ${auth.user?.profileMotto || auth.user?.profileIntro ? styles.companionProfile : ''}`}>
+        {showFoxArt ? <FoxSheetPose className={styles.accountFox} pose="waving" /> : null}
+        <div>
+          <b>{auth.user?.profileMotto ? `“${auth.user.profileMotto}”` : signed ? '今天也有小美好' : '你的校园小伙伴'}</b>
+          <p>{auth.user?.profileIntro || (signed ? '编辑资料写下你的个人介绍，发送好友申请时对方就能看到。' : '先逛逛校园，发现喜欢的生活。')}</p>
+        </div>
+      </div> : null}
     </section>
 
     <section className={styles.stats} aria-label="校园快捷入口">
@@ -139,7 +202,7 @@ export function ProfilePage() {
       <div className={styles.group}>
         <ProfileRow to="/moments" icon="edit" title="朋友圈" detail="好友动态，支持图文" />
         <ProfileRow to="/contacts" icon="message" title="通讯录" detail="好友与好友申请" />
-        <ProfileRow to="/discover" icon="bell" title="发现" detail="校园热点与校园服务" />
+        <ProfileRecommendations uid={signed ? auth.user?.uid || '' : ''} />
       </div>
     </section>
 

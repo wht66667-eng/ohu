@@ -79,6 +79,7 @@
   font-weight:600;
   margin:18px 0
 }
+.profilePrivacy { margin:0; color:var(--text-2); font-size:12px; line-height:1.6; }
 .field>span {
   font-weight:400;
   color:var(--text-2);

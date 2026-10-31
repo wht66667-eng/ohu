@@ -11,7 +11,7 @@ import {
   loadSavedPassword,
   loadSavedStuid,
 } from './schedule-credentials'
-import { openSecret, sealSecret } from './local-secret'
+import { openSecret, sealSecret } from './credential-storage'
 import {
   credentialSession, currentCredentialSession, readCampusCredentials,
   updateCampusCredentials, type CredentialSession,

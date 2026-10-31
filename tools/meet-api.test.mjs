@@ -19,7 +19,12 @@ function fixture() {
   let owner = '', revision = 0, responder = async () => ({ data:room(), error:null })
   const localStorage = { getItem:key => values.get(key) ?? null, setItem:(key,value)=>values.set(key,value), removeItem:key=>values.delete(key) }
   const qbank = { captureQbankSession:()=>({uid:owner,revision}), isQbankSessionCurrent:s=>s.uid===owner && s.revision===revision }
-  const mocks = { './cb':{cbRdb:()=>({rpc:async (name,params)=>{ calls.push({name,params}); return responder(name,params) }})}, './qbank':qbank }
+  const personalityModule = { exports: {} }
+  const personalitySource = ts.transpileModule(fs.readFileSync(new URL('../src/lib/meet-personality.ts', import.meta.url), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText
+  vm.runInNewContext(personalitySource, { module: personalityModule, exports: personalityModule.exports, localStorage })
+  const mocks = { './cb':{cbRdb:()=>({rpc:async (name,params)=>{ calls.push({name,params}); return responder(name,params) }})}, './qbank':qbank, './meet-personality': personalityModule.exports }
   const module = { exports:{} }
   vm.runInNewContext(source,{ module, exports:module.exports, require:name=>mocks[name] || {}, localStorage, crypto:webcrypto, Uint8Array, Date })
   return { api:module.exports,calls,values,setOwner:uid=>{owner=uid;revision++},setResponder:fn=>{responder=fn} }
@@ -27,7 +32,7 @@ function fixture() {
 
 test('private invitation generates a local secret and saves a guest response only after server acceptance', async () => {
   const f=fixture(), code=room().code
-  await f.api.respondMeet(code,{name:'同学',vibe:'I',slots:['2099-01-01T10:00','2099-01-01T10:30']})
+  await f.api.respondMeet(code,{name:'同学',vibe:'I',personalityType:null,preferredPersonality:null,slots:['2099-01-01T10:00','2099-01-01T10:30']})
   assert.equal(f.calls[0].name,'meet_respond')
   assert.match(f.calls[0].params.p_token,/^[a-f0-9]{64}$/)
   assert.equal(f.api.readMeetReply(code).name,'同学')
@@ -39,7 +44,7 @@ test('private invitation generates a local secret and saves a guest response onl
 test('a failed response retains only its secret and cannot be displayed as submitted', async () => {
   const f=fixture(),code=room().code
   f.setResponder(async()=>({error:{message:'网络出错'}}))
-  await assert.rejects(()=>f.api.respondMeet(code,{name:'同学',vibe:'any',slots:['2099-01-01T10:00']}),/网络出错/)
+  await assert.rejects(()=>f.api.respondMeet(code,{name:'同学',vibe:'any',personalityType:null,preferredPersonality:null,slots:['2099-01-01T10:00']}),/网络出错/)
   assert.equal(f.api.readMeetReply(code),null)
   assert.equal(f.values.size,1)
 })
@@ -62,7 +67,7 @@ test('owner changes during a pending request discard the response', async () => 
 
 test('leaving a private activity removes local reply only after the server releases the place', async () => {
   const f=fixture(),code=room().code
-  await f.api.respondMeet(code,{name:'同学',vibe:'any',slots:['2099-01-01T10:00']})
+  await f.api.respondMeet(code,{name:'同学',vibe:'any',personalityType:null,preferredPersonality:null,slots:['2099-01-01T10:00']})
   f.setResponder(async()=>({error:{message:'暂时不能退出'}}))
   await assert.rejects(()=>f.api.leaveMeet(code),/暂时不能退出/)
   assert.ok(f.api.readMeetReply(code))

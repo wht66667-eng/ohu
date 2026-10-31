@@ -18,6 +18,7 @@ import { PublicMeetShell } from './components/meet/PublicMeetShell'
 type ScreenLoader = () => Promise<{ default: ComponentType }>
 const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/services', () => import('./pages/ServicesPage').then((module) => ({ default: module.ServicesPage }))],
+  ['/plugins', () => import('./pages/PluginMarketplacePage').then((module) => ({ default: module.PluginMarketplacePage }))],
   ['/nearby-food', () => import('./pages/CampusServicePages').then((module) => ({ default: module.NearbyFoodPage }))],
   ['/campus-card', () => import('./pages/CampusServicePages').then((module) => ({ default: module.CampusCardPage }))],
   ['/bus', () => import('./pages/CampusServicePages').then((module) => ({ default: module.BusPage }))],

@@ -452,7 +452,7 @@ export function HomePage() {
         {weather ? <span className={styles.weatherBar} aria-label="校园天气">{weather.emoji} {weather.city} · {weather.label} {weather.temp}°<span className={styles.weatherSub}>{weather.low}～{weather.high}°</span></span> : null}
         <button type="button" className={styles.dotsBtn} aria-label="快捷设置" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><IconGear size={18} /></button>
       </div>
-      <figure className={styles.campusBanner}><AnnouncementBanner fallback="/brand/ohu-original/home-campus-banner.webp" /></figure>
+      <figure className={styles.campusBanner}><AnnouncementBanner fallback="/brand/ohu-original/home-campus-banner.webp" rotateWithFallback /></figure>
 
       <div className={styles.homeCards}>
       {visibleCards.has('schedule') ? <section className={styles.todayCard} style={{ order: cardOrder.schedule }} aria-labelledby="home-today">

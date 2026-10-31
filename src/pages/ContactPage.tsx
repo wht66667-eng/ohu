@@ -19,7 +19,7 @@ export function ContactPage() {
   const toast = useToast()
   const [category, setCategory] = useState<FeedbackCategory>('suggest')
   const [title, setTitle] = useState(() => pluginTopic ? '插件接入申请' : '')
-  const [content, setContent] = useState(() => pluginTopic ? '插件名称与用途：\n主要功能：\n代码仓库或演示地址（如有）：\n需要的权限及处理的数据：\n第三方服务与隐私说明：\n' : '')
+  const [content, setContent] = useState(() => pluginTopic ? '插件名称与版本：\n作者／团队：\n用途与主要功能：\n公开 GitHub 仓库地址：\n固定源码 commit：\n插件 ID、分类、哦狐入口和最小权限：\n数据读写与网络访问：\n依赖、代码／素材许可证及来源说明：\n兼容范围：\n实际完成的检查与结果：\n' : '')
   const [busy, setBusy] = useState(false)
   const [waitingLogin, setWaitingLogin] = useState(false)
   const [done, setDone] = useState(false)
@@ -98,7 +98,7 @@ export function ContactPage() {
         </span>
         <div>
           <h2 id="contact-intro-title">{pluginTopic ? '提交插件接入方案' : '有问题，直接留言'}</h2>
-          <p>{pluginTopic ? '管理员将审核功能、安全、隐私与校园适用性；通过审核并完成接入核验后才会接入。请勿提交密钥、密码或真实用户数据。' : '写清时间、地点和遇到的问题，便于处理。'}</p>
+          <p>{pluginTopic ? '此表单提交插件方案与 GitHub 仓库链接，不支持直接上传源码文件。请提供固定 commit，并分别说明代码、图片、字体和数据许可，以及插件的数据与网络行为。管理员审核通过后由哦狐维护者静态接入并随新版发布；请勿提交密钥、密码或真实用户数据。' : '写清时间、地点和遇到的问题，便于处理。'}</p>
         </div>
       </section>
 

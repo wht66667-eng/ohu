@@ -8,7 +8,7 @@
  */
 import { App } from '@capacitor/app'
 import { startFreeRASP, type SuspiciousAppInfo, type TalsecConfig } from 'capacitor-freerasp'
-import { IS_NATIVE } from './platform'
+import { IS_NATIVE, PLATFORM } from './platform'
 import { SHELL_APP_ID, getAppShell } from './app-shell'
 import { toast } from './toast'
 
@@ -41,6 +41,10 @@ function hardWarn(title: string, key?: string) {
 export async function initAppSecurity(): Promise<boolean> {
   if (!IS_NATIVE || started) return started
   if (typeof window === 'undefined') return false
+  // Self-signed iPhone packages can belong to different teams. Do not start
+  // a native integrity SDK with an unknown team identity; it can terminate
+  // the app before the JavaScript error handler can recover.
+  if (PLATFORM.os !== 'android') return false
 
   try {
     const info = await App.getInfo()

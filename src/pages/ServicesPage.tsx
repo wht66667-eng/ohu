@@ -136,6 +136,13 @@ export function ServicesPage() {
           <button type="button" className={s.removePlugin} aria-label={`移除 ${link.title}`} onClick={() => { try { setUserLinks(removeUserServiceLink(uid, link.id)) } catch { setPluginError('移除失败，请重试') } }}>移除</button>
         </article>)}</div> : <p className={s.pluginEmpty}>还没有自定义入口。添加 HTTPS 网页即可快速打开；哦狐不会运行脚本或替你填写账号密码。</p>}
       </section>
+      <section className={`${s.panel} ${s.pluginMarket}`} aria-labelledby="services-plugin-market-title">
+        <div className={s.pluginMarketCopy}>
+          <span className={s.pluginMarketIcon} aria-hidden="true">✦</span>
+          <div><h2 id="services-plugin-market-title">哦狐插件</h2><p>轻量学习工具与趣味玩法 · 审核后随版本更新</p></div>
+        </div>
+        <Link className={s.pluginMarketLink} to="/plugins">逛插件商城 <span aria-hidden="true">›</span></Link>
+      </section>
       {showFox ? <section className={s.panel} aria-labelledby="services-featured-title">
         <div className={s.panelHead}><h2 id="services-featured-title"><span aria-hidden="true">☆</span>常用功能</h2><span>学习与校园生活</span></div>
         <div className={s.featuredGrid}>{featured.map((item, index) => <ServiceEntry key={item.id} item={item} kind="featured" artIndex={index} onUse={used} />)}</div>

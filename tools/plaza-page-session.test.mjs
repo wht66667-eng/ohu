@@ -37,7 +37,7 @@ function fixture(options = {}) {
   const keyboard = load(compile('src/lib/keyboard-viewport.ts'))
   let auth = { isSigned: true, user: { uid: 'synthetic-A', isAnonymous: false }, profile: { username: '合成同学' }, ensureSignedIn: async () => true }
   im.selectImSession(auth.user.uid)
-  let searchParams = new URLSearchParams('tab=feed'), tree, cursor = 0, dirty = false, active = true, effects = []
+  let searchParams = new URLSearchParams('tab=feed'), tree, cursor = 0, dirty = false, active = true, effects = [], layoutEffects = []
   const slots = [], intervals = new Map(), notices = []
   let sequence = 0
   const calls = { upload: [], create: [], search: [], mirrorText: [], mirrorImage: [], feed: 0, hot: 0, staleWrites: 0 }
@@ -78,6 +78,10 @@ function fixture(options = {}) {
       const i = cursor++
       if (!slots[i] || !same(slots[i].deps, deps)) effects.push({ i, fn, deps })
     },
+    useLayoutEffect(fn, deps) {
+      const i = cursor++
+      if (!slots[i] || !same(slots[i].deps, deps)) layoutEffects.push({ i, fn, deps })
+    },
   }
   const noop = () => {}
   const setSearchParams = (next) => { searchParams = next; dirty = true }
@@ -90,18 +94,26 @@ function fixture(options = {}) {
   Object.assign(window, {
     setInterval: (fn) => { const id = ++sequence; intervals.set(id, fn); return id },
     clearInterval: (id) => intervals.delete(id), setTimeout: noop, clearTimeout: noop,
+    matchMedia: () => ({ matches: false }),
   })
   document.visibilityState = 'visible'
+  const main = Object.assign(new EventTarget(), {
+    scrollTop: 0, scrollHeight: 1400, clientHeight: 700,
+    getBoundingClientRect: () => ({ top: 0, bottom: 700 }),
+    scrollTo({ top }) { this.scrollTop = top; this.dispatchEvent(new Event('scroll')) },
+  })
+  document.getElementById = (id) => id === 'main-content' ? main : null
   function jsx(type, props, key) {
     const node = { type, props: props || {}, key }
-    if (props?.ref) props.ref.current = { style: {}, scrollHeight: 40, scrollIntoView: noop, focus: noop, setSelectionRange: noop, selectionStart: 0, selectionEnd: 0 }
+    if (props?.ref) props.ref.current ??= { style: {}, scrollHeight: 40, scrollIntoView: noop, focus: noop, setSelectionRange: noop, selectionStart: 0, selectionEnd: 0, querySelector: () => null, querySelectorAll: () => [] }
     return node
   }
   const plaza = {
     PLAZA_MSG_LIMIT: 80, PLAZA_POLL_MS: 4000, PLAZA_TAGS: ['吐槽', '交友', '帮忙'],
     fetchPlazaPosts: async () => { calls.feed++; return emptyRows() }, fetchPlazaMessages: async () => emptyRows(),
+    fetchOlderPlazaPosts: async () => ({ ...emptyRows(), hasMore: false }),
     fetchHotPosts: async () => { calls.hot++; return emptyRows() }, fetchTopLikedPosts: async () => emptyRows(),
-    fetchLikedPostIds: async () => new Set(), incrPostView: async () => {}, fmtPlazaTime: () => '',
+    fetchLikedPostIds: async () => ({ ids: new Set(), error: null }), incrPostView: async () => {}, fmtPlazaTime: () => '',
     deletePlazaPost: async () => ({ error: null }), togglePostLike: async () => ({ error: null, liked: true, likes: 1 }),
     searchPlazaPosts: async (keyword) => { calls.search.push(keyword); return search(keyword) },
     createPlazaPost: async (body, tag, uid, name, avatar, images) => {
@@ -119,7 +131,7 @@ function fixture(options = {}) {
     '../../lib/native': { onAppRefresh(task) { refreshTasks.add(task); return () => refreshTasks.delete(task) } },
     '../../lib/keyboard-viewport': keyboard,
     react: hooks, 'react/jsx-runtime': { jsx, jsxs: jsx },
-    'react-router-dom': { useNavigate: () => noop, useSearchParams: () => [searchParams, setSearchParams] },
+    'react-router-dom': { Link: 'a', useNavigate: () => noop, useSearchParams: () => [searchParams, setSearchParams] },
     '../../lib/auth': { useAuth: () => auth }, '../../lib/async-owner': asyncOwner, '../../lib/im-session': im,
     '../../context/ToastContext': { useToast: () => toast }, '../../data/images': { resolveAvatar: () => 'https://fixture.invalid/avatar.png' },
     '../../lib/plaza': plaza,
@@ -145,15 +157,15 @@ function fixture(options = {}) {
     require: (name) => { if (Object.hasOwn(dependencies, name)) return dependencies[name]; throw new Error(`Unexpected dependency: ${name}`) },
   })
   function render() {
-    cursor = 0; dirty = false; effects = []
+    cursor = 0; dirty = false; effects = []; layoutEffects = []
     tree = module.exports.PlazaPage()
-    for (const pending of effects) {
+    for (const pending of [...layoutEffects, ...effects]) {
       slots[pending.i]?.cleanup?.()
       slots[pending.i] = { deps: pending.deps, cleanup: pending.fn() }
     }
   }
   return {
-    calls, notices,
+    calls, notices, main,
     async refresh() { await Promise.all([...refreshTasks].map(task => task())); await this.render() },
     async render() { render(); await flush(); for (let i = 0; dirty && i < 20; i++) { render(); await flush() } assert.equal(dirty, false, 'render effects must settle'); return tree },
     find(predicate) { return walk(tree).find(predicate) }, all(predicate) { return walk(tree).filter(predicate) },
@@ -181,11 +193,30 @@ const images = (f) => f.all((node) => node.type === 'img' && /^配图 /.test(nod
 const searchInput = (f) => f.find((node) => node.type === 'input' && node.props.placeholder?.startsWith('搜索广场'))
 const cards = (f) => f.all((node) => node.type === 'p' && node.props.className === 'cardBody').map(text)
 async function openCompose(f, body = '合成草稿') {
-  f.find((node) => node.type === 'button' && text(node) === '＋ 发布动态').props.onClick()
+  const banner = f.find((node) => node.type === 'announcement-banner')
+  assert.equal(banner?.props.intro?.actionLabel, '＋ 发布动态')
+  banner.props.intro.onAction()
   await f.render()
   bodyInput(f).props.onChange({ target: { value: body } })
   await f.render()
 }
+
+test('the page scroll container controls the back-to-top action and the action returns it to zero', async () => {
+  const f = fixture()
+  try {
+    await f.render()
+    assert.equal(f.find(node => node.props['aria-label'] === '回到页面顶部'), undefined)
+    f.main.scrollTop = 400
+    f.main.dispatchEvent(new Event('scroll'))
+    await f.render()
+    const backTop = f.find(node => node.props['aria-label'] === '回到页面顶部')
+    assert.ok(backTop)
+    backTop.props.onClick()
+    await f.render()
+    assert.equal(f.main.scrollTop, 0)
+    assert.equal(f.find(node => node.props['aria-label'] === '回到页面顶部'), undefined)
+  } finally { f.dispose() }
+})
 async function searchFor(f, keyword) {
   searchInput(f).props.onChange({ target: { value: keyword } })
   await f.render()

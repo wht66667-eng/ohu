@@ -127,12 +127,14 @@ function tabFromSearch(sp: URLSearchParams): TabKey {
 }
 
 function captureVisiblePostAnchor(container: HTMLElement | null): { id: number; offsetTop: number } | null {
-  if (!container || container.scrollTop <= 0) return null
-  const containerTop = container.getBoundingClientRect().top
+  const scrollContainer = document.getElementById('main-content')
+  if (!container || !scrollContainer || scrollContainer.scrollTop <= 0) return null
+  const containerTop = scrollContainer.getBoundingClientRect().top
+  const containerBottom = scrollContainer.getBoundingClientRect().bottom
   const cards = container.querySelectorAll<HTMLElement>('[data-post-id]')
   for (const card of cards) {
     const rect = card.getBoundingClientRect()
-    if (rect.bottom <= containerTop) continue
+    if (rect.bottom <= containerTop || rect.top >= containerBottom) continue
     const id = Number(card.dataset.postId)
     return Number.isSafeInteger(id) && id > 0 ? { id, offsetTop: rect.top - containerTop } : null
   }
@@ -198,6 +200,7 @@ export function PlazaPage() {
   const [likedSet, setLikedSet] = useState<Set<number>>(new Set())
   const [likedError, setLikedError] = useState('')
   const [likedLoading, setLikedLoading] = useState(false)
+  const [showBackTop, setShowBackTop] = useState(false)
   const lobbyList = useRef<HTMLDivElement | null>(null)
   const feedListRef = useRef<HTMLDivElement | null>(null)
   const feedAnchorRef = useRef<{ id: number; offsetTop: number } | null>(null)
@@ -326,9 +329,11 @@ export function PlazaPage() {
     const container = feedListRef.current
     const card = container?.querySelector<HTMLElement>(`[data-post-id="${anchor.id}"]`)
     if (!container || !card) return
-    const containerTop = container.getBoundingClientRect().top
+    const scrollContainer = document.getElementById('main-content')
+    if (!scrollContainer) return
+    const containerTop = scrollContainer.getBoundingClientRect().top
     const nextOffset = card.getBoundingClientRect().top - containerTop
-    container.scrollTop += nextOffset - anchor.offsetTop
+    scrollContainer.scrollTop += nextOffset - anchor.offsetTop
   }, [posts, tab, keyword])
 
   const loadOlderPosts = useCallback(async () => {
@@ -361,6 +366,29 @@ export function PlazaPage() {
       }
     }
   }, [uid, sessionScope, loadingOlder, hasOlderPosts])
+
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content')
+    if (!scrollContainer || tab === 'lobby') {
+      setShowBackTop(false)
+      return
+    }
+    const onScroll = () => {
+      setShowBackTop(scrollContainer.scrollTop > 320)
+      if (tab === 'feed' && !keywordRef.current.trim() && scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 220) {
+        void loadOlderPosts()
+      }
+    }
+    scrollContainer.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => scrollContainer.removeEventListener('scroll', onScroll)
+  }, [tab, loadOlderPosts, posts.length, loadingOlder, hasOlderPosts])
+
+  function scrollToTop() {
+    const scrollContainer = document.getElementById('main-content')
+    if (!scrollContainer) return
+    scrollContainer.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
 
   const loadHot = useCallback(async () => {
     const ticket = capture('hot')
@@ -1059,11 +1087,8 @@ export function PlazaPage() {
         <div className={styles.headActions}><FocusThemeToggle /><MessageEntry /><Link to="/moments" aria-label="好友朋友圈" className={styles.momentsAction}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 21 3.5 12A5.3 5.3 0 0 1 12 5a5.3 5.3 0 0 1 8.5 7Z" /></svg></Link></div>
       </header>
 
-      {tab !== 'lobby' ? <><section className={styles.communityHero} aria-label="校园广场介绍">
-        <div><span>和哦狐一起 · 记录闪光日常 ✦</span><h2>发现校园新鲜事 <i>♥</i></h2><p>学习 · 生活 · 朋友 · 成长</p><button type="button" onClick={openCompose}>＋ 发布动态</button></div>
-        <FoxSheetPose pose="waving" title="哦狐狐狸吉祥物" />
-      </section>
-      <div className={styles.communityScene}><AnnouncementBanner fallback="/ohu-v7-assets/community-campus-scene.webp" /></div>
+      {tab !== 'lobby' ? <>
+      <div className={styles.communityScene}><AnnouncementBanner fallback="/ohu-v7-assets/community-campus-scene.webp" intro={{ eyebrow: '和哦狐一起 · 记录闪光日常 ✦', title: '发现校园新鲜事 ♥', summary: '学习 · 生活 · 朋友 · 成长', actionLabel: '＋ 发布动态', onAction: openCompose, artwork: <FoxSheetPose pose="waving" title="哦狐狐狸吉祥物" /> }} /></div>
       <nav className={styles.communityLinks} aria-label="校园社区快捷入口"><Link to="/campus-map">⌖ 地图打卡</Link><Link to="/moments">♡ 好友朋友圈</Link></nav></> : null}
 
       <div className={styles.tabs}>
@@ -1310,11 +1335,7 @@ export function PlazaPage() {
           ) : null}
         </div>
       ) : (
-        <div className={styles.feedList} ref={feedListRef} onScroll={(event) => {
-          if (keywordRef.current.trim()) return
-          const list = event.currentTarget
-          if (list.scrollHeight - list.scrollTop - list.clientHeight < 180) void loadOlderPosts()
-        }}>
+        <div className={styles.feedList} ref={feedListRef}>
           {loading && posts.length === 0 ? <PostCardSkeleton count={3} /> : null}
           <div className={styles.searchBox}>
             <input
@@ -1401,6 +1422,8 @@ export function PlazaPage() {
           )}
         </div>
       )}
+
+      {tab !== 'lobby' && showBackTop ? <button type="button" className={styles.backTop} onClick={scrollToTop} aria-label="回到页面顶部"><span aria-hidden="true">↑</span>回顶部</button> : null}
 
       {composeOpen && stateOwner === sessionScope ? (
         <DialogLayer title="发广场动态" onClose={closeCompose} allowClose={!sending} className={styles.sheet}>

@@ -83,6 +83,8 @@ function FriendRequestsContent() {
       {actionError ? <p className={styles.error} role="alert">{actionError}</p> : feedback ? <p className={styles.feedback} role="status">{feedback}</p> : null}
       {loading ? <LoadingState title="正在加载申请…" hint="" /> : error ? <ErrorState title="好友申请加载失败" hint={error} action={<button type="button" className={styles.primary} onClick={() => void loadRequests()}>重试</button>} /> : !requests.length ? <EmptyState title="暂无待处理申请" hint="对方可通过你的好友码添加你。" action={<button type="button" className={styles.secondary} onClick={() => nav('/contacts/add')}>查看我的好友码</button>} /> : <ul className={styles.list}>{requests.map(request => <li key={request.id} className={styles.request} aria-busy={processing === request.id}>
         <div className={styles.person}><Avatar name={request.from_name || '同学'} src={request.from_avatar} seed={request.from_uid} /><div className={styles.info}><strong>{request.from_name || '同学'}</strong><span>好友码 {request.from_uid}</span></div></div>
+        {request.from_motto ? <p className={styles.profileMotto}>“{request.from_motto}”</p> : null}
+        {request.from_intro ? <p className={styles.profileIntro}><b>个人介绍</b>{request.from_intro}</p> : null}
         <p className={styles.message}>{request.message || '希望添加你为好友'}</p>
         <div className={styles.actions}><button type="button" className={styles.secondary} disabled={processing !== null} onClick={() => void processRequest(request.id, false)}>拒绝</button><button type="button" className={styles.primary} disabled={processing !== null} onClick={() => void processRequest(request.id, true)}>{processing === request.id ? '处理中…' : '接受'}</button></div>
       </li>)}</ul>}

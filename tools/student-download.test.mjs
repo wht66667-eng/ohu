@@ -7,6 +7,7 @@ import vm from 'node:vm'
 import { prepareStudentDownload, studentDownloadRelease } from './student-download.mjs'
 import { sha256File } from './release-common.mjs'
 const template = readFileSync(new URL('../public/download/student.html', import.meta.url), 'utf8')
+const adminTemplate = readFileSync(new URL('../public/download/admin.html', import.meta.url), 'utf8')
 const identity = { version: '1.2.131', webBuild: 131, nativeVersion: '1.2.131', nativeBuild: 131 }
 const asset = { url: 'https://example.test/downloads/SunshineCampus-User-1.2.131.apk', size: 123456, sha256: 'a'.repeat(64) }
 const manifest = { latestVersion: '1.2.131', latestBuild: 131, assets: { androidArm64: asset }, flavors: { user: { androidArm64: asset } } }
@@ -21,9 +22,9 @@ function fixture(run) {
     rmSync(root, { recursive: true, force: true })
   }
 }
-function page(seed, response = manifest, fail = false) {
+function page(seed, response = manifest, fail = false, sourceTemplate = template) {
   const elements = Object.fromEntries(['download', 'release-meta', 'status', 'wechat-tip', 'ios-tip', 'download-release'].map(id => [id, { textContent: id === 'download-release' ? JSON.stringify(seed) : '', attrs: {}, removeAttribute(name) { delete this.attrs[name] }, hasAttribute(name) { return name === 'href' ? !!this.href : name in this.attrs }, addEventListener() {} }]))
-  const script = template.match(/<script>([\s\S]*?)<\/script>/)[1]
+  const script = sourceTemplate.match(/<script>([\s\S]*?)<\/script>/)[1]
   const urls = []
   vm.runInNewContext(script, { document: { getElementById: id => elements[id] }, navigator: { userAgent: 'test' }, location: { href: 'https://example.test/download/student.html', origin: 'https://example.test' }, URL, AbortController, Date,
     setTimeout: () => 1, clearTimeout: () => {}, fetch: async url => { urls.push(url); if (fail) throw Error('offline'); return { ok: true, json: async () => typeof response === 'function' ? response(url) : response } } })
@@ -120,3 +121,27 @@ test('iOS download identity stays unavailable unless a same-version IPA passes m
   writeFileSync(ipaPath, 'tampered')
   assert.throws(() => prepareStudentDownload(root, output, manifest, identity), /size or SHA-256/)
 }))
+
+
+test('admin downloads are prepared separately and cannot fall back to a student APK', async () => {
+  const adminAsset = { ...asset, url: asset.url.replace('User', 'Admin') }
+  const both = { ...manifest, flavors: { ...manifest.flavors, admin: { androidArm64: adminAsset } } }
+  const adminRelease = studentDownloadRelease(both, identity, 'admin')
+  assert.equal(adminRelease.packageName, 'com.sunshinecampus.admin')
+  assert.throws(() => studentDownloadRelease(manifest, identity, 'admin'))
+  assert.throws(() => studentDownloadRelease({ ...both, flavors: { admin: { androidArm64: asset } } }, identity, 'admin'))
+  fixture(root => {
+    writeFileSync(join(root, 'public/download/admin.html'), adminTemplate)
+    const output = join(root, '.release-out/landing')
+    prepareStudentDownload(root, output, both, identity)
+    const html = readFileSync(join(output, 'download/admin.html'), 'utf8')
+    assert.ok(html.includes(`href="${adminAsset.url}"`))
+    assert.deepEqual(JSON.parse(readFileSync(join(output, 'download/admin-latest.json'), 'utf8')), adminRelease)
+  })
+  const offline = page(adminRelease, both, true, adminTemplate)
+  await new Promise(setImmediate)
+  assert.equal(offline.elements.download.href, adminAsset.url)
+  const wrong = page(adminRelease, manifest, false, adminTemplate)
+  await new Promise(setImmediate)
+  assert.equal(wrong.elements.download.href, adminAsset.url)
+})

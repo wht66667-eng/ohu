@@ -18,13 +18,15 @@ export interface FriendRequest {
   from_uid: string
   from_name: string
   from_avatar?: string
+  from_motto?: string
+  from_intro?: string
   to_uid: string
   status: 'pending' | 'accepted' | 'rejected'
   message?: string
   created_at: string
 }
 export interface QueryRes<T> { rows: T[]; error: string | null }
-export interface MutateRes { error: string | null; id?: number }
+export interface MutateRes { error: string | null; id?: number; notice?: string }
 
 const changed = '账号已变化，请重新操作'
 function captureActor() {
@@ -43,6 +45,12 @@ function errText(error: unknown): string {
 }
 function duplicate(error: unknown) {
   return (error as { code?: string } | null)?.code === '23505' || /duplicate|unique/i.test(errText(error))
+}
+
+function missingProfileColumns(error: unknown) {
+  const value = error as { code?: string; message?: string; details?: string } | null
+  return (value?.code === '42703' || value?.code === 'PGRST204')
+    && /from_motto|from_intro/.test(`${value.message || ''} ${value.details || ''}`)
 }
 
 export async function fetchFriends(): Promise<QueryRes<Friend>> {
@@ -93,20 +101,37 @@ export async function fetchFriendRequests(): Promise<QueryRes<FriendRequest>> {
   }
 }
 
-export async function sendFriendRequest(toUid: string, message = ''): Promise<MutateRes> {
+export async function sendFriendRequest(
+  toUid: string,
+  message = '',
+  personalSnapshot?: { motto?: string; intro?: string },
+): Promise<MutateRes> {
   const work = captureActor()
   if (!work) return { error: '请先登录' }
   const peerUid = String(toUid || '').trim()
   if (!peerUid) return { error: '请输入对方的好友码' }
   if (peerUid === work.actor.uid) return { error: '不能添加自己为好友' }
   try {
-    const result = await cbRdb().from('friend_requests').insert({
+    const base = {
       from_uid: work.actor.uid, from_name: work.actor.name, from_avatar: work.actor.avatar,
       to_uid: peerUid, status: 'pending', message: message.trim(), created_at: new Date().toISOString(),
-    })
+    }
+    const snapshot = {
+      from_motto: String(personalSnapshot?.motto ?? work.actor.motto ?? '').trim().slice(0, 40),
+      from_intro: String(personalSnapshot?.intro ?? work.actor.intro ?? '').trim().slice(0, 160),
+    }
+    let result = await cbRdb().from('friend_requests').insert({ ...base, ...snapshot })
+    if (!current(work)) return { error: changed }
+    // Retry only after a definite schema rejection: network, permission and
+    // duplicate failures must never cause another potentially successful write.
+    let notice: string | undefined
+    if (result.error && missingProfileColumns(result.error)) {
+      result = await cbRdb().from('friend_requests').insert(base)
+      notice = snapshot.from_motto || snapshot.from_intro ? '申请已发送；当前服务暂不支持随申请展示个人介绍。' : undefined
+    }
     if (!current(work)) return { error: changed }
     if (result.error) return { error: duplicate(result.error) ? '已发送过申请，请等待对方处理' : errText(result.error) }
-    return { error: null }
+    return { error: null, notice }
   } catch (error) {
     return { error: current(work) ? errText(error) : changed }
   }

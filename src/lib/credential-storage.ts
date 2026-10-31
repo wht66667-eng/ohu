@@ -1,5 +1,5 @@
 /**
- * 本机敏感串的存储封装（教务密码 / WebVPN 密码）。
+ * 本机敏感串的存储封装（教务密码 / WebVPN 密码）；本文件不包含实际凭据。
  *
  * 以前 schedule-credentials.ts 和 campus-account.ts 各写了一份「硬编码 SALT + 可逆 XOR」，
  * SALT 是打进包里的常量，拿到包加一条 localStorage 记录就能离线还原明文，等于没加密。

@@ -749,9 +749,13 @@ function EditSheet() {
   const auth = useAuth()
   const initialName = auth.profile?.username || auth.user?.nickname || ''
   const initialAvatar = auth.user?.avatarUrl || ''
+  const initialMotto = auth.user?.profileMotto || ''
+  const initialIntro = auth.user?.profileIntro || ''
 
   const [nick, setNick] = useState(initialName)
   const [pic, setPic] = useState(initialAvatar)
+  const [motto, setMotto] = useState(initialMotto)
+  const [intro, setIntro] = useState(initialIntro)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [pending, setPending] = useState<File | null>(null)
@@ -818,6 +822,14 @@ function EditSheet() {
         return
       }
     }
+    if (motto.trim() !== initialMotto || intro.trim() !== initialIntro) {
+      const personalError = await auth.savePersonalIntro(motto, intro)
+      if (personalError) {
+        setBusy(false)
+        setErr(personalError)
+        return
+      }
+    }
     setBusy(false)
     toast.ok('资料已更新')
     auth.closeEdit()
@@ -879,7 +891,32 @@ function EditSheet() {
             />
           </label>
 
-          <p className="auth-hint">头像与昵称对全站同学可见，请使用真实、友善的校园形象。</p>
+          <label className="af-field">
+            <span>个人名言 <small>选填 · 最多 40 字</small></span>
+            <input
+              className="field-input"
+              placeholder="写一句喜欢的话"
+              maxLength={40}
+              value={motto}
+              disabled={busy}
+              onChange={(e) => setMotto(e.target.value)}
+            />
+          </label>
+
+          <label className="af-field">
+            <span>个人介绍 <small>选填 · 最多 160 字</small></span>
+            <textarea
+              className="field-input"
+              placeholder="让同学多了解你一点"
+              maxLength={160}
+              rows={3}
+              value={intro}
+              disabled={busy}
+              onChange={(e) => setIntro(e.target.value)}
+            />
+          </label>
+
+          <p className="auth-hint">头像与昵称用于哦狐社交展示。个人名言和介绍不会公开到全站，仅在你主动发送好友申请时展示给申请接收人。</p>
           <button className="auth-btn" type="submit" disabled={busy}>
             {busy ? '保存中…' : '保存'}
           </button>
