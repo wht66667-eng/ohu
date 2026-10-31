@@ -6,7 +6,7 @@
 
 ## 当前结论
 
-**尚未提交收录申请，也不应把当前 APK 直接提交当作上架。** F-Droid 官方主仓库要求以可公开审查的源码构建，并检查整套应用、依赖和素材许可。哦狐仓库当前没有根目录许可证或任何被 Git 跟踪的 `LICENSE` 文件；著作权人尚未为公众授予复制、修改和再分发代码的许可。这是首要阻塞，不能替著作权人擅自选许可证。
+**尚未提交收录申请，也不应把当前 APK 直接提交当作上架。** F-Droid 官方主仓库要求以可公开审查的源码构建，并检查整套应用、依赖和素材许可。著作权人已选择 MIT；根目录 `LICENSE` 和 `package.json` 已登记，`LICENSES.md` 将 MIT 范围限定为哦狐原创软件代码与文档。`public/` 中素材的作者、来源及再分发授权仍未逐项确认，不能把代码许可证当成素材授权；这仍是重要收录阻塞。
 
 除此之外，哦狐学生端使用账号、CloudBase 数据库／存储、教务代理和哦狐服务端接口。F-Droid 需要审查这些服务依赖及是否应标记 `NonFreeNet`／`TetheredNet`；不能承诺主仓库一定接受。学生端 APK 还需在 F-Droid 的构建环境完成源码构建，并核对所有前端、原生库、插件、图像、字体及词库素材的许可证与再分发权。
 
@@ -23,7 +23,7 @@
 - 当前 Capacitor Android 插件列表同时包含 Talsec freeRASP 和 Capgo updater。freeRASP 插件仓库的桥接层为 MIT，但它会从 Talsec Maven 仓库依赖 `TalsecSecurity-Community-Capacitor:19.2.3`；Capgo updater 还依赖 `com.google.android.gms:play-services-tasks`、`com.google.android.play:app-update`／`app-update-ktx`。官方政策明确排除专有 Google Play Services／Firebase 等库；因此 F-Droid 学生 variant 必须同时从 Web bundle 与原生依赖图中移除这些插件，不能只隐藏“检查更新”按钮。
 - Android `build.gradle` 声明 Google Services 插件，但只有存在 `google-services.json` 时才应用；仓库不应依赖私有 Firebase 配置。尚未在 F-Droid 环境验证该条件构建。
 - 源码搜索没有发现 Firebase Analytics、Crashlytics、广告或常见商业统计 SDK 的应用调用；这只是初步搜索，不替代完整依赖扫描。
-- 仓库当前没有 F-Droid 所需的许可证选择、素材许可证清单、`fastlane/metadata/android` 商店资料、F-Droid 构建元数据或已验证的可复现构建记录。
+- MIT 代码许可证和范围说明已加入；素材逐项权利核验、`fastlane/metadata/android` 商店资料、F-Droid 构建元数据或已验证的可复现构建记录仍未完成。
 - 新增自动盘点脚本 `tools/fdroid-license-inventory.mjs` 及报告 [`F-DROID-LICENSE-INVENTORY.md`](./F-DROID-LICENSE-INVENTORY.md)：锁定 396 个 npm 包中有 2 个缺少 `license` 元数据（`@cloudbase/signature-nodejs`、`@cloudbase/wx-cloud-client-sdk`），66 个包根目录未见常见许可证文件名，另有包声明多许可证选项；192 个 `public/` 文件逐项列入素材清单但均待人工核验来源与再分发权。报告仅作自动初筛，不能作为合法授权证明。
 - `public/` 下有 192 个文件；未发现统一的插图、品牌图、地图数据、词库和字体来源／许可证清册。应用当前使用的狐狸形象和校园宣传图需确认著作权及分发授权；不能只依赖代码许可证覆盖素材。
 - 当前 `git tag --list` 与 GitHub Releases 均未发现版本标签／发行记录；提交前需建立与源码及 APK versionCode 对应的不可变上游版本标签。
@@ -41,7 +41,7 @@
 
 | 项目 | 状态 | 完成条件 |
 |---|---|---|
-| 著作权人选择并提交应用许可证 | **阻塞：须由著作权人决定** | 在仓库添加准确 SPDX 许可证文本，并确认所有贡献者／素材均有再授权权利 |
+| 软件代码许可证 | **已选择 MIT 并加入仓库；素材权利待核验** | `LICENSE`、`package.json` 和 `LICENSES.md` 已说明哦狐原创代码与文档的 MIT 授权范围；第三方依赖、图片素材、字体和品牌继续按各自权利处理，须完成授权证明或按 F-Droid 政策处理 |
 | 依赖与素材 SBOM／许可证盘点 | **自动初筛已完成；人工核验未完成** | 396 个 npm 包、192 个 public 文件已生成 CSV；识别 2 个缺许可元数据包、66 个无常见许可证文件名的包；仍需确认最终 APK 依赖闭包、每个包及素材的上游许可和再分发权 |
 | 服务依赖与隐私／反特性说明 | 未开始 | 列明登录、CloudBase、教务及其他后端；确定离线／替代服务能力和需申报的 F-Droid Anti-Features |
 | F-Droid 专用学生构建变体 | **本地实现并构建通过；F-Droid buildserver 待验** | 学生包 `userFdroid` 不含管理端、不含签名；Web 与 staging Android 副本移除 Capgo/Talsec；显示 F-Droid 构建不使用哦狐热更新；本地 unsigned 产物及 hash 已记录 |
@@ -53,7 +53,7 @@
 
 ## 许可证选择说明
 
-本文件不代替软件许可证，也没有改变代码授权。常见选择包括：
+哦狐原创代码与软件文档现已采用 MIT License。该授权允许公众复制、修改、再分发及用于商业用途，并要求保留版权与许可声明；`LICENSES.md` 明确它不自动覆盖第三方依赖、来源不明的素材或品牌。常见替代方案说明仅作为历史背景：
 
 - **Apache-2.0**：允许广泛复制、修改和再分发，并包含明确专利条款；衍生作品可采用其他许可证。
 - **GPL-3.0-or-later**：允许复制、修改和分发，但分发衍生版本时须按 GPL 继续提供对应源码和相同自由度。

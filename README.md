@@ -20,6 +20,10 @@
 - CloudBase Auth、PostgreSQL、云函数与对象存储
 - Python Flask 教务代理（`tools/jou-api/`）
 
+## 许可证
+
+哦狐原创软件代码与随附软件文档采用 MIT License，具体范围及第三方依赖、图片素材和品牌权利说明见 [`LICENSE`](./LICENSE) 与 [`LICENSES.md`](./LICENSES.md)。MIT 授权不自动覆盖狐狸形象、宣传图、字体、数据、商标或第三方组件；请按各自来源与许可证使用。
+
 ## 本地开发
 
 需要 Node.js 24 和 npm。Android 原生构建还需要 Android Studio 与 Android SDK。
