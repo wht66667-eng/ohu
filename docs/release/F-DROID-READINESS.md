@@ -12,7 +12,7 @@
 
 ## 已核验事实
 
-- GitHub 仓库公开，默认分支 `main`；当前 HEAD 为 `a6927f6`。
+- GitHub 仓库公开，默认分支 `main`；本轮 F-Droid 构建隔离及审计资料已推送到 `main`，提交 `2e07b60`（已通过 `git ls-remote` 核对远端引用）。
 - Android 学生应用 ID 为 `com.sunshinecampus.app`；管理端 ID 为 `com.sunshinecampus.admin`。首轮申请目标应限学生端，不申请管理端。
 - 已新增 `fdroid` Android build type 和独立学生端准备脚本 `tools/prepare-fdroid-android.mjs`。脚本将 Android 工程复制到忽略目录 `android-fdroid/`，从副本的 Capacitor 插件清单及 Gradle 文件中剔除 Capgo updater、freeRASP/Talsec 和 Google Services 配置，不改普通 APK 的原生依赖清单。`fdroid` build type 使用 release 依赖匹配、关闭签名及 shrink，以便 F-Droid 自己签名。
 - 已运行 `npm run build:app -- --shell user --fdroid`，并用生成副本完成 `:app:assembleUserFdroid` 本地构建。产物是未签名 APK：`android-fdroid/app/build/outputs/apk/user/fdroid/app-user-fdroid-unsigned.apk`；Gradle 输出元数据确认为 `com.sunshinecampus.app`、`1.2.146`、versionCode `146`。SHA-256：`329830F1DAD7B493E661A1EC6886CE053406AAE2BBC452E614D1E620817AC188`。这是本机 Windows 构建结果，不等同于 F-Droid buildserver 的干净、可复现构建，也不是可直接发布的签名包。
