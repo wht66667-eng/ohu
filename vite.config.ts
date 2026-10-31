@@ -45,12 +45,23 @@ export default defineConfig(({ mode }) => {
     'com.sunshinecampus.app'
   ).trim()
   const appShell = process.env.VITE_APP_SHELL || env.VITE_APP_SHELL || 'user'
+  const fdroidBuild = (process.env.VITE_FDROID_BUILD || env.VITE_FDROID_BUILD) === '1'
 
   return {
     base,
     plugins: [react(), managementEntry(appShell), localStudentDownload(cwd), harborDevPack(), pruneDeadDraco()],
+    resolve: {
+      alias: fdroidBuild ? [
+        // The F-Droid build must not contain a second executable-code updater.
+        { find: './lib/live-update', replacement: join(cwd, 'src/lib/live-update-fdroid.ts') },
+        { find: '../lib/live-update', replacement: join(cwd, 'src/lib/live-update-fdroid.ts') },
+        // The regular app keeps freeRASP; this source-only build omits its binary SDK.
+        { find: 'capacitor-freerasp', replacement: join(cwd, 'src/lib/fdroid/capacitor-freerasp.ts') },
+      ] : [],
+    },
     define: {
       'import.meta.env.VITE_CAPGO_APP_ID': JSON.stringify(capgoAppId),
+      'import.meta.env.VITE_FDROID_BUILD': JSON.stringify(fdroidBuild ? '1' : '0'),
     },
     server: {
       host: '0.0.0.0',

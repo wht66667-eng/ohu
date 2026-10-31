@@ -65,6 +65,14 @@ android {
         debug {
             minifyEnabled false
         }
+        // F-Droid signs the resulting APK with its repository key.
+        fdroid {
+            initWith release
+            matchingFallbacks = ['release']
+            signingConfig null
+            minifyEnabled false
+            shrinkResources false
+        }
     }
 }
 

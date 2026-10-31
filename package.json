@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:h5": "node tools/build-multiplatform.mjs h5",
     "build:app": "node tools/build-multiplatform.mjs app",
+    "test:fdroid": "node --test tools/fdroid-build.test.mjs",
     "build:web": "tsc -b && node tools/build-multiplatform.mjs h5",
     "build:all": "node tools/build-multiplatform.mjs all",
     "postinstall": "patch-package",

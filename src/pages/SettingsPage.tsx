@@ -8,6 +8,7 @@ import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
 import { fetchModerationPendingCount } from '../lib/moderation'
 import { applyTheme, getStoredTheme, type Theme } from '../lib/theme'
+import { IS_FDROID_BUILD } from '../lib/build-channel'
 import {
   APP_VERSION,
   checkAppUpdate,
@@ -789,6 +790,9 @@ function SettingsForAccount() {
         </div>
         <PluginMarketplace />
         <h3 style={{ marginTop: 22 }}>版本与更新</h3>
+        {IS_FDROID_BUILD ? (
+          <p className={styles.hint} role="note">此构建不使用哦狐热更新。通过 F-Droid 安装后，请在 F-Droid 客户端更新；收录完成前请从哦狐官网获取新版安装包。</p>
+        ) : <>
         <p className={styles.hint}>界面版本 v{webVersion}{IS_NATIVE ? nativeVersion ? ` · 安装包 v${nativeVersion.version}（${nativeVersion.build}）` : versionLoaded ? ' · 安装包版本暂时无法读取' : ' · 正在读取安装包版本…' : ' · 电脑网页版'}</p>
         <button type="button" className={styles.setRow} onClick={onCheckUpdate} disabled={updateBusy || !IS_NATIVE}>
           <span className={styles.setIc} style={{ background: '#e6efff' }}>
@@ -858,6 +862,7 @@ function SettingsForAccount() {
         <p className={styles.hint} style={{ marginTop: 8 }}>
           桌面图标等系统能力变更，需要安装新版本安装包。
         </p>
+        </>}
       </section>
       ) : null}
 

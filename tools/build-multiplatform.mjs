@@ -37,12 +37,15 @@ export function removeBundledIpaArtifacts(root, output) {
 
 export function buildPlan(root, argv = [], env = process.env) {
   const target = argv[0] && !argv[0].startsWith('--') ? argv[0] : 'all'
-  const options = parseOptions(argv[0] === target ? argv.slice(1) : argv, ['--shell'], ['--no-sync', '--plan', '--help'])
+  const options = parseOptions(argv[0] === target ? argv.slice(1) : argv, ['--shell'], ['--no-sync', '--plan', '--help', '--fdroid'])
   if (!['h5', 'app', 'all'].includes(target)) throw new Error('Target must be h5, app, or all')
   const shell = options['--shell'] || env.VITE_APP_SHELL || 'user'
   if (selectShells(shell).length !== 1) throw new Error('A Web bundle must target one shell')
+  if (options['--fdroid'] && (target !== 'app' || shell !== 'user' || options['--no-sync'])) {
+    throw new Error('F-Droid builds require app target, user shell, and Capacitor sync')
+  }
   return {
-    target, shell, options,
+    target, shell, options, fdroid: Boolean(options['--fdroid']),
     outputs: target === 'all' ? ['dist', 'dist-app'] : [target === 'h5' ? 'dist' : 'dist-app'],
     platforms: target === 'h5' || options['--no-sync'] ? [] : existingPlatforms(root),
   }
@@ -76,6 +79,7 @@ export function main({ root = PROJECT_ROOT, argv = process.argv.slice(2), env = 
     ], {
       VITE_BASE: base, VITE_APP_SHELL: plan.shell,
       VITE_CAPGO_APP_ID: env.VITE_CAPGO_APP_ID || 'com.sunshinecampus.app',
+      VITE_FDROID_BUILD: plan.fdroid ? '1' : '0',
     })
     pruneUnusedDraco(destination)
     if (output === 'dist' && plan.shell === 'user') {
