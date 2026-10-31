@@ -1,0 +1,53 @@
+.page { min-height:100%; padding:14px 16px 30px; background:var(--page-mid); color:var(--text); }
+.content { display:grid; gap:14px; max-width:760px; margin:0 auto; }
+.card { display:grid; gap:13px; padding:20px 18px; border:1px solid var(--line); border-radius:22px; background:var(--card); }
+.kicker { color:var(--green-text); font-size:12px; font-weight:750; letter-spacing:.02em; }
+.card h2 { margin:3px 0 0; font-size:21px; line-height:1.35; }
+.card p { margin:0; color:var(--text-2); font-size:14px; line-height:1.75; }
+.primary,.secondary,.back,.outlineButton { display:flex; align-items:center; justify-content:center; min-height:46px; border-radius:14px; font:inherit; font-weight:700; text-decoration:none; }
+.primary { border:0; padding:0 16px; background:var(--green); color:var(--on-green,#fff); cursor:pointer; }
+.secondary { border:1px solid var(--line); background:var(--green-soft); color:var(--green-text); }
+.quickLinks { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.quickLinks a { padding:12px 10px; border-radius:12px; background:var(--page-soft,var(--green-soft)); color:var(--green-text); text-align:center; text-decoration:none; font-weight:700; font-size:13px; }
+.card small,.formHint { color:var(--text-3); font-size:12px; line-height:1.6; }
+.recordCard { background:linear-gradient(155deg,var(--card),var(--green-soft)); }
+.sectionTitle { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.count { padding:6px 10px; border-radius:99px; background:var(--card); color:var(--green-text); font-size:12px; font-weight:700; }
+.field { display:grid; gap:7px; color:var(--text); font-size:13px; font-weight:700; }
+.field input,.field textarea { width:100%; min-width:0; border:1px solid var(--line); border-radius:12px; padding:11px 12px; background:var(--card); color:var(--text); font:inherit; font-weight:450; line-height:1.5; }
+.field textarea { resize:vertical; }
+.field input:focus-visible,.field textarea:focus-visible,.page :is(button,a):focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+.outlineButton { border:1px solid var(--line); background:var(--card); color:var(--green-text); cursor:pointer; }
+.formGrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.formGrid .field:last-child { grid-column:1/-1; }
+.formHint { margin-top:-5px!important; }
+.success,.error { padding:10px 12px; border-radius:12px; font-size:13px!important; }
+.success { background:var(--green-soft); color:var(--green-text)!important; }
+.error { background:var(--danger-soft,#fff1ee); color:var(--danger,#a3321b)!important; }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stats>div { display:grid; gap:5px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--page-mid); }
+.stats small,.stats span { color:var(--text-2); font-size:12px; }
+.stats strong { color:var(--green-text); font-size:28px; line-height:1.15; }
+.stats i,.resultHead i { margin-left:3px; font-size:13px; font-style:normal; font-weight:650; }
+.chartWrap { padding:8px 4px 0; }
+.chart { display:block; width:100%; overflow:visible; }
+.gridLine { stroke:var(--line); stroke-dasharray:4 4; stroke-width:1; }
+.axisLabel { fill:var(--text-3); font-size:10px; }
+.chartLine { fill:none; stroke:var(--green); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.chartPoint { fill:var(--orange,var(--green)); stroke:var(--card); stroke-width:2; }
+.chartLabels { display:flex; justify-content:space-between; color:var(--text-3); font-size:11px; }
+.chartHint { padding:14px; border-radius:12px; background:var(--page-mid); }
+.history { display:grid; gap:9px; }
+.resultRow { display:grid; gap:10px; padding:13px; border:1px solid var(--line); border-radius:15px; background:var(--page-mid); }
+.resultHead { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.resultHead>span { display:grid; gap:4px; }
+.resultHead b { font-size:14px; }
+.resultHead small,.noEvents { color:var(--text-3); font-size:12px; }
+.resultHead strong { color:var(--green-text); font-size:22px; }
+.eventList { display:flex; flex-wrap:wrap; gap:6px; }
+.eventList span { padding:5px 8px; border-radius:9px; background:var(--green-soft); color:var(--text-2); font-size:11px; }
+.empty { display:grid; gap:8px; padding:22px 12px; text-align:center; }
+.empty strong { font-size:16px; }
+.empty span { color:var(--text-2); font-size:13px; line-height:1.7; }
+.back { color:var(--green-text); }
+@media (max-width:380px) { .card { padding:17px 14px; } .formGrid { grid-template-columns:1fr; } .formGrid .field:last-child { grid-column:auto; } .quickLinks { grid-template-columns:1fr; } }

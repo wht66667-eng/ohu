@@ -1,0 +1,20 @@
+# 江苏海洋大学课表抓取服务 · 运行依赖（固定版本，保证云端构建可复现）
+flask==3.1.0
+gunicorn==23.0.0
+requests==2.32.3
+beautifulsoup4==4.13.3
+
+# 验证码 OCR：/api/timetable/auto 免手输验证码用（captcha_ocr.py）。
+#
+# 2026-10-14 启用。之前注释掉的原因是体积：ddddocr 会带 onnxruntime + opencv + numpy，
+# 下载量约 150MB、解压后镜像会到 800MB 量级，云托管创建版本耗时明显变长、也更易失败。
+#
+# 启用前已实测（本地 venv 装同版本）：
+#   1. /api/health 的 ocr 变为 {"ready": true, "engine": "ddddocr"}（线上缺包时是
+#      {"ready": false, "error": "No module named 'ddddocr'"}）；
+#   2. 连续 8 张线上真实验证码，OCR 结果与人工逐张核对全部吻合；
+#   3. /api/timetable/auto 不再返回 1010，而是带着识别结果打到教务（返回教务侧 1001）。
+#
+# ⚠️ 回退方式：注释掉下面这行重新部署即可退回「手输验证码」，
+#    前端 auto-sync.ts 对 1010 有完整降级（自动换图 + 弹手输框），不会白屏或卡死。
+ddddocr==1.6.1

@@ -1,0 +1,24 @@
+.panel { color: var(--text); }
+.intro, .note { margin: 0; font-size: 12px; line-height: 1.75; color: var(--text-2); }
+.panel h3 { margin: 18px 0 9px; font-size: 13px; line-height: 1.5; font-weight: 700; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.entry { min-width: 0; display: flex; align-items: center; gap: 8px; min-height: 68px; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 12px; padding: 12px 10px; text-align: left; font: inherit; text-decoration: none; cursor: pointer; }
+.entry:disabled { opacity: .55; cursor: default; }
+.entry:focus-visible, .feedback a:focus-visible, .source a:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.entry:not(:disabled):hover { background: var(--mint); }
+.mark { display: grid; place-items: center; width: 30px; height: 34px; flex: 0 0 30px; border-radius: 9px; background: var(--mint); color: var(--green-text); font-size: 15px; font-weight: 750; }
+.label { min-width: 0; flex: 1; }
+.label strong { display: block; font-size: 12.5px; line-height: 1.5; font-weight: 650; overflow-wrap: anywhere; }
+.label small { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.5; color: var(--text-2); }
+.arrow { color: var(--text-3); font-size: 12px; }
+.feedback { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--mint); color: var(--text); font-size: 12px; line-height: 1.75; }
+.feedback p { margin: 0; }
+.feedback a { display: inline-flex; align-items: center; min-height: 44px; color: var(--green-text); font-weight: 650; }
+.note { margin-top: 16px; }
+.source { margin: 4px 0 16px; font-size: 11px; color: var(--text-3); }
+.source a { display: inline-flex; align-items: center; min-height: 32px; color: var(--green-text); text-underline-offset: 3px; }
+.lookup { margin-top: 16px; border-top: 1px solid var(--line); }
+.lookup > summary { min-height: 44px; padding: 14px 0; color: var(--text); font-size: 13px; font-weight: 650; cursor: pointer; }
+.lookup > summary:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.heading { margin: 0 0 10px; color: var(--text); font-size: 18px; font-weight: 750; }
+@media (max-width: 350px) { .grid { grid-template-columns: minmax(0, 1fr); } }

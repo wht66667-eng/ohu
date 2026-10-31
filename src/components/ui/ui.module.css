@@ -1,0 +1,472 @@
+/* ============================================================
+ * 通用动效组件样式（motion-ui.tsx）
+ * 设计原则：变化过程连贯，不用硬切换
+ * ========================================================== */
+
+/* ---------- 提交按钮：idle → busy → done 原位过渡 ---------- */
+.submitButton {
+  min-width: 48px;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+.submitButton:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+.submitButton[aria-busy="true"] { cursor: wait; }
+:global([data-ui-variant='cute']) .submitButton { min-height: 48px; border-radius: 20px; background: var(--green); color: var(--on-primary); border: 1px solid rgba(255,154,61,.35); box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .submitButton:disabled { filter: saturate(.6); }
+:global([data-ui-variant='minimal']) .submitButton { min-height: 48px; border-radius: 16px; background: var(--green); color: var(--on-primary); border: 0; box-shadow: none; }
+.submitIcon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: none; }
+.submitInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  display: inline-block;
+}
+
+.check {
+  display: inline-block;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ---------- 分段标签 + 共享指示条 ---------- */
+.tabs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 45%, transparent);
+}
+
+.tab {
+  position: relative;
+  flex: 1;
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.tabOn {
+  color: #fff;
+  font-weight: 650;
+}
+
+.tabText {
+  position: relative;
+  z-index: 1;
+}
+
+.ind {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--ocean), var(--ocean-deep));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ocean) 34%, transparent);
+  z-index: 0;
+}
+
+/* ---------- 搜索框：图标 ↔ 输入框 同位置展开 ---------- */
+.searchBox {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding: 0 4px;
+  gap: 6px;
+}
+
+.searchOpen {
+  width: 100%;
+}
+
+.searchCollapsed {
+  width: 44px;
+  justify-content: center;
+  padding: 0;
+}
+
+.searchIcon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-2);
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding-right: 6px;
+}
+
+.searchField input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.searchField input::placeholder {
+  color: var(--text-3);
+}
+
+.searchClear {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-2);
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 40%, transparent);
+}
+
+/* ---------- 按钮 ↔ 步进器 ---------- */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--green) 14%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+.stepBtn {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--green-deep);
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 44px; min-width: 44px;
+}
+
+/* 视觉 26px，命中区扩到 44px */
+.stepBtn::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+
+.stepBtn:disabled {
+  opacity: 0.45;
+}
+
+.stepNum {
+  min-width: 18px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--green-deep);
+}
+
+/* ---------- 菜单铺满全屏 ---------- */
+.reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: var(--card);
+  border-radius: 20px;
+  padding: calc(var(--safe-top, 0px) + 14px) 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.revealHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.revealClose {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--line) 45%, transparent);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.revealClose::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+
+.revealGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+.revealGroup {
+  margin: 8px 12px;
+  background: var(--card-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.revealGroupTitle {
+  padding: 10px 14px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.revealRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.revealRow:last-child {
+  border-bottom: none;
+}
+
+.revealRow:active {
+  background: var(--ocean-soft);
+}
+
+.revealRowIc {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.revealRowGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.revealRowGrow b {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.revealRowGrow span {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.revealRowArrow {
+  color: var(--text-3);
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.revealSeg {
+  display: flex;
+  gap: 6px;
+  padding: 4px 14px 12px;
+}
+
+.revealSegBtn,
+.revealSegOn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.revealSegOn {
+  background: var(--ocean, #2f9bff);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ---------- 列表 ↔ 网格 ---------- */
+.gridWrap {
+  display: grid;
+  gap: 10px;
+}
+
+.gridList {
+  grid-template-columns: 1fr;
+}
+
+.gridCards {
+  grid-template-columns: 1fr 1fr;
+}
+
+.viewToggle {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 45%, transparent);
+}
+
+.viewBtn {
+  position: relative;
+  width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.viewBtn::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.viewOn {
+  color: var(--green-deep);
+}
+
+.viewInd {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  z-index: 0;
+}
+
+.viewIcon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+}
+
+.revealSeg button { min-height: 44px; }
+.revealRow { min-height: 56px; }
+.revealRowIc { color: var(--green-text); }
+
+/* Shared interaction surfaces use the campus palette and real hit areas. */
+.tab { min-height: 44px; }
+.tabOn { color: var(--on-primary); }
+.ind { background: var(--green); box-shadow: none; }
+.searchBox { height: 48px; border-radius: var(--radius); }
+.searchIcon, .searchClear, .stepBtn, .revealClose, .viewBtn { min-width: 44px; min-height: 44px; }
+.stepBtn { width: 44px; height: 44px; 
+  min-height: 44px; min-width: 44px;
+}
+.stepBtn::after, .revealClose::after, .viewBtn::after { display: none; }
+.searchField input { min-height: 44px; font-size: 16px; }
+.reveal { position: relative; inset: auto; z-index: auto; height: 100%; border-radius: 0; padding-bottom: max(20px, var(--safe-bottom)); }
+.revealHead h2 { font-size: 20px; line-height: 1.4; }
+.revealGrid { flex: 1; min-height: 0; }
+.revealGroup { flex-shrink: 0; margin: 0 0 12px; border-radius: var(--radius); background: var(--card); backdrop-filter: none; }
+.revealGroupTitle { font-size: 12px; }
+.revealRow:active { background: var(--mint); }
+.revealSegOn { background: var(--green); color: var(--on-primary); }
+
+:global([data-ui-variant='cute']) .tabs { background: var(--mint); border: 1px solid color-mix(in srgb,var(--fox) 12%,var(--line)); }
+:global([data-ui-variant='cute']) .ind { background: linear-gradient(120deg,color-mix(in srgb,var(--fox) 10%,var(--green)),var(--green)); box-shadow: none; }
+:global([data-ui-variant='cute']) .searchBox { border-radius: 20px; box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .tabs { background: var(--mint); border-radius: 16px; padding: 4px; }
+:global([data-ui-variant='minimal']) .tab, :global([data-ui-variant='minimal']) .ind { border-radius: 12px; }
+:global([data-ui-variant='minimal']) .ind { background: var(--green); box-shadow: none; }
+:global([data-ui-variant='minimal']) .tabOn { color: var(--on-primary); }
+:global([data-ui-variant='minimal']) .searchBox { border-radius: 16px; background: var(--card); box-shadow: none; border: 1px solid var(--line); }
+:global([data-ui-variant='minimal']) .stepper { background: var(--card); border-color: var(--line); border-radius: 16px; }
+:global([data-ui-variant='cute']) .searchIcon, :global([data-ui-variant='minimal']) .searchIcon { position: relative; min-width: 44px; min-height: 44px; }
+:global([data-ui-variant='cute']) .searchBox, :global([data-ui-variant='minimal']) .searchBox { min-height: 48px; }
+.searchIcon { position: relative; }
+.searchIcon::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+
+.submitButton, .tab, .searchIcon, .searchClear, .stepBtn, .revealClose, .viewBtn, .revealRow, .revealSeg button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.stepAdd { min-height: 44px; min-width: 44px; touch-action: manipulation; }
+.stepAdd:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.tab:focus-visible, .searchIcon:focus-visible, .searchClear:focus-visible, .stepBtn:focus-visible, .revealClose:focus-visible, .viewBtn:focus-visible, .revealRow:focus-visible, .revealSeg button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.searchBox:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+.searchClear { min-width: 44px; }
+.searchIcon { width: 44px; height: 44px; }
+.submitButton:disabled { cursor: not-allowed; }
+.submitButton[aria-busy='true'] { cursor: wait; }
+
+:global([data-ui-variant='immersive']) .submitButton { min-height: 48px; padding: 10px 18px; border-radius: 20px; background: var(--green); color: var(--on-primary); border: 1px solid color-mix(in srgb,var(--fox) 35%,transparent); box-shadow: var(--shadow-sm); }
+:global([data-ui-variant='immersive']) .submitButton:disabled, :global([data-ui-variant='immersive']) .stepBtn:disabled { filter: saturate(.6); opacity: .58; }
+:global([data-ui-variant='immersive']) .tabs { padding: 4px; background: var(--mint); border: 1px solid color-mix(in srgb,var(--fox) 12%,var(--line)); }
+:global([data-ui-variant='immersive']) .ind { background: var(--green); box-shadow: none; }
+:global([data-ui-variant='immersive']) .searchBox { min-height: 48px; border-radius: 20px; background: var(--card); border-color: color-mix(in srgb,var(--fox) 14%,var(--line)); box-shadow: var(--shadow-sm); }
+:global([data-ui-variant='immersive']) .stepper { border-color: color-mix(in srgb,var(--fox) 20%,var(--line)); background: var(--mint); }
+:global([data-ui-variant='immersive']) .revealGroup { border-color: color-mix(in srgb,var(--fox) 12%,var(--line)); }
+:global([data-ui-variant='immersive']) .viewOn { color: var(--green-text); }
+:global([data-theme='dark']) .stepBtn, :global([data-theme='dark']) .stepNum { color: var(--green-text); }

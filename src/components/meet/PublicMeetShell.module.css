@@ -1,0 +1,4 @@
+.outer { min-height: 100dvh; display: flex; justify-content: center; background: var(--bg-grad-from); }
+.phone { width: min(100%, 520px); min-height: 100dvh; position: relative; background: var(--page-mid); box-shadow: 0 10px 48px rgb(18 57 43 / 10%); }
+.main { min-height: 100dvh; }
+@media (max-width: 520px) { .outer { background: var(--page-mid); } .phone { box-shadow: none; } }

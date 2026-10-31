@@ -1,0 +1,16 @@
+.page { padding: 0 16px 24px; color: var(--text); }
+.lead { margin: 0 0 22px; color: var(--text-2); font-size: 14px; line-height: 1.7; }
+.section { margin: 0 0 20px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.section h2 { margin: 0 0 10px; font-size: 16px; line-height: 1.5; }
+.hint { color: var(--text-3); font-size: 12px; line-height: 1.8; margin: 0 0 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; }
+.row + .row { border-top: 1px solid var(--line); }
+.row > div { min-width: 0; }
+.row strong { font-size: 14px; line-height: 1.6; }
+.row p { margin: 4px 0 0; color: var(--text-3); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.row :is(button, select) { flex: none; max-width: 48%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--green-soft); color: var(--green-text); font-size: 12px; line-height: 1.5; }
+.row select { background: var(--card); color: var(--text); }
+.error { padding: 12px 14px; border: 1px solid var(--danger); border-radius: 8px; color: var(--danger); background: var(--danger-soft); font-size: 13px; line-height: 1.7; }
+.back { display: inline-flex; align-items: center; min-height: 44px; color: var(--green-text); font-size: 13px; }
+.section[data-highlighted] { border-color: var(--green); }
+@media (max-width: 420px) { .section { padding: 16px; } .row { gap: 12px; } }

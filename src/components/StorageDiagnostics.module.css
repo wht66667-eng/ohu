@@ -1,0 +1,22 @@
+.card { margin: 0 16px 20px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); color: var(--text); }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.heading > div { min-width: 0; }
+.heading > div > span { color: var(--text-3); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.heading h2 { margin: 3px 0 0; color: var(--green-text); font-size: 18px; line-height: 1.35; }
+.heading button { flex: none; min-width: 44px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--mint); color: var(--green-text); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.heading button:disabled { opacity: .6; cursor: default; }
+.heading button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.intro, .note, .loading, .error { margin: 12px 0 0; color: var(--text-2); font-size: 13px; line-height: 1.6; }
+.metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 16px; }
+.metrics > div { min-width: 0; min-height: 74px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 10px 12px; border-radius: 14px; background: var(--page-mid); }
+.metrics span { color: var(--text-2); font-size: 11px; line-height: 1.35; }
+.metrics strong { overflow-wrap: anywhere; color: var(--green-text); font-size: 17px; font-variant-numeric: tabular-nums; }
+.progressBlock { margin-top: 16px; }
+.progressLabel { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 7px; color: var(--text-2); font-size: 12px; }
+.progressLabel strong { color: var(--green-text); font-variant-numeric: tabular-nums; }
+.track { height: 9px; overflow: hidden; border-radius: 99px; background: var(--mint); }
+.track span { display: block; height: 100%; border-radius: inherit; background: var(--green); transition: width 180ms ease; }
+.error { color: var(--danger); }
+.note { margin-top: 14px; font-size: 11px; }
+@media (max-width: 350px) { .card { padding: 13px; } .metrics { gap: 6px; } .metrics > div { padding: 9px; } .metrics strong { font-size: 15px; } }
+@media (prefers-reduced-motion: reduce) { .track span { transition: none; } }

@@ -1,0 +1,140 @@
+/* 无狐五皮肤令牌（迁入自 ui-design-preview/DESIGN.md：清简/花间/澄光/晴野/星栖）。
+   仅做令牌级覆盖：配色、圆角、阴影、字体；业务结构与交互不变。
+   每个皮肤的狐狸角色由组件层 isFoxFreeVariant() 抑制，这里不处理。 */
+
+/* 简单版：使用中性灰度，强调内容、状态和可操作性。 */
+:root[data-ui-variant='pure'] {
+  --page-top:#f5f5f5; --page-mid:#f5f5f5; --page-bot:#f5f5f5;
+  --bg-light:#f5f5f5; --theme-light-canvas:#f5f5f5;
+  --bg-grad-from:#f0f0f0; --bg-grad-mid:#f0f0f0; --bg-grad-to:#f0f0f0;
+  --card:#fff; --surface:#fff; --card-glass:rgba(255,255,255,.98);
+  --chip-bg:#fff; --chip-border:#d2d2d2;
+  --text:#171717; --text-primary:#171717; --text-2:#444; --text-3:#606060;
+  --green:#252525; --green-hot:#151515; --green-deep:#111; --green-text:#252525; --green-ink:#171717;
+  --green-soft:#eee; --mint:#eee; --mint-2:#e5e5e5; --leaf:#d1d1d1;
+  --yellow:#d4d4d4; --yellow-2:#c4c4c4; --sun:#eee; --orange:#555;
+  --fox:#555; --fox-gold:#aaa; --fox-deep:#333; --fox-orange:#555; --campus-green:#252525;
+  --pink:#555; --blue:#555; --ocean:#444; --ocean-deep:#333; --ocean-soft:#eee; --purple:#555;
+  --service-blue:#eee; --service-blue-ink:#333; --service-amber:#eee; --service-amber-ink:#333; --service-violet:#eee; --service-violet-ink:#333;
+  --danger:#9b2222; --danger-soft:#f8eeee; --price:#333;
+  --on-primary:#fff; --line:#d5d5d5; --warm-line:#d5d5d5;
+  --radius:10px; --radius-lg:14px; --shadow:none; --shadow-sm:none;
+}
+:root[data-theme='dark'][data-ui-variant='pure'] {
+  --page-top:#151515; --page-mid:#151515; --page-bot:#151515;
+  --bg-light:#151515; --theme-dark-canvas:#151515;
+  --bg-grad-from:#101010; --bg-grad-mid:#101010; --bg-grad-to:#101010;
+  --card:#242424; --surface:#242424; --card-glass:rgba(36,36,36,.98);
+  --chip-bg:#242424; --chip-border:#505050;
+  --text:#f3f3f3; --text-primary:#f3f3f3; --text-2:#d0d0d0; --text-3:#b8b8b8;
+  --green:#ededed; --green-hot:#ddd; --green-deep:#ccc; --green-text:#ededed; --green-ink:#fff;
+  --green-soft:#383838; --mint:#383838; --mint-2:#444; --leaf:#555;
+  --yellow:#ccc; --yellow-2:#bbb; --sun:#444; --orange:#ddd;
+  --fox:#ddd; --fox-gold:#bbb; --fox-deep:#eee; --fox-orange:#ddd; --campus-green:#eee;
+  --pink:#ddd; --blue:#ddd; --ocean:#ddd; --ocean-deep:#eee; --ocean-soft:#383838; --purple:#ddd;
+  --service-blue:#383838; --service-blue-ink:#eee; --service-amber:#383838; --service-amber-ink:#eee; --service-violet:#383838; --service-violet-ink:#eee;
+  --danger:#ffb3b3; --danger-soft:#432c2c; --price:#eee;
+  --on-primary:#171717; --line:#505050; --warm-line:#505050; --shadow:none; --shadow-sm:none;
+}
+
+/* Hide only bundled character and wordmark art; user photos, maps and announcements remain intact. */
+:root[data-ui-variant='pure'] img[src*='/brand/ohu-original/fox-'],
+:root[data-ui-variant='pure'] img[src*='/ohu-original/fox-'],
+:root[data-ui-variant='pure'] img[src*='/brand/ohu-original/ohu-wordmark'],
+:root[data-ui-variant='pure'] img[src*='/pixel-fox/'],
+:root[data-ui-variant='pure'] [data-fox-3d] { display:none !important; }
+
+/* ── 第 7 版 · 花间 bloom ────────────────────────────── */
+:root[data-ui-variant='bloom'] {
+  --page-top: #fbf2ef; --page-mid: #fbf2ef; --page-bot: #fbf2ef;
+  --bg-light: #fbf2ef; --theme-light-canvas: #fbf2ef;
+  --bg-grad-from: #fbf2ef; --bg-grad-mid: #fbf2ef; --bg-grad-to: #fbf2ef;
+  --card: #fffcf6; --surface: #fffcf6; --card-glass: rgba(255,252,246,.96);
+  --chip-bg: #fff0e5; --chip-border: #efd8d4;
+  --text: #503e43; --text-primary: #503e43; --text-2: #6f565c; --text-3: #82666b;
+  --green: #a7445c; --green-hot: #943a51; --green-deep: #823047;
+  --green-text: #8e3a4f; --green-ink: #77303f;
+  --green-soft: #f6dce0; --mint: #f6dce0; --mint-2: #f0cdd3;
+  --line: #efd8d4;
+  --radius: 24px; --radius-lg: 28px;
+  --shadow: 0 8px 24px rgba(145,87,83,.07); --shadow-sm: 0 3px 10px rgba(145,87,83,.04);
+  --display: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+:root[data-theme='dark'][data-ui-variant='bloom'] {
+  --radius: 24px; --radius-lg: 28px;
+  --green: #d9738c; --green-hot: #c96479; --green-deep: #a8506a;
+  --green-text: #e89aad; --green-ink: #f0b6c3;
+  --green-soft: #3d242c; --mint: #3d242c; --mint-2: #492e36;
+}
+
+/* ── 第 8 版 · 澄光 glass ────────────────────────────── */
+:root[data-ui-variant='glass'] {
+  --page-top: #e9f0f9; --page-mid: #e9f0f9; --page-bot: #e9f0f9;
+  --bg-light: #e9f0f9; --theme-light-canvas: #e9f0f9;
+  --bg-grad-from: #e9f0f9; --bg-grad-mid: #e9f0f9; --bg-grad-to: #e9f0f9;
+  --card: #fcfdff; --surface: #fcfdff; --card-glass: rgba(252,253,255,.92);
+  --chip-bg: #edf3fc; --chip-border: #d9e3ef;
+  --text: #1c2e46; --text-primary: #1c2e46; --text-2: #44546b; --text-3: #5b6e86;
+  --green: #a54819; --green-hot: #913e15; --green-deep: #7d3512;
+  --green-text: #8c3f16; --green-ink: #753510;
+  --green-soft: #ffeadf; --mint: #ffeadf; --mint-2: #fadfd0;
+  --line: #d9e3ef;
+  --radius: 23px; --radius-lg: 27px;
+  --shadow: 0 10px 24px rgba(74,110,153,.09); --shadow-sm: 0 4px 12px rgba(74,110,153,.05);
+}
+:root[data-theme='dark'][data-ui-variant='glass'] {
+  --radius: 23px; --radius-lg: 27px;
+  --green: #d97b4a; --green-hot: #c86c3c; --green-deep: #a85a30;
+  --green-text: #e59a6e; --green-ink: #efb490;
+  --green-soft: #3a2a1e; --mint: #3a2a1e; --mint-2: #463526;
+}
+
+/* ── 第 9 版 · 晴野 meadow ───────────────────────────── */
+:root[data-ui-variant='meadow'] {
+  --page-top: #f2f4e8; --page-mid: #f2f4e8; --page-bot: #f2f4e8;
+  --bg-light: #f2f4e8; --theme-light-canvas: #f2f4e8;
+  --bg-grad-from: #f2f4e8; --bg-grad-mid: #f2f4e8; --bg-grad-to: #f2f4e8;
+  --card: #fffffa; --surface: #fffffa; --card-glass: rgba(255,255,250,.96);
+  --chip-bg: #e9eddc; --chip-border: #cdd5bd;
+  --text: #223c31; --text-primary: #223c31; --text-2: #46584c; --text-3: #5b6d60;
+  --green: #245d43; --green-hot: #1e5039; --green-deep: #18422f;
+  --green-text: #1f5140; --green-ink: #173c2e;
+  --green-soft: #e0eabf; --mint: #e0eabf; --mint-2: #d5e1ae;
+  --line: #cdd5bd;
+  --radius: 15px; --radius-lg: 19px;
+  --shadow: 0 4px 0 rgba(44,77,50,.09); --shadow-sm: 0 2px 0 rgba(44,77,50,.05);
+}
+:root[data-theme='dark'][data-ui-variant='meadow'] {
+  --radius: 15px; --radius-lg: 19px;
+  --green-soft: #2b3a26; --mint: #2b3a26; --mint-2: #35452e;
+}
+
+/* ── 第 10 版 · 星栖 night（自带暗色，与亮暗主题无关） ── */
+:root[data-ui-variant='night'] {
+  --page-top: #111924; --page-mid: #111924; --page-bot: #111924;
+  --bg-light: #111924; --theme-light-canvas: #111924; --theme-dark-canvas: #111924;
+  --bg-grad-from: #111924; --bg-grad-mid: #111924; --bg-grad-to: #111924;
+  --card: #1d2938; --surface: #1d2938; --card-glass: rgba(29,41,56,.94);
+  --chip-bg: #263344; --chip-border: #354254;
+  --text: #edf0f4; --text-primary: #edf0f4; --text-2: #c3cdd9; --text-3: #acb8c9;
+  --on-primary: #23202a;
+  --green: #e7b58a; --green-hot: #dda678; --green-deep: #c89467;
+  --green-text: #eec39d; --green-ink: #f4d3b6;
+  --green-soft: #3b322f; --mint: #3b322f; --mint-2: #473d38;
+  --line: #354254;
+  --radius: 17px; --radius-lg: 21px;
+  --shadow: 0 8px 24px rgba(3,8,15,.18); --shadow-sm: 0 3px 10px rgba(3,8,15,.12);
+  --overlay: rgba(3,8,15,.62);
+  --danger: #f0a69e; --danger-soft: #43302c;
+  --price: #e7b58a;
+  color-scheme: dark;
+}
+
+/* 五皮肤共同：焦点环跟随主色（与既有 immersive 一致的行为） */
+:root[data-ui-variant='pure'] :is(button,a,input,select,textarea):focus-visible,
+:root[data-ui-variant='bloom'] :is(button,a,input,select,textarea):focus-visible,
+:root[data-ui-variant='glass'] :is(button,a,input,select,textarea):focus-visible,
+:root[data-ui-variant='meadow'] :is(button,a,input,select,textarea):focus-visible,
+:root[data-ui-variant='night'] :is(button,a,input,select,textarea):focus-visible {
+  outline: 2px solid var(--green); outline-offset: 3px;
+}

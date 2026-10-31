@@ -1,0 +1,1279 @@
+/* ============================================================
+ * 课表页 · 哦狐温暖校园风
+ *
+ * 仅使用全局 design tokens（--green / --mint / --fox / --card …），
+ * 浅 / 深色模式随 token 自动适配，无任何硬编码颜色。
+ * ============================================================ */
+
+.page {
+  min-height: 100%;
+  background: var(--page-bot);
+  color: var(--text);
+  padding-bottom: calc(var(--tab-h) + var(--safe-bottom, 0px) + 16px);
+}
+
+/* V4 日程结构：真实日期和课程填入画面，狐狸只占页眉与辅助卡。 */
+.v4Hero { margin: 0 16px 10px; height: 126px; overflow: hidden; position: relative; background: radial-gradient(circle at 78% 100%,#b9dba6 0 8%,transparent 8.2%),radial-gradient(circle at 95% 101%,#d5e9c7 0 12%,transparent 12.2%),linear-gradient(120deg,#fffdf6,#eff7e7); border-radius: 21px; }
+.v4Wordmark { position:absolute;z-index:2;left:10px;top:30px;width:88px;height:auto; }
+.v4Hero p { position:absolute;z-index:2;left:105px;top:13px;width:125px;margin:0;padding:9px 10px;border-radius:35px 35px 35px 10px;background:#e3f2dddc;color:var(--green-text);font-size:11px;font-weight:700;line-height:1.35; }
+.v4Hero p strong{font-size:15px}.v4Hero p span { color: var(--green); padding-left: 3px; }
+.v4Fox { position:absolute;z-index:1;right:7px;bottom:3px;width:156px;height:112px;object-fit:contain;object-position:bottom right;filter:drop-shadow(0 3px 4px #705a3520); }
+.cacheNotice { margin: 0 16px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border: 1px solid color-mix(in srgb, var(--fox-orange) 35%, var(--line)); border-radius: 16px; background: color-mix(in srgb, var(--fox-orange) 9%, var(--card)); color: var(--text); }
+.cacheNotice > div { min-width: 0; }
+.cacheNotice strong { display: block; color: var(--green-text); font-size: 14px; }
+.cacheNotice p { margin: 4px 0 0; color: var(--text-2); font-size: 12px; line-height: 1.5; }
+.cacheNotice button { flex: none; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--green); color: var(--on-primary); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.cacheNotice button:disabled { opacity: .55; cursor: default; }
+.widgetGuide { margin: 0 16px 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 15px; background: var(--card); color: var(--text-2); font-size: 12px; line-height: 1.55; }
+.widgetGuide summary { color: var(--green-text); font-size: 13px; font-weight: 750; cursor: pointer; min-height: 24px; }
+.widgetGuide p { margin: 8px 0 5px; }
+.widgetGuide small { color: var(--text-3); }
+.v4LoginCard { margin-top: 2px; }
+.v4WeekNav { margin: 0 16px 16px; min-height: 72px; display: flex; align-items: stretch; gap: 2px; padding: 8px 4px; border-radius: 20px; background: #fff4df; box-shadow: var(--shadow-sm); }
+.v4Days { flex: 1; display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 1px; min-width: 0; }
+.v4WeekArrow { width: 30px; flex: none; border: 0; border-radius: 10px; background: transparent; color: var(--green-text); font-size: 25px; cursor: pointer; }
+.v4WeekArrow:disabled { opacity: .28; cursor: default; }
+.v4Day { min-width: 0; padding: 4px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; border-radius: 14px; background: transparent; color: var(--green-text); cursor: pointer; font: inherit; }
+.v4Day strong { font-size: 13px; white-space: nowrap; }
+.v4Day small { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.v4DayActive { background: var(--green); box-shadow: var(--shadow-sm); }
+.v4DayActive strong, .v4DayActive small { color: var(--on-primary); }
+.v4Day:focus-visible, .v4WeekArrow:focus-visible, .v4Course:focus-visible { outline: 3px solid var(--fox-orange); outline-offset: 2px; }
+.v4SectionHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px; margin: 2px 0 12px; }
+.v4SectionHead > div { min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.v4SectionHead h2 { color: var(--green-text); font-size: 22px; line-height: 1.25; letter-spacing: -.035em; margin: 0; }
+.v4SectionHead h2 span { color: var(--fox-orange); font-size: 16px; }
+.v4SectionHead > div > span { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.v4SectionHead button { flex: none; color: var(--green-text); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 8px 10px; min-height: 40px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.v4Timeline { margin: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.v4TimelineItem{position:relative}.v4TimelineRow { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 7px; align-items: stretch; min-height: 82px; }
+.v4Time { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding-top: 13px; color: var(--green-text); font-variant-numeric: tabular-nums; }
+.v4Time strong { font-size: 12px; line-height: 1.1; }
+.v4Time span { color: var(--text-3); font-size: 11px; }
+.v4Time i { position: absolute; width: 7px; height: 7px; top: 34px; right: 1px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--mint); }
+.v4Time::after{content:"";position:absolute;top:43px;bottom:-39px;right:3px;width:2px;border-radius:2px;background:#e3e9d8}.v4TimelineItem:last-child .v4Time::after{display:none}.v4Time i{z-index:1}
+.v4Course { position:relative;width: 100%; min-width: 0; min-height: 82px; border: 1px solid color-mix(in srgb,var(--green) 18%,transparent); border-radius: 18px; padding: 10px 12px; display: flex; align-items: center; gap: 9px; text-align: left; cursor: pointer; font: inherit; color: var(--text); overflow:hidden; }
+.v4CourseNow { border: 2px solid var(--green); }
+.v4CourseWithFox .v4CourseText{padding-right:55px}.v4CourseFox{position:absolute;right:7px;bottom:6px;width:58px;height:58px;object-fit:contain;pointer-events:none}
+.v4CourseIcon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 13px; background: color-mix(in srgb,var(--card) 70%,transparent); }
+.v4CourseText { display: flex; flex-direction: column; min-width: 0; gap: 4px; flex: 1; }
+.v4CourseText strong { font-size: 14px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
+.v4CourseText small { font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4Status, .v4StatusNext { flex: none; border-radius: 999px; background: var(--green); color: var(--on-primary); font-size: 10px; font-weight: 800; padding: 5px 7px; }
+.v4StatusNext { color: var(--fox-orange); background: var(--card); }
+.v4Chevron { color: var(--text-3); font-size: 20px; }
+.v4Lunch { margin: 4px 0 8px 63px; display: flex; gap: 6px; align-items: center; min-height: 60px; border-top: 1px dashed #cfd8c9; color: var(--text-3); font-size: 11px; }
+.v4LunchSun { flex: none; color: var(--fox-orange); font-size: 19px; }
+.v4LunchCopy { flex: 1; min-width: 0; line-height: 1.3; }
+.v4Lunch svg { flex: none; align-self: end; width: min(100px, 35%); height: 59px; object-fit: contain; object-position: bottom; pointer-events: none; }
+.v4BottomCards { display: grid; grid-template-columns: 1.3fr .8fr; gap: 8px; margin: 12px 16px; }
+.v4ReminderCard, .v4Encourage { min-width: 0; min-height: 112px; border-radius: 18px; padding: 11px; display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: var(--text); overflow: hidden; }
+.v4ReminderCard { background: var(--service-amber); }
+.v4ReminderCard strong, .v4Encourage strong { color: var(--green-text); font-size: 14px; }
+.v4ReminderCard strong span { color: var(--fox-orange); }
+.v4ReminderCard > span { color: var(--text-2); font-size: 12px; line-height: 1.45; }
+.v4ReminderCard small { margin-top: auto; color: var(--green-text); font-size: 11px; font-weight: 800; }
+.v4Encourage { position: relative; background: var(--mint); }
+.v4Encourage span { font-size: 11px; line-height: 1.4; max-width: 90px; color: var(--text-2); }
+.v4Encourage svg { align-self: flex-end; width: 60px; height: 60px; margin-top:auto; flex:none; overflow:hidden; }
+:global([data-ui-variant='pure']) .v4Hero,
+:global([data-ui-variant='pure']) .v4Encourage { display:none; }
+:global([data-ui-variant='pure']) .v4BottomCards { grid-template-columns:1fr; }
+:global([data-ui-variant='pure']) .v4ReminderCard { min-height:0; border:1px solid var(--line); background:var(--card); }
+:global([data-ui-variant='pure']) .v4Summary { background:var(--card); border:1px solid var(--line); color:var(--text); }
+:global([data-ui-variant='pure']) .v4Summary > div { margin-right:0; background:var(--green-soft); }
+:global([data-ui-variant='pure']) .v4CourseWithFox .v4CourseText { padding-right:0; }
+.v4Summary { position: relative; margin: 12px 16px; padding: 14px 13px 20px; min-height:105px;border-radius: 20px; overflow: hidden; background: linear-gradient(120deg,#124d32,#006347); color: var(--on-primary); }
+.v4Summary h2 { margin: 0 0 10px; font-size: 15px; }
+.v4Summary > div { display: flex; justify-content: space-around; gap: 3px; margin-right: 54px; padding: 11px 5px; border-radius: 14px; background: #fffaf1; color: var(--green-text); }
+.v4Summary > div span { font-size: 11px; text-align: center; }
+.v4Summary > div strong { font-size: 16px; }
+.v4Summary > div small { display: block; color: var(--text-3); font-size: 10px; }
+.v4Summary > svg { position:absolute;right:7px;bottom:8px;width:78px;height:82px;overflow:hidden; }
+.v4Tools { margin: 16px; border: 1px solid var(--line); background: var(--card); border-radius: 16px; overflow: hidden; }
+.v4Tools > summary { list-style: none; padding: 13px 15px; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--green-text); display: flex; justify-content: space-between; }
+.v4Tools > summary::-webkit-details-marker { display: none; }
+.v4Tools > summary span { font-weight: 500; }
+.v4Tools .todayCard { margin: 0; box-shadow: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.viewCard[hidden] { display: none; }
+@media (max-width: 350px) { .v4Hero p { left:91px;width:111px;font-size: 9px; } .v4Wordmark { width: 75px; }.v4Fox { width: 152px; } .v4Day strong { font-size: 10px; } .v4Day small { font-size: 9px; } .v4TimelineRow { grid-template-columns: 49px minmax(0,1fr); } .v4Lunch { margin-left: 55px; } .v4CourseWithFox .v4CourseText{padding-right:37px}.v4CourseFox{width:51px;height:51px} }
+
+.headerActions { display: flex; align-items: center; gap: 2px; }
+
+.textBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.textBtn:hover {
+  background: var(--mint);
+}
+
+/* ---- 绑定 / 登录卡片 ---- */
+.loginCard {
+  margin: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 22px 18px 24px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.hero h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+
+.hero p {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card);
+  outline: none;
+  min-width: 0;
+  font-family: inherit;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--mint);
+}
+
+.captchaRow {
+  display: grid;
+  grid-template-columns: 1fr 112px;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.captchaImg {
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* 统一状态组件嵌在验证码格里时收紧尺寸 */
+.captchaState {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+.captchaTip {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+  text-align: right;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 16px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.remember input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green);
+}
+
+.btn {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--green) 0%, var(--green-hot) 100%);
+  color: var(--on-primary);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.16s ease, opacity 0.16s ease;
+  min-height: 48px;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn[aria-busy='true'], .btnAlt[aria-busy='true'] { opacity: 1; cursor: wait; }
+.captchaState { color: var(--green-text); font-size: 12px; }
+
+/* 次要按钮：与主按钮同宽同高，用于「自动同步（免验证码）」这类可选的第二步操作 */
+.btnAlt {
+  width: 100%;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--mint);
+  color: var(--green-text);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 12px;
+  min-height: 46px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.btnAlt:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btnAlt:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formMsgOk {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--mint);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---- 今日速览卡 ---- */
+.todayCard {
+  margin: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+
+.todayHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.todayHeadMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.todayHead h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.todayHead span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.weekPill {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.bannerOk,
+.bannerErr {
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.bannerOk {
+  background: var(--mint);
+  color: var(--green-text);
+}
+
+.bannerErr {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.todayEmpty {
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 10px 0 4px;
+  margin: 0;
+  text-align: center;
+}
+
+.calBanner {
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--service-amber);
+  color: var(--service-amber-ink);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* —— 下一节课（倒计时 + 教室） —— */
+.nextCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--mint);
+}
+
+.nextMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nextKicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--green-text);
+}
+
+.nextName {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nextMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.nextCount {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 正在上课：绿色实心强提示 */
+.nextNow {
+  background: var(--green);
+}
+
+.nextNow .nextKicker,
+.nextNow .nextName,
+.nextNow .nextMeta {
+  color: var(--on-primary);
+}
+
+.nextNow .nextMeta {
+  opacity: 0.85;
+}
+
+.nextNow .nextCount {
+  background: color-mix(in srgb, var(--on-primary) 18%, transparent);
+  color: var(--on-primary);
+  box-shadow: none;
+}
+
+.todayList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.miniCourse {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.miniCourse:active {
+  background: var(--mint);
+}
+
+/* 当前正在上的课 */
+.miniNow {
+  background: var(--mint);
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--green);
+}
+
+.miniTime {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.miniBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.miniName {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.miniMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- 周视图卡片 ---- */
+.viewCard {
+  margin: 0 16px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.weekStrip {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--line);
+}
+
+.weekStrip::-webkit-scrollbar {
+  display: none;
+}
+
+.navChip,
+.weekChip {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.navChip {
+  padding: 7px 12px;
+  color: var(--text);
+}
+
+.weekChip.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-primary);
+}
+
+/* 今天所在周：浅绿胶囊（非选中态） */
+.weekChip.current:not(.active) {
+  background: var(--mint);
+  border-color: var(--leaf);
+  color: var(--green-text);
+}
+
+/* ---- 网格 ---- */
+.gridWrap {
+  padding: 14px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.gridWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-rows: 40px repeat(11, 50px);
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 周一至周日一屏铺满，周末课不再被挤到屏外 */
+.grid7 {
+  grid-template-columns: 34px repeat(7, minmax(0, 1fr));
+}
+
+.hd,
+.hdToday {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+  line-height: 1.15;
+  padding: 2px 0;
+}
+
+/* 周末弱化 */
+.hdWeekend {
+  opacity: 0.55;
+}
+
+.hdWeek {
+  font-size: 12px;
+}
+
+.hdDate {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.hdToday {
+  color: var(--green-text);
+  font-weight: 800;
+  background: var(--mint);
+  border-radius: 12px;
+}
+
+.hdToday .hdDate {
+  opacity: 1;
+}
+
+.hdTagOff,
+.hdTagMakeup {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.hdTagOff {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.hdTagMakeup {
+  background: var(--service-blue);
+  color: var(--service-blue-ink);
+}
+
+.axis,
+.axisNow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--mint) 45%, var(--card));
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+/* 当前节次高亮 */
+.axisNow {
+  background: var(--mint);
+  color: var(--green-text);
+  font-weight: 700;
+}
+
+.axisSn {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.axisNow .axisSn {
+  color: var(--green-text);
+}
+
+.col {
+  position: relative;
+  display: grid;
+  grid-auto-rows: 50px;
+  gap: 5px;
+  border-radius: 12px;
+}
+
+/* 今日列：浅绿底 */
+.colToday {
+  background: color-mix(in srgb, var(--mint) 60%, transparent);
+}
+
+/* 周末列弱化 */
+.colWeekend {
+  background: var(--col-weekend);
+}
+
+.cell {
+  position: relative;
+  min-width: 0;
+  font: inherit;
+  text-align: left;
+  border-radius: 12px;
+  margin: 1px;
+  padding: 5px 6px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.16s ease;
+}
+
+.cell:active {
+  transform: scale(0.97);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--green-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell { transition: none; }
+  .cell:active { transform: none; }
+}
+
+/* 撞课：狐狸橙描边提醒（少量重点色） */
+.cellClash {
+  box-shadow: inset 0 0 0 2px var(--fox-deep);
+}
+
+.cellIcon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  pointer-events: none;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px !important;
+}
+
+.cellName {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-right: 22px;
+}
+
+.cellMeta {
+  font-size: 12px;
+  opacity: 0.88;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cellTeacher {
+  font-size: 12px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.colOff {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    color-mix(in srgb, var(--text-3) 6%, transparent) 6px,
+    color-mix(in srgb, var(--text-3) 6%, transparent) 12px
+  );
+}
+
+.colOffLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  color: var(--text-3);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+
+/* ---- 底栏 ---- */
+.footerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--mint) 40%, var(--card));
+}
+
+.footerHint {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.footerBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ---- 今日快捷入口（狐狸暖橙，少量点缀） ---- */
+.todoLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--service-amber);
+  border: 1px dashed color-mix(in srgb, var(--fox) 45%, transparent);
+  text-decoration: none;
+  font-size: 12.5px;
+  color: var(--text-2);
+  min-height: 44px;
+}
+
+.todoLinkArrow {
+  flex-shrink: 0;
+  font-weight: 800;
+  color: var(--fox-deep);
+}
+
+.exportRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.phraseForm {
+  display: flex;
+  gap: 8px;
+  margin: 10px 16px 0;
+}
+
+.phraseForm input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  padding: 0 12px;
+  font-size: 13px;
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+}
+
+.phraseForm input:focus {
+  border-color: var(--green);
+}
+
+.phraseForm button {
+  flex: 0 0 auto;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.scheduleAiButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 32px);
+  min-height: 58px;
+  margin: 10px 16px 0;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--green) 24%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--green-soft) 54%, var(--card));
+  color: var(--green-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.scheduleAiIcon { flex: none; width: 22px; height: 22px; color: var(--fox); }
+.scheduleAiChevron { flex: none; width: 20px; height: 20px; margin-left: auto; color: var(--text-3); }
+.scheduleAiButton > span { display: grid; gap: 3px; min-width: 0; }
+.scheduleAiButton strong { font-size: 13px; }
+.scheduleAiButton small { color: var(--text-3); font-size: 11px; line-height: 1.4; }
+.scheduleAiButton:focus-visible { outline: 3px solid color-mix(in srgb, var(--green) 32%, transparent); outline-offset: 2px; }
+.scheduleAiButton:active { transform: scale(.99); }
+.scheduleAiButton { transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease; }
+:global([data-ui-variant='pure']) .scheduleAiButton {
+  min-height: 52px;
+  border-color: var(--line);
+  background: var(--card);
+  color: var(--text);
+  box-shadow: none;
+}
+:global([data-ui-variant='pure']) .scheduleAiIcon { color: var(--text-2); }
+.scheduleStudyAiLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin: 2px 20px 12px;
+  padding: 0 4px;
+  color: var(--text-2);
+  font-size: 12px;
+  text-decoration: none;
+}
+button.scheduleStudyAiLink { width: calc(100% - 40px); border: 0; background: transparent; text-align: left; font: inherit; cursor: pointer; }
+.scheduleStudyAiLink span { color: var(--green-text); font-size: 20px; line-height: 1; }
+.scheduleStudyAiLink:focus-visible { outline: 3px solid color-mix(in srgb, var(--green) 32%, transparent); outline-offset: 2px; border-radius: 8px; }
+:global([data-ui-variant='pure']) .scheduleStudyAiLink { color: var(--text); }
+
+.scheduleMoreTools { margin: 8px 16px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; }
+.scheduleMoreTools > summary { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:54px; padding:8px 13px; list-style:none; cursor:pointer; color:var(--green-text); }
+.scheduleMoreTools > summary::-webkit-details-marker { display:none; }
+.scheduleMoreTools > summary > span { display:grid; gap:3px; min-width:0; }
+.scheduleMoreTools > summary strong { font-size:13px; }
+.scheduleMoreTools > summary small { color:var(--text-3); font-size:11px; line-height:1.4; }
+.scheduleMoreTools > summary svg { flex:none; width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:transform 140ms ease; }
+.scheduleMoreTools[open] > summary svg { transform:rotate(180deg); }
+.scheduleMoreLinks { padding:0 12px 4px; border-top:1px solid var(--line); }
+.scheduleMoreLinks .scheduleStudyAiLink { margin:2px 8px 4px; }
+.scheduleMoreLinks button.scheduleStudyAiLink { width:calc(100% - 16px); }
+.scheduleMoreLinks .scheduleStudyAiLink + .scheduleStudyAiLink { border-top:1px solid var(--line); }
+:global([data-ui-variant='pure']) .scheduleMoreTools { background:var(--card); }
+:global([data-ui-variant='pure']) .scheduleMoreTools > summary { color:var(--text); }
+.schedulePhotoSource { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:8px 16px; padding:9px 11px; border:1px solid var(--line); border-radius:12px; background:var(--mint); color:var(--text-2); font-size:11px; line-height:1.5; }
+.schedulePhotoSource button { flex:none; min-height:40px; padding:0 10px; border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--green-text); font:inherit; font-weight:700; }
+:global([data-ui-variant='pure']) .schedulePhotoSource { background:var(--card); }
+
+.termStartSetting {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 12px 16px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--mint) 28%, var(--card));
+}
+
+.termStartSetting label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.termStartSetting input {
+  min-height: 38px;
+  max-width: 170px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.termStartSetting small {
+  grid-column: 1 / -1;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.exportBtn,
+.exportBtnGhost {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.exportBtn {
+  background: var(--green);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+.exportBtnGhost {
+  background: var(--mint);
+  color: var(--green-text);
+}
+
+/* ---- 节次时间设置 ---- */
+.tmTip {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+
+.tmTip a {
+  color: var(--green-text);
+}
+
+.tmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tmLabel {
+  width: 44px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.tmInput {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  padding: 0 10px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.tmInput:focus {
+  border-color: var(--green);
+}
+
+.tmDash {
+  color: var(--text-3);
+}
+
+.tmMsg {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+  line-height: 1.5;
+}
+
+.tmFoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.calForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.calList {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.calItem,
+.calItemDisabled {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.calItemDisabled {
+  opacity: 0.55;
+}
+
+.calItemMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-2);
+  min-width: 0;
+}
+
+.calItemMain strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.calItemActs {
+  flex-shrink: 0;
+}
+
+.calMiniBtn {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--mint);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tmReset,
+.tmSave {
+  flex: 1;
+  min-height: 42px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tmReset {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text-2);
+}
+
+.tmSave {
+  border: 0;
+  background: var(--green);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tmSave:disabled,
+.tmReset:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---- 底部弹层（课程详情 / 节次时间 / 假期调课） ---- */
+.sheet {
+  padding: 20px 20px calc(24px + var(--safe-bottom, 0px));
+  max-width: 430px;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sheetTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.sheetClose {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--mint);
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: var(--green-text);
+  cursor: pointer;
+}
+
+.sheetBody {
+  display: grid;
+  gap: 14px;
+}
+
+.sheetRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.sheetLabel {
+  width: 40px;
+  flex-shrink: 0;
+  color: var(--text-3);
+  font-size: 13px;
+  padding-top: 1px;
+}
+
+.sheetTag {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 0 6px 6px 0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--mint);
+  color: var(--green-text);
+}
+
+.sheetSub {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* ---- 窄屏适配 ---- */
+@media (max-width: 380px) {
+  .grid {
+    grid-template-rows: 36px repeat(11, 46px);
+  }
+  .col {
+    grid-auto-rows: 46px;
+  }
+}

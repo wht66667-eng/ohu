@@ -1,0 +1,36 @@
+.panel { margin: 16px 0 24px; color: var(--text, #202f28); }
+.panel h3 { font-size: 18px; margin: 0 0 16px; }
+.group { margin: 0 0 20px; padding: 0; border: 0; min-width: 0; }
+.group legend { padding: 0; font-size: 15px; font-weight: 750; }
+.group p { margin: 6px 0 12px; font-size: 13px; line-height: 1.65; color: var(--text-2, #56665e); }
+.options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.options button { text-align: left; min-height: 90px; border: 1px solid var(--line, #d9e2dc); background: var(--card, #fff); color: inherit; font: inherit; border-radius: 14px; padding: 12px 10px; cursor: pointer; }
+.options button[aria-pressed=true] { border-color: var(--green, #276c49); box-shadow: inset 0 0 0 1px var(--green, #276c49); background: var(--mint, #e8f4ed); }
+.options strong { display: block; font-size: 13px; line-height: 1.5; }
+.options small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.5; color: var(--text-2, #56665e); }
+.link { min-height: 44px; border: 0; background: none; color: var(--green, #276c49); display: flex; gap: 10px; align-items: center; font: inherit; font-size: 13px; font-weight: 700; padding: 8px 0; cursor: pointer; }
+.row { display: flex; gap: 12px; align-items: center; text-align: left; margin-top: 12px; width: 100%; border: 1px solid var(--line, #d9e2dc); border-radius: 14px; padding: 12px; background: var(--card, #fff); color: inherit; font: inherit; }
+button.row { cursor: pointer; }
+.row > span:nth-child(2) { flex: 1; min-width: 0; }
+.row strong { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 1.5; }
+.row small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--text-2, #56665e); }
+.icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: var(--mint, #e8f4ed); color: var(--green, #276c49); }
+.switch { min-width: 48px; min-height: 44px; border: 1px solid var(--line, #d9e2dc); border-radius: 12px; background: var(--bg, #f3f6f3); color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.switch[aria-checked=true] { background: var(--green, #276c49); color: var(--on-primary, #fff); }
+.buttons { display: flex; gap: 10px; margin-top: 10px; }
+.buttons button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; min-height: 44px; flex: 1; border: 1px solid var(--line, #d9e2dc); border-radius: 12px; background: var(--card, #fff); color: var(--text, #202f28); font: inherit; font-size: 13px; cursor: pointer; }
+.panel .note { font-size: 12px; line-height: 1.7; }
+.panel .error { color: var(--danger, #ac3448); font-size: 13px; line-height: 1.65; }
+.feedback { padding: 12px; border: 1px solid var(--line, #d9e2dc); border-radius: 12px; background: var(--mint, #e8f4ed); font-size: 13px; line-height: 1.65; }
+.guide { margin-top: 12px; padding: 12px; border: 1px solid var(--line, #d9e2dc); border-radius: 12px; font-size: 13px; line-height: 1.7; }
+.guide summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--green, #276c49); font-weight: 700; }
+.guide ol { padding-left: 20px; margin: 12px 0; }
+.guide li { padding-bottom: 8px; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 700ms linear infinite; flex: none; }
+.panel button { transition: transform 140ms ease; touch-action: manipulation; }
+.panel button:active:not(:disabled) { transform: scale(.98); }
+.panel button:disabled { opacity: .5; cursor: default; }
+.panel button:focus-visible { outline: 3px solid var(--green, #276c49); outline-offset: 3px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 340px) { .options { grid-template-columns: 1fr; } .options button { min-height: 64px; } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .panel button { transition: none; } .panel button:active:not(:disabled) { transform: none; } }

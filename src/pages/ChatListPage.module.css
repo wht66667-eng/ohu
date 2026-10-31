@@ -1,0 +1,43 @@
+.page { min-height: 100%; padding-bottom: 16px; background: var(--page-mid); color: var(--text); }
+.inbox { min-width: 0; color: var(--text); }
+.sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 18px 16px 12px; }
+.sectionHead h2 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4; }
+.hint { font-size: 12px; line-height: 1.5; color: var(--text-2); text-align: right; }
+.list { margin: 0; padding: 0; list-style: none; background: var(--card); border-block: 1px solid var(--line); }
+.row { display: flex; align-items: center; padding: 0 4px 0 16px; }
+.row + .row { border-top: 1px solid var(--line); }
+.hit { display: flex; align-items: center; flex: 1; gap: 12px; min-width: 0; min-height: 80px; padding: 14px 0; color: inherit; background: transparent; text-align: left; border: 0; border-radius: 8px; }
+.avatar { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; }
+.main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.topline { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.name { min-width: 0; flex: 1; font-size: 15px; line-height: 1.4; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.time { flex-shrink: 0; color: var(--text-2); font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; line-height: 1.45; color: var(--text-2); }
+.topic { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 1.4; color: var(--text-2); }
+.unread { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; background: var(--green); color: var(--on-primary); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 12px; }
+.remove { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; margin-left: 4px; padding: 0; color: var(--text-2); background: transparent; border: 0; border-radius: 10px; }
+.state { display: flex; align-items: center; flex-direction: column; gap: 10px; margin: 0 16px; padding: 30px 12px; color: var(--text-2); text-align: center; }
+.state > svg { color: var(--green-text); }
+.state p { margin: 0; color: var(--text); font-size: 15px; font-weight: 650; }
+.state > span { font-size: 13px; line-height: 1.6; }
+.action, .retry, .moreButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--green-text); font-size: 14px; line-height: 1.5; }
+.action { margin-top: 6px; background: var(--green); color: var(--on-primary); border-color: transparent; }
+.loading { margin: 0; padding: 22px 16px; color: var(--text-2); font-size: 14px; text-align: center; }
+.error { display: flex; align-items: center; gap: 12px; margin: 0 16px 12px; padding: 12px; background: var(--danger-soft); border: 1px solid var(--line); border-radius: 10px; color: var(--danger); }
+.error > div { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 5px; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.error strong { font-size: 14px; }
+.retry { flex-shrink: 0; }
+.moreRow { padding: 16px; text-align: center; }
+.moreError { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: var(--danger); overflow-wrap: anywhere; }
+.moreButton:disabled, .retry:disabled { opacity: .55; cursor: wait; }
+.inbox button:focus-visible, .page button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) {
+  .hit:hover, .remove:hover, .retry:not(:disabled):hover, .moreButton:not(:disabled):hover { background: var(--green-soft); }
+  .remove:hover { color: var(--danger); }
+}
+@media (max-width: 340px) {
+  .row { padding-left: 12px; }
+  .hit { gap: 8px; }
+  .avatar { width: 36px; height: 36px; }
+  .sectionHead { gap: 8px; }
+}

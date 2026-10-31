@@ -1,0 +1,58 @@
+/* 统一选图控件：自带样式，不依赖调用方的 CSS Module */
+
+/* 整行（信息 / 任务 / 闲置 等表单） */
+.pickBlock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 贴着输入框的小按钮（聊天 / 大厅 / 表情包） */
+.pickInline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.pickLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* 原生 file input：透明但保留在布局里，铺满可点区域。
+   必须用 opacity:0 而不是 display:none，后者不参与命中测试、
+   只能靠 label 转发点击，部分 ROM 的 WebView 不认这种转发。 */
+.pickInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  /* iOS 上字号 <16px 聚焦时会自动放大页面 */
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  touch-action: manipulation;
+}
+
+.pickInput:disabled {
+  cursor: default;
+}
+
+.hint {
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--text-3, #8b9a82);
+}

@@ -1,0 +1,31 @@
+.draftFields { margin: 0; padding: 0; border: 0; min-width: 0; }
+.pickerLabel { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; color: var(--text-2); font-size: 13px; font-weight: 700; }
+.pickerLabel span { color: var(--text-3); font-size: 12px; font-weight: 500; }
+.pics, .galleryRow { display: flex; flex-wrap: wrap; gap: 10px; }
+.pic { position: relative; width: 92px; min-height: 92px; border-radius: 14px; background: var(--mint); border: 1px solid var(--line); overflow: hidden; }
+.pic > img { display: block; width: 92px; height: 92px; object-fit: cover; }
+.picEmpty { height: 92px; display: grid; place-items: center; color: var(--text-3); font-size: 12px; }
+.remove { position: absolute; top: 0; right: 0; width: 44px; height: 44px; color: white; background: rgba(29, 48, 41, .7); border-radius: 0 0 0 14px; font-size: 18px; }
+.picState { position: absolute; inset: auto 0 0; padding: 4px; background: rgba(29, 48, 41, .8); color: white; text-align: center; font-size: 12px; }
+.retry { width: 100%; min-height: 44px; color: var(--green-text); background: var(--green-soft); font-size: 12px; font-weight: 700; }
+.add { width: 92px; min-height: 92px; border: 1px dashed var(--green); border-radius: 14px; background: var(--green-soft); color: var(--green-text); font-size: 13px; font-weight: 700; }
+.add b { display: block; font-size: 24px; line-height: 1.4; }
+.hint { margin: 8px 0 12px; color: var(--text-3); font-size: 12px; line-height: 1.6; }
+.error { color: var(--danger); margin: 8px 0; font-size: 12px; line-height: 1.5; }
+.listThumb { position: relative; width: 72px; height: 72px; flex: none; margin-top: 6px; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; background: var(--mint); }
+.listThumb img { width: 100%; height: 100%; object-fit: cover; }
+.listThumb span { position: absolute; bottom: 0; right: 0; padding: 2px 6px; border-radius: 8px 0 0; color: white; background: rgba(29, 48, 41, .8); font-size: 12px; }
+.gallery { margin-top: 18px; }
+.galleryTitle { margin: 0 0 8px; font-size: 14px; font-weight: 800; }
+.galleryTitle span { margin-left: 8px; color: var(--text-3); font-size: 12px; font-weight: 500; }
+.galleryImage { width: calc((100% - 20px) / 3); min-height: 84px; aspect-ratio: 1; overflow: hidden; border-radius: 14px; background: var(--mint); border: 1px solid var(--line); color: var(--text-3); font-size: 12px; }
+.galleryImage img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.viewer { display: flex; flex-direction: column; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.viewerHead { display: flex; justify-content: space-between; align-items: center; color: var(--text-2); font-size: 14px; }
+.viewerHead button, .viewerNav button, .imageFailure button { min-width: 64px; min-height: 44px; padding: 8px 14px; border-radius: 12px; color: var(--green-text); background: var(--green-soft); font-size: 14px; font-weight: 700; }
+.viewerBody { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; padding: 12px 0; }
+.viewerBody > img { max-width: 100%; max-height: 65dvh; object-fit: contain; }
+.viewerNav { display: flex; justify-content: space-between; gap: 12px; }
+.imageFailure { text-align: center; color: var(--text-2); font-size: 14px; }
+.add:disabled, .remove:disabled, .retry:disabled, .viewerNav button:disabled { opacity: .55; cursor: not-allowed; }
+.add:focus-visible, .remove:focus-visible, .retry:focus-visible, .galleryImage:focus-visible, .viewer button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }

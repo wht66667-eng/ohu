@@ -1,0 +1,350 @@
+{
+  "pack": "OHU Fox Sticker Assets V1",
+  "asset_count": 20,
+  "first_batch_count": 16,
+  "extra_count": 4,
+  "format": "PNG RGBA transparent",
+  "note": "Illustrated assets, not yet full 64. Source sheet contains 20 distinct variants. Labels/captions are manifest metadata and are not baked into images.",
+  "items": [
+    {
+      "id": "login_day_01",
+      "file": "assets/fox/stickers/01_login_day_01.png",
+      "category": "login",
+      "name_zh": "连续登录第1天",
+      "caption_zh": "你终于来啦！",
+      "threshold_days": 1,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 1,
+        "col": 1
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "login_day_03",
+      "file": "assets/fox/stickers/02_login_day_03.png",
+      "category": "login",
+      "name_zh": "连续登录第3天",
+      "caption_zh": "三天！阿狐要飘了！",
+      "threshold_days": 3,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 1,
+        "col": 2
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "login_day_07",
+      "file": "assets/fox/stickers/03_login_day_07.png",
+      "category": "login",
+      "name_zh": "连续登录第7天",
+      "caption_zh": "连续七天！我疯啦！",
+      "threshold_days": 7,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 1,
+        "col": 3
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "login_day_30",
+      "file": "assets/fox/stickers/04_login_day_30.png",
+      "category": "login",
+      "name_zh": "连续登录第30天",
+      "caption_zh": "三十天！给朕鼓掌！",
+      "threshold_days": 30,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 1,
+        "col": 4
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_01",
+      "file": "assets/fox/stickers/05_miss_day_01.png",
+      "category": "missed",
+      "name_zh": "未登录第1天",
+      "caption_zh": "你昨天去哪儿了？",
+      "threshold_days": 1,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 1,
+        "col": 5
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_02",
+      "file": "assets/fox/stickers/06_miss_day_02.png",
+      "category": "missed",
+      "name_zh": "未登录第2天",
+      "caption_zh": "我是不是被卸载了？",
+      "threshold_days": 2,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 2,
+        "col": 1
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_03",
+      "file": "assets/fox/stickers/07_miss_day_03.png",
+      "category": "missed",
+      "name_zh": "未登录第3天",
+      "caption_zh": "我芽都等蔫了！",
+      "threshold_days": 3,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 3,
+        "col": 1
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_07",
+      "file": "assets/fox/stickers/08_miss_day_07.png",
+      "category": "missed",
+      "name_zh": "未登录第7天",
+      "caption_zh": "七天了！整整七天！",
+      "threshold_days": 7,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 2,
+        "col": 3
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_15",
+      "file": "assets/fox/stickers/09_miss_day_15.png",
+      "category": "missed",
+      "name_zh": "未登录第15天",
+      "caption_zh": "终于想起我了？",
+      "threshold_days": 15,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 3,
+        "col": 4
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "miss_day_30",
+      "file": "assets/fox/stickers/10_miss_day_30.png",
+      "category": "missed",
+      "name_zh": "未登录第30天",
+      "caption_zh": "我等到融化了！",
+      "threshold_days": 30,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 3,
+        "col": 5
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "random_stare",
+      "file": "assets/fox/stickers/11_random_stare.png",
+      "category": "random",
+      "name_zh": "死亡凝视狐",
+      "caption_zh": "我就静静看着你。",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 2,
+        "col": 5
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "random_sarcasm",
+      "file": "assets/fox/stickers/12_random_sarcasm.png",
+      "category": "random",
+      "name_zh": "阴阳怪气狐",
+      "caption_zh": "哟，稀客呀～",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 4,
+        "col": 1
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "random_chaos",
+      "file": "assets/fox/stickers/13_random_chaos.png",
+      "category": "random",
+      "name_zh": "精神错乱狐",
+      "caption_zh": "哈哈哈哈……哈？",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 2,
+        "col": 4
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "random_study",
+      "file": "assets/fox/stickers/14_random_study.png",
+      "category": "random",
+      "name_zh": "监督学习狐",
+      "caption_zh": "书呢？打开！",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 2,
+        "col": 2
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "hidden_school",
+      "file": "assets/fox/stickers/15_hidden_school.png",
+      "category": "hidden",
+      "name_zh": "开学发疯狐",
+      "caption_zh": "怎么又开学了啊啊啊！",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 3,
+        "col": 3
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "hidden_exam",
+      "file": "assets/fox/stickers/16_hidden_exam.png",
+      "category": "hidden",
+      "name_zh": "期末渡劫狐",
+      "caption_zh": "知识它不进脑子啊！",
+      "threshold_days": null,
+      "status": "first_batch",
+      "source_grid": {
+        "row": 4,
+        "col": 4
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "bonus_side_eye",
+      "file": "assets/fox/stickers/17_bonus_side_eye.png",
+      "category": "bonus",
+      "name_zh": "侧目狐",
+      "caption_zh": "真的？",
+      "threshold_days": null,
+      "status": "extra",
+      "source_grid": {
+        "row": 3,
+        "col": 2
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "bonus_laugh",
+      "file": "assets/fox/stickers/18_bonus_laugh.png",
+      "category": "bonus",
+      "name_zh": "喜极而泣狐",
+      "caption_zh": "笑死我了！",
+      "threshold_days": null,
+      "status": "extra",
+      "source_grid": {
+        "row": 4,
+        "col": 2
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "bonus_panic",
+      "file": "assets/fox/stickers/19_bonus_panic.png",
+      "category": "bonus",
+      "name_zh": "震惊狐",
+      "caption_zh": "什么？！",
+      "threshold_days": null,
+      "status": "extra",
+      "source_grid": {
+        "row": 4,
+        "col": 3
+      },
+      "px": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "bonus_unimpressed",
+      "file": "assets/fox/stickers/20_bonus_unimpressed.png",
+      "category": "bonus",
+      "name_zh": "冷淡狐",
+      "caption_zh": "就这？",
+      "threshold_days": null,
+      "status": "extra",
+      "source_grid": {
+        "row": 4,
+        "col": 5
+      },
+      "px": [
+        512,
+        512
+      ]
+    }
+  ]
+}

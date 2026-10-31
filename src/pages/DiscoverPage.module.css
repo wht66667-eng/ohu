@@ -1,0 +1,162 @@
+.page {
+  min-height: 100vh;
+  background: var(--page-mid);
+  padding-bottom: 88px;
+}
+
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 20px 22px;
+  background: linear-gradient(125deg, #e5f2df, #fff8eb 78%);
+  border-radius: 0 0 28px 28px;
+}
+.header > svg { width: 74px; height: 74px; object-fit: contain; flex: none; }
+.eyebrow { color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: .15em; }
+.header p { margin: 5px 0 0; font-size: 13px; color: var(--text-2); }
+
+
+.header h1 {
+  margin: 4px 0 0;
+  font-size: clamp(22px, 6vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--green);
+}
+
+
+.main {
+  padding: 16px;
+}
+
+.cardGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fffdf7;
+  border-radius: 22px;
+  text-decoration: none;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--warm-line);
+  position: relative;
+  overflow: hidden;
+}
+
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 50%);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+
+.card:active {
+  transform: scale(0.98);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card:active::before {
+  opacity: 1;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardIcon svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardContent h3 {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: -0.01em;
+}
+
+
+.cardContent p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+
+
+.arrow {
+  flex-shrink: 0;
+  color: var(--text-2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+.card:active .arrow {
+  transform: translateX(4px);
+  color: var(--text-2);
+}
+
+
+@media (max-width: 375px) {
+  .header {
+    padding: 10px 16px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .main {
+    padding: 12px;
+  }
+  
+  .card {
+    padding: 14px;
+    gap: 14px;
+  }
+  
+  .cardIcon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .cardContent h3 {
+    font-size: 16px;
+  }
+  
+  .cardContent p {
+    font-size: 13px;
+  }
+}

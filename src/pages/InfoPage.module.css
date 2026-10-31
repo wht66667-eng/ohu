@@ -1,0 +1,8 @@
+.page { min-width: 0; }
+.publishAction { min-height: 40px; padding: 0 14px; border: 0; border-radius: 14px; background: var(--green); color: var(--on-primary); font: inherit; font-weight: 700; cursor: pointer; }
+.located { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 16px 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--green-soft); color: var(--green-text); font-size: 13px; line-height: 1.5; }
+.located button { min-height: 44px; min-width: 44px; border: 0; padding: 8px; background: transparent; color: var(--green-text); font: inherit; font-weight: 650; cursor: pointer; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.recordStatus { margin-left: 8px; color: var(--text-3); font-size: 12px; line-height: 1.5; }
+.actions button { min-height: 44px; min-width: 44px; padding: 8px; }
+.located button:focus-visible, .actions button:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }

@@ -1,0 +1,99 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.sunshinecampus.app"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.sunshinecampus.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        // 两端（学生端 / 管理端）共用 versionCode / versionName，保证同步更新
+        versionCode 145
+        versionName "1.2.145"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // 默认只打 arm64，体积更小（参考酱海带分 ABI 包；老机需另出 armeabi-v7a）
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    buildFeatures {
+        buildConfig true
+    }
+    flavorDimensions "shell"
+    productFlavors {
+        // 2026-10 功能缩减：仅保留学生端与管理端（交易链 / 骑手 / 小店 / 档口已下线）
+        user {
+            dimension "shell"
+            applicationId "com.sunshinecampus.app"
+            resValue "string", "app_name", "哦狐"
+            resValue "string", "title_activity_main", "哦狐"
+            buildConfigField "String", "SC_SHELL", "\"user\""
+        }
+        admin {
+            dimension "shell"
+            applicationId "com.sunshinecampus.admin"
+            resValue "string", "app_name", "哦狐·管理"
+            resValue "string", "title_activity_main", "哦狐·管理"
+            buildConfigField "String", "SC_SHELL", "\"admin\""
+        }
+    }
+    signingConfigs {
+        release {
+            def ks = file('../keystore/sunshine-release.jks')
+            if (ks.exists()) {
+                storeFile ks
+                storePassword System.getenv('SUNSHINE_STORE_PASSWORD')
+                keyAlias 'sunshine'
+                keyPassword System.getenv('SUNSHINE_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation "androidx.work:work-runtime:2.9.1"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

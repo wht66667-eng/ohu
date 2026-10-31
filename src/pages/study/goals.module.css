@@ -1,0 +1,54 @@
+.page { min-height: 100%; color: var(--text); background: var(--page-mid); }
+.content { display: grid; gap: 16px; padding: 16px 16px calc(112px + var(--safe-bottom, 0px)); }
+.intro { display: flex; align-items: center; gap: 14px; }
+.intro > div { flex: 1; min-width: 0; }
+.eyebrow { color: var(--green-text); font-size: 12px; font-weight: 600; }
+.intro h2 { margin: 8px 0; font-size: 21px; line-height: 1.5; font-weight: 750; }
+.intro p, .storageNote { margin: 0; color: var(--text-3); font-size: 12px; line-height: 1.7; }
+.introLeaf { flex: none; width: 62px; height: 62px; }
+.introLeaf svg { width: 100%; height: 100%; }
+.summary { display: flex; align-items: center; padding: 18px; border: 1px solid var(--line); background: var(--card); border-radius: var(--radius-lg); gap: 18px; }
+.summary > div { flex: 1; display: grid; gap: 8px; }
+.summary span { color: var(--text-3); font-size: 12px; }
+.summary strong { font-family: var(--display); font-size: 27px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.summary > a { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border-radius: 16px; background: var(--green-soft); color: var(--green-text); text-decoration: none; font-size: 13px; }
+.tabs { display: flex; gap: 10px; }
+.tabs button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--text-3); font: inherit; font-size: 13px; cursor: pointer; }
+.tabs button[aria-pressed='true'] { color: var(--green-text); background: var(--mint); border-color: var(--green); font-weight: 650; }
+.notice { margin: 0; color: var(--green-text); font-size: 13px; line-height: 1.5; }
+.notice:empty { display: none; }
+.error { margin: 0; color: var(--danger, var(--price)); font-size: 13px; line-height: 1.6; }
+.wall { display: grid; gap: 16px; }
+.goal { min-width: 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); box-shadow: var(--shadow); }
+.goalTop { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: -6px; }
+.goalLabel { color: var(--green-text); font-size: 12px; font-weight: 650; }
+.goal h3 { margin: 4px 0 8px; font-size: 18px; line-height: 1.5; overflow-wrap: anywhere; }
+.goal > p { margin: 0 0 14px; color: var(--text-2); font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.date { display: block; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.date time { margin-left: 8px; }
+.goalActions { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--line); }
+.encourage, .complete { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px; background: transparent; border: 0; border-radius: 12px; color: var(--text-3); font: inherit; font-size: 12px; cursor: pointer; }
+.encourage[aria-pressed='true'] { background: var(--green-soft); color: var(--green-text); }
+.complete { color: var(--green-text); }
+.empty { padding: 24px 18px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.form textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--page-mid); color: var(--text); font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
+.form textarea:focus-visible, .page button:focus-visible, .page a:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+:global([data-ui-variant='cute']) .page { background: radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--fox-orange) 9%, transparent), transparent 40%), var(--page-mid); }
+:global([data-ui-variant='cute']) .goal { position: relative; border-radius: 8px 28px 8px 28px; background: color-mix(in srgb, var(--card) 92%, var(--fox-belly, #fff0dc)); border-color: color-mix(in srgb, var(--fox-orange) 18%, var(--line)); padding-top: 18px; }
+:global([data-ui-variant='cute']) .goal::before { content: ''; position: absolute; width: 20px; height: 11px; border-radius: 50% 2px 50% 2px; top: -5px; left: 20px; background: var(--leaf); rotate: -25deg; pointer-events: none; }
+:global([data-ui-variant='cute']) .goal:nth-child(even) { border-radius: 28px 8px 28px 8px; background: color-mix(in srgb, var(--card) 94%, var(--leaf)); }
+:global([data-ui-variant='cute']) .goalDone { border-color: color-mix(in srgb, var(--green) 30%, var(--line)); }
+:global([data-ui-variant='cute']) .encourage { padding-inline: 10px; border-radius: 999px; background: var(--fox-paw, #ffe4c7); color: var(--green-text); }
+:global([data-ui-variant='cute']) .encourage[aria-pressed='true'] { background: var(--green); color: var(--on-primary); }
+:global([data-ui-variant='cute']) .tabs button[aria-pressed='true'] { background: linear-gradient(110deg, var(--mint), color-mix(in srgb, var(--fox-orange) 10%, var(--mint))); }
+:global([data-ui-variant='minimal']) .content { padding-top: 24px; gap: 22px; }
+:global([data-ui-variant='minimal']) .intro h2 { font-size: 26px; margin-block: 12px; }
+:global([data-ui-variant='minimal']) .eyebrow { color: var(--text-3); letter-spacing: .06em; font-weight: 500; }
+:global([data-ui-variant='minimal']) .summary { padding-inline: 0; border: 0; background: transparent; }
+:global([data-ui-variant='minimal']) .summary strong { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+:global([data-ui-variant='minimal']) .tabs button { border-radius: 16px; border-color: transparent; background: var(--mint); }
+:global([data-ui-variant='minimal']) .tabs button[aria-pressed='true'] { background: var(--green-soft); }
+:global([data-ui-variant='minimal']) .goal { border-radius: 20px; padding: 20px; box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .goal h3 { font-size: 19px; margin-bottom: 12px; }
+:global([data-ui-variant='minimal']) .goalLabel { color: var(--text-3); font-weight: 500; }
+@media (max-width: 350px) { .goal { padding-inline: 14px; } .goalActions { flex-wrap: wrap; justify-content: flex-start; } .summary { gap: 12px; } .summary > a { padding-inline: 8px; } }

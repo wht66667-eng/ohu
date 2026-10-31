@@ -1,0 +1,62 @@
+import { cbAuth } from './cb'
+import { API_BASE } from './gateway'
+
+export type AgnesFeature = 'chat' | 'study-plan' | 'material-summary' | 'material-points' | 'material-quiz' | 'assignment-breakdown' | 'exam-plan' | 'vocab-explain' | 'schedule-change' | 'schedule-image'
+export class AgnesAiError extends Error {
+  code: string
+  constructor(message: string, code: string) { super(message); this.name = 'AgnesAiError'; this.code = code }
+}
+
+async function accessToken(): Promise<string> {
+  const auth = cbAuth() as unknown as { getAccessToken?: () => unknown }
+  const raw = await auth.getAccessToken?.()
+  const value = typeof raw === 'string' ? raw : (raw as { accessToken?: string; token?: string } | null)?.accessToken || (raw as { token?: string } | null)?.token
+  if (!value || typeof value !== 'string') throw new AgnesAiError('请先登录哦狐账号，再使用 AI 功能。', 'AUTH_REQUIRED')
+  return value
+}
+
+export async function requestAgnes(feature: AgnesFeature, input: string, signal?: AbortSignal, imageDataUrl?: string): Promise<string> {
+  const text = input.trim()
+  if (!text) throw new AgnesAiError('先输入问题或学习资料。', 'EMPTY_INPUT')
+  if (text.length > 10000) throw new AgnesAiError('内容最多 10000 字，请删减后重试。', 'INPUT_TOO_LARGE')
+  if (feature === 'schedule-image' && (!imageDataUrl || imageDataUrl.length > 1_500_000 || !/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(imageDataUrl))) {
+    throw new AgnesAiError('课表图片格式不支持或文件过大，请换一张清晰图片后重试。', 'INVALID_IMAGE')
+  }
+  if (feature !== 'schedule-image' && imageDataUrl) throw new AgnesAiError('当前 AI 功能不支持附带图片。', 'INVALID_IMAGE')
+  if (signal?.aborted) throw new AgnesAiError('本次 AI 请求已取消。', 'ABORTED')
+  const controller = new AbortController()
+  const abort = () => controller.abort()
+  signal?.addEventListener('abort', abort, { once: true })
+  const timer = setTimeout(abort, 50000)
+  try {
+    const token = await accessToken()
+    if (signal?.aborted) throw new AgnesAiError('本次 AI 请求已取消。', 'ABORTED')
+    const response = await fetch(`${API_BASE}/api/agnes`, {
+      method: 'POST', signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ feature, input: text, ...(imageDataUrl ? { imageDataUrl } : {}) }),
+    })
+    const body = await response.text().catch(() => '')
+    let result: unknown = null
+    try { result = body && body.length <= 256_000 ? JSON.parse(body) : null } catch { /* Gateways may return a non-JSON error page. */ }
+    const data = result as { ok?: boolean; answer?: unknown; message?: unknown; code?: unknown } | null
+    const emptyAnswer = response.ok && data?.ok === true
+      && typeof data.answer === 'string' && !data.answer.trim()
+    if (!response.ok || data?.ok !== true || typeof data.answer !== 'string' || emptyAnswer) {
+      const missingRoute = response.status === 404
+      throw new AgnesAiError(
+        typeof data?.message === 'string' ? data.message : emptyAnswer ? 'AI 暂未返回可用内容，请重试。' : missingRoute ? 'AI 服务入口暂时不可用，请稍后重试。' : 'AI 服务暂时无法连接，请稍后重试。',
+        typeof data?.code === 'string' ? data.code : emptyAnswer ? 'EMPTY_RESPONSE' : missingRoute ? 'ROUTE_UNAVAILABLE' : 'UNAVAILABLE',
+      )
+    }
+    return data.answer.trim()
+  } catch (error) {
+    if (error instanceof AgnesAiError) throw error
+    if (signal?.aborted) throw new AgnesAiError('本次 AI 请求已取消。', 'ABORTED')
+    if (controller.signal.aborted) throw new AgnesAiError('等待时间较长，请重试。', 'TIMEOUT')
+    throw new AgnesAiError('网络暂时不稳定，请稍后重试。', 'NETWORK')
+  } finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', abort)
+  }
+}

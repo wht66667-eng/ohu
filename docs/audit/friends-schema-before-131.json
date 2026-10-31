@@ -1,0 +1,314 @@
+{
+  "captured_at": "2026-10-22T05:15:43.588Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "source": "docs/sql/friends-authorization-131.sql",
+  "source_sha256": "b0fe39b1ac2d0d105d407aee6bb5840db35d66c5da0152fb95c0193ff43908a3",
+  "scope": "Catalog SELECT only; no personal business rows, end-user authentication, business writes or RPCs.",
+  "request_ids": [
+    "5b0e4189-9f9d-4251-983a-1e0b9615f0a3",
+    "ed3376ae-0fa1-4b86-a967-53a571688f9a",
+    "7910d0af-b900-4425-9636-a0b88230a053",
+    "4c96cff6-75bd-4c92-bf00-53dddf36c278",
+    "667b8f8d-7207-4ee3-857b-54fe6e0fe113",
+    "9ff3c130-4c1e-4e6e-8d91-75538c68ef61",
+    "c865cb9f-5c68-444c-8d6d-6fdca3408bc4",
+    "80b6aff4-672a-4eb1-b74c-3f4b1e3db50d",
+    "8e612691-cbcd-4caf-9f8e-0b4d183d12cf"
+  ],
+  "context": [
+    {
+      "current_user": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "session_user": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "version": "PostgreSQL 17.10 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.0, 64-bit",
+      "client_schema_create": "false",
+      "client_bypass_rls": "false"
+    }
+  ],
+  "tables": [
+    {
+      "relname": "friend_requests",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "rls": "true",
+      "force_rls": "false"
+    },
+    {
+      "relname": "friends",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "rls": "true",
+      "force_rls": "false"
+    }
+  ],
+  "privileges": [
+    {
+      "name": "friend_requests",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_update": "false",
+      "can_delete": "false",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    },
+    {
+      "name": "friend_requests",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_update": "true",
+      "can_delete": "true",
+      "can_trigger": "true",
+      "can_truncate": "true"
+    },
+    {
+      "name": "friends",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_update": "false",
+      "can_delete": "false",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    },
+    {
+      "name": "friends",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_update": "true",
+      "can_delete": "true",
+      "can_trigger": "true",
+      "can_truncate": "true"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_insert_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(from_uid = auth.uid())"
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((from_uid = auth.uid()) OR (to_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_update_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "(to_uid = auth.uid())",
+      "with_check": "(to_uid = auth.uid())"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_delete_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_insert_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_uid = auth.uid())"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "moments",
+      "policyname": "moments_select_visible",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((creator_uid = auth.uid()) OR (visibility = 'public'::text) OR ((visibility = 'friends_only'::text) AND (EXISTS ( SELECT 1\n   FROM friends f\n  WHERE (((f.user_uid = auth.uid()) AND (f.friend_uid = moments.creator_uid)) OR ((f.friend_uid = auth.uid()) AND (f.user_uid = moments.creator_uid))))) AND (EXISTS ( SELECT 1\n   FROM friend_requests r\n  WHERE ((r.status = 'accepted'::text) AND (((r.from_uid = auth.uid()) AND (r.to_uid = moments.creator_uid)) OR ((r.to_uid = auth.uid()) AND (r.from_uid = moments.creator_uid))))))))",
+      "with_check": null
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "friend_requests",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('friend_requests_id_seq'::regclass)"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "to_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'pending'::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "message",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('friends_id_seq'::regclass)"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "user_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "remark",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "friend_requests",
+      "conname": "friend_requests_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "friend_requests",
+      "conname": "friend_requests_status_check",
+      "contype": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'rejected'::text])))"
+    },
+    {
+      "table_name": "friends",
+      "conname": "friends_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_from",
+      "indexdef": "CREATE INDEX friend_requests_from ON public.friend_requests USING btree (from_uid, id DESC)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_pending_pair",
+      "indexdef": "CREATE UNIQUE INDEX friend_requests_pending_pair ON public.friend_requests USING btree (from_uid, to_uid) WHERE (status = 'pending'::text)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_pkey",
+      "indexdef": "CREATE UNIQUE INDEX friend_requests_pkey ON public.friend_requests USING btree (id)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_to",
+      "indexdef": "CREATE INDEX friend_requests_to ON public.friend_requests USING btree (to_uid, status, id DESC)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_pair",
+      "indexdef": "CREATE UNIQUE INDEX friends_pair ON public.friends USING btree (user_uid, friend_uid)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_pkey",
+      "indexdef": "CREATE UNIQUE INDEX friends_pkey ON public.friends USING btree (id)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_uid",
+      "indexdef": "CREATE INDEX friends_uid ON public.friends USING btree (user_uid, id DESC)"
+    }
+  ],
+  "triggers": [],
+  "functions": []
+}

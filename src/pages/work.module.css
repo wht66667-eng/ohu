@@ -1,0 +1,1549 @@
+/* ---------- 管理端工作台与审核台共用样式 ---------- */
+
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  color: var(--text);
+  padding-bottom: 20px;
+}
+
+.wrap {
+  padding: 0 16px;
+}
+
+.secTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 14px 0 8px;
+}
+
+.secTitle em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* ---------- 参数卡 ---------- */
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.kpis4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.kpi {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 11px 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi b {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--green-text);
+  line-height: 1.1;
+}
+
+.kpi b i {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-left: 2px;
+}
+
+.kpi span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.kpiPrice b {
+  color: var(--price);
+}
+
+/* ---------- 卡片 ---------- */
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.cardHead b {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cardEmoji {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--mint);
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* ---------- 分段控制 ---------- */
+
+.seg {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 10px;
+  scrollbar-width: none;
+}
+
+.seg::-webkit-scrollbar {
+  display: none;
+}
+
+.segBtn {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.segBtn:active {
+  transform: scale(0.96);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.segOn {
+  background: var(--green);
+  color: var(--on-primary);
+}
+
+.segBadge {
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* ---------- 按钮 ---------- */
+
+.btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btn:active {
+  transform: scale(0.97);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnP {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-hot) 100%);
+  color: var(--on-primary);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--green) 26%, transparent);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnG {
+  background: var(--green-soft);
+  color: var(--green-text);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnB {
+  background: var(--service-blue);
+  color: var(--service-blue-ink);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnD {
+  background: var(--danger-soft);
+  color: var(--danger);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnN {
+  background: var(--mint);
+  color: var(--text-2);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnBlk {
+  flex: 1;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnSm {
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12px;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btnRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+
+  min-height: 44px; min-width: 44px;
+}
+
+/* ---------- 空态 / 引导 ---------- */
+
+.empty {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 26px 16px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.empty b {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-2);
+}
+
+.empty span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.gate {
+  margin: 20px 16px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.gateIc {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  border-radius: 20px;
+  background: var(--green-soft);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+.gate b {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.gate p {
+  margin: 8px 0 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+.loading {
+  padding: 22px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---------- 列表行 ---------- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.rowGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowGrow b {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rowGrow span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+  padding: 2px 0 10px;
+}
+
+.pill {
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  background: var(--mint);
+  color: var(--text-3);
+}
+
+.pillOk {
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.pillWarn {
+  background: var(--service-amber);
+  color: var(--orange);
+}
+
+.pillBad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.pillOff {
+  background: var(--mint);
+  color: var(--text-3);
+}
+
+/* ---------- 开关行 ---------- */
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switchRow .rowGrow b {
+  font-size: 14px;
+}
+
+.switch {
+  flex-shrink: 0;
+  width: 50px;
+  height: 29px;
+  border-radius: 999px;
+  background: var(--line);
+  padding: 3px;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.switchOn {
+  background: var(--green);
+}
+
+.switch i {
+  display: block;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.switchOn i {
+  transform: translateX(21px);
+}
+
+/* ---------- 弹层 ---------- */
+
+.mask {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  max-height: 86%;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 22px 22px 0 0;
+  padding: 14px 16px 22px;
+  animation: workSheetUp 0.24s ease;
+  scrollbar-width: none;
+}
+
+.sheet::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes workSheetUp {
+  from {
+    transform: translateY(22px);
+    opacity: 0.5;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--line);
+  margin: 0 auto 12px;
+}
+
+.sheetTitle {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.field > label em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+
+.input,
+.area {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.area {
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: none;
+}
+
+.input:focus,
+.area:focus {
+  border-color: var(--green);
+  background: var(--card);
+}
+
+.input::placeholder,
+.area::placeholder {
+  color: var(--text-3);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.err {
+  font-size: 12px;
+  color: var(--danger);
+  margin: -4px 0 10px;
+}
+
+.preview {
+  font-size: 12px;
+  color: var(--green-text);
+  background: var(--mint);
+  border-radius: 10px;
+  padding: 7px 10px;
+  margin-bottom: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+  .btn,
+  .segBtn,
+  .switch,
+  .switch i {
+    transition: transform .16s ease, opacity .16s ease;
+  
+  min-height: 44px; min-width: 44px;
+}
+}
+
+/* ---------- 钱包：余额主卡 ---------- */
+
+.walletCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  padding: 15px 16px 16px;
+  margin-bottom: 12px;
+  color: var(--on-primary);
+  background: linear-gradient(135deg, var(--green-hot) 0%, var(--green-deep) 100%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--green-deep) 26%, transparent);
+}
+
+.walletCard::after,
+.walletCard::before {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.walletCard::after {
+  width: 136px;
+  height: 136px;
+  right: -40px;
+  top: -50px;
+}
+
+.walletCard::before {
+  width: 92px;
+  height: 92px;
+  right: 30px;
+  bottom: -54px;
+}
+
+.walletHead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  opacity: 0.95;
+}
+
+.walletHead em {
+  font-style: normal;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.walletAmount {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  margin: 9px 0 1px;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.walletAmount i {
+  font-style: normal;
+  font-size: 17px;
+  font-weight: 700;
+  margin-right: 2px;
+  opacity: 0.92;
+}
+
+/* 数据刷新时的一次性淡入上移，遵循 prefers-reduced-motion 降级 */
+.walletAmountFresh {
+  animation: walletRise 0.2s ease;
+}
+
+@keyframes walletRise {
+  from {
+    transform: translateY(5px);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.walletMeta {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  margin-top: 9px;
+  font-size: 12px;
+}
+
+.walletMeta span {
+  opacity: 0.85;
+}
+
+.walletMeta b {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.walletActions {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.walletActions button {
+  flex: 1;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--card);
+  color: var(--green-text);
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.walletActions button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.walletActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--green-text);
+}
+
+.walletActions .walletGhost {
+  flex: 0 0 96px;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--on-primary);
+}
+
+/* ---------- 钱包：流水与提现记录 ---------- */
+
+.walletSegWrap {
+  margin-bottom: 12px;
+}
+
+.dateGroupLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  padding: 10px 2px 6px;
+}
+
+.ledgeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledgeRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ledgeIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: var(--mint);
+}
+
+.ledgeGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.ledgeGrow b {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ledgeGrow span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ledgeAmt {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.amtIn {
+  color: var(--green-text);
+}
+
+.amtOut {
+  color: var(--price);
+}
+
+.amtFee {
+  color: var(--text-3);
+}
+
+.wdStatus {
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+}
+
+.stWarn {
+  background: color-mix(in srgb, var(--orange) 14%, var(--card));
+  color: var(--orange);
+}
+
+.stOk {
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.stBad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.wdReply {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--danger);
+  line-height: 1.5;
+}
+
+.moneyNum {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+}
+
+/* ---------- 提现弹层 ---------- */
+
+.wdSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: var(--mint);
+  border-radius: 14px;
+  padding: 11px 13px;
+  margin-bottom: 14px;
+}
+
+.wdSummary span {
+  display: block;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.wdSummary b {
+  display: block;
+  margin-top: 3px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.wdSummaryMuted {
+  color: var(--text-2) !important;
+}
+
+.wdQuick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.wdQuick button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wdQuick button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wdQuick em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+.wdTip {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+}
+
+/* ---------- 营业时间弹层 ---------- */
+
+.hourPresets {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+
+.hourPresets::-webkit-scrollbar {
+  display: none;
+}
+
+.hourPresets button {
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hourRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.hourDay {
+  flex: 0 0 74px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+
+.hourTime {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.hourDash {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.hourDel {
+  flex: 0 0 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.hourAdd {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px dashed var(--leaf);
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.hourAdd:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hourPreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--mint);
+  border-radius: 12px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.hourPreview span {
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+.hourPreview b {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--green-text);
+  line-height: 1.45;
+}
+
+/* ---------- 平台强制打烊告警条 ---------- */
+
+.topBanner {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--orange) 12%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--orange) 32%, var(--line));
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--orange);
+}
+
+.topBanner b {
+  display: block;
+  color: var(--orange);
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+/* ---------- 后台财务台 ---------- */
+
+.finCount {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: var(--on-primary);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.finCard {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.finHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.finHead b {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.finHead em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.finAmt {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--price);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 8px;
+}
+
+.copyField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.copyField span {
+  flex-shrink: 0;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.copyField b {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.copyField button {
+  flex-shrink: 0;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rateRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.rateInputWrap {
+  position: relative;
+}
+
+.rateInputWrap i {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.rateHint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--green-text);
+  background: var(--mint);
+  border-radius: 12px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.statBox {
+  background: var(--mint);
+  border-radius: 13px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.statBox b {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statBox span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.plainRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.plainRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.plainRowGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.plainRowGrow b {
+  display: block;
+  font-size: 13px;
+}
+
+.plainRowGrow span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.textBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-text);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.textBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 通知中心 ---------- */
+
+.notifyItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  width: 100%;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.notifyItem:active {
+  transform: scale(0.99);
+}
+
+.notifyItemUnread {
+  background: linear-gradient(180deg, var(--green-soft) 0%, var(--card) 68%);
+  border-left: 3px solid var(--green);
+}
+
+.notifyIc {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  background: var(--mint);
+}
+
+.notifyGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.notifyGrow b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.notifyGrow p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-2);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.notifyTime {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.notifyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  flex-shrink: 0;
+}
+
+.notifyHistoryNote,
+.notifyHistoryEnd {
+  padding: 8px 4px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.notifyHistoryEnd {
+  padding-bottom: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walletAmountFresh,
+  .notifyItem {
+    animation: none;
+    transition: transform .16s ease, opacity .16s ease;
+  }
+  .walletActions button {
+    transition: transform .16s ease, opacity .16s ease;
+  }
+}
+
+/* ---------- 小店工作台（紫罗兰子主题，与食堂绿色系区分） ---------- */
+
+.shopCover {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 132px;
+  font-size: 12.5px;
+  color: var(--ink-2, var(--text-2));
+  background: var(--mint) center/cover no-repeat;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.shopCover:hover:not(:disabled) {
+  border-color: var(--vi, var(--green));
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--green) 14%, transparent);
+}
+
+.shopCover:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.shopLogoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+}
+
+.shopLogo {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  color: var(--on-primary);
+  background: linear-gradient(135deg, var(--vi, var(--green)), var(--vi-2, var(--green-hot))) center/cover no-repeat;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.shopLogo:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.shopLogoHint {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2, var(--text-2));
+}
+
+.shopLogoHint b {
+  font-size: 13px;
+  color: var(--ink, var(--text));
+}
+
+.shopEmoji {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 38px;
+  font-size: 18px;
+  text-align: center;
+  color: var(--ink, var(--text));
+  background: var(--page-mid);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.shopEmoji:focus {
+  border-color: var(--vi, var(--green));
+  background: var(--card);
+}
+
+.shopReq {
+  color: var(--danger);
+}
+
+.shopLabelNote {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-3, var(--text-3));
+}
+
+/* Shared campus canvas in both appearance modes. */
+.page { background: var(--page-mid); color: var(--text); }
+:root[data-theme='dark'] .page { background: var(--page-mid); color: var(--text); }
+
+/* Shared business controls and status semantics. */
+.btn, .segBtn { min-height: 44px; }
+.btnP { background: var(--green); color: var(--on-primary); box-shadow: none; 
+  min-height: 44px; min-width: 44px;
+}
+.segOn { color: var(--on-primary); }
+.field > label { color: var(--text-2); }
+.input { height: 48px; background: var(--card); font-size: 16px; }
+.area { font-size: 16px; background: var(--card); }
+.kpi b, .walletAmount { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+.walletCard { background: var(--green-deep); box-shadow: none; }
+.switch { height: 44px; width: 64px; display: flex; align-items: center; }
+.switch i { width: 26px; height: 26px; }
+.switchOn i { transform: translateX(32px); }
+
+/* ---------- 工作台顶部：待处理摘要（浅绿卡 + 绿色徽标，数字用 Nunito） ---------- */
+
+.todo {
+  margin: 12px 0 4px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--green-soft);
+}
+
+.todoHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.todoTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--green-text);
+  letter-spacing: 0.02em;
+}
+
+.todoBadge {
+  margin-left: auto;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.todoCell {
+  width: 100%;
+  display: block;
+  border: 0;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  padding: 11px 6px 10px;
+  text-align: center;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px;
+}
+
+.todoCell:active {
+  transform: scale(0.97);
+}
+
+.todoNum {
+  display: block;
+  font-family: var(--font-numeric);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 需要立即处理的待办用狐狸橙强调 */
+.todoNumHot {
+  color: var(--orange);
+}
+
+/* 数字为 0 时弱化，避免干扰 */
+.todoNumZero {
+  color: var(--text-3);
+}
+
+.todoLabel {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.todoHint {
+  margin: 10px 2px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .todoCell {
+    transition: none;
+  }
+}

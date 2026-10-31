@@ -1,0 +1,134 @@
+{
+  "at": "2026-10-23T09:39:15.320Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "mode": "audit",
+  "tables": [
+    {
+      "relname": "campus_link_opens",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_links",
+      "relrowsecurity": "true"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "link_id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "href",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "tag",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "stuid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "copied",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "opened_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "desc_text",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "href",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "tag",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "cred",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "link_group",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "campus_link_opens",
+      "policyname": "campus_link_opens_insert_own",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(uid = auth.uid())"
+    },
+    {
+      "tablename": "campus_link_opens",
+      "policyname": "campus_link_opens_select_own",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "(uid = auth.uid())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_links",
+      "policyname": "campus_links_select",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "proname": "is_admin_user",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_admin_user()\n RETURNS boolean\n LANGUAGE sql\n STABLE\nAS $function$ SELECT EXISTS (\n     SELECT 1 FROM public.profiles p\n     WHERE p.uid = auth.uid() AND p.is_admin\n   ) $function$\n"
+    }
+  ]
+}

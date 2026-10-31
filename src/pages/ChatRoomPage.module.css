@@ -1,0 +1,382 @@
+.page {
+  min-height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #eaf8d4 0%, #f6fbf0 100%);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px 8px;
+}
+
+.back {position: relative;
+  
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.who {
+  flex: 1;
+  min-width: 0;
+}
+
+.who b {
+  display: block;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.who span {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.topic {
+  margin: 0 14px 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.topicTag {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-ink);
+  font-size: 12px;
+}
+
+.topicTitle {
+  min-width: 0;
+  color: var(--green-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px 14px;
+}
+
+.newMessages {
+  flex-shrink: 0;
+  padding: 0 14px 4px;
+  text-align: center;
+}
+
+.newMessages button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.moreRow {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.moreBtn {position: relative;
+  
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid #d6ecc0;
+  color: var(--green-text);
+  font-size: 12px;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.row.me {
+  justify-content: flex-end;
+}
+
+.wrap {
+  max-width: 78%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.row.me .wrap {
+  align-items: flex-end;
+}
+
+.bubble {
+  background: var(--card);
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: var(--shadow-sm);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.row.me .bubble {
+  background: var(--green-soft);
+  color: var(--green-ink);
+  border-radius: 16px 16px 4px 16px;
+}
+
+.time {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.empty {
+  margin: 14px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composer { transition: none; }
+}
+
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 112px;
+  height: auto;
+  field-sizing: content;
+  border: 0;
+  outline: 0;
+  border-radius: 16px;
+  background: var(--card);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-sm);
+}
+
+.send {
+  flex-shrink: 0;
+  min-width: 58px;
+  height: 44px;
+  border-radius: 14px;
+  padding: 0 10px;
+  color: var(--on-primary);
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send:disabled {
+  opacity: 0.5;
+}
+
+.gate {
+  padding: 8px 12px 14px;
+  text-align: center;
+}
+
+.gate button {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 人性化：命中区扩到 44px（视觉尺寸不变） */
+.back::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+/* 图片气泡：内边距收窄，圆角跟随气泡 */
+.bubbleImg {
+  padding: 4px;
+}
+
+.bubbleImg img {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* 点图放大：全屏遮罩，点任意处关闭 */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(12, 20, 12, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.lightbox .previewClose {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: 16px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card, #fff);
+  color: var(--text, #1c2b1c);
+  font-size: 14px;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
+/* 表情面板：8 列网格，超出滚动 */
+.emojiPanel {
+  padding: 4px 12px 0;
+}
+
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 172px;
+  overflow: auto;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.emojiCell {
+  height: 38px;
+  font-size: 22px;
+  line-height: 1;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.emojiCell:active {
+  background: var(--green-soft);
+}
+
+/* 上传中提示 */
+.upHint {
+  margin: 0 14px 4px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* 输入框两侧的圆形图标按钮（表情 / 图片） */
+.iconBtn {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.iconBtn:disabled {
+  opacity: 0.5;
+}
+
+/* 人性化：命中区扩到 44px（视觉尺寸不变） */
+.iconBtn::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+}
+
+/* 人性化：命中区扩到 44px（视觉尺寸不变） */
+.moreBtn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+/* 乐观消息：发送中半透明、失败红边可点重试（视觉小按钮，命中区扩到 44px） */
+.pending .bubble {
+  opacity: 0.72;
+}
+
+.bubbleFailed {
+  border: 1px solid #e5b8b2;
+  background: #fdf3f1;
+  color: #a5493f;
+}
+
+.resend {
+  position: relative;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #e5b8b2;
+  background: #fdf3f1;
+  color: #b3564d;
+  font-size: 12px;
+}
+
+.resend::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+
+/* Shared campus canvas in both appearance modes. */
+.page { background: var(--page-mid); color: var(--text); }
+:root[data-theme='dark'] .page { background: var(--page-mid); color: var(--text); }

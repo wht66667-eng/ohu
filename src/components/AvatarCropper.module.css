@@ -1,0 +1,136 @@
+/* 头像裁剪弹层：拖动 + 双指缩放 + 滑杆兜底 */
+
+.mask {
+  position: fixed;
+  inset: 0;
+  /* 必须盖过 sheet.css 的 .sheet-mask(1000)：本弹层从「编辑资料/设置账号」抽屉里唤起，
+     若低于它会被抽屉整个压住——看得见、拖不了、按钮点不到（1.2.38 起的老病，2026-10-10 修）。
+     同时低于 .toaster(1200)，toast 仍能浮在裁剪层之上提示。 */
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--overlay, rgba(13, 28, 21, 0.4));
+  backdrop-filter: blur(2px);
+}
+
+.card {
+  width: min(88vw, 360px);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 16px;
+  border-radius: var(--radius-lg, 22px);
+  background: var(--card, #fff);
+  box-shadow: var(--shadow, 0 8px 24px rgba(30, 62, 46, 0.08));
+  display: grid;
+  gap: 10px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text, #1d3029);
+}
+
+.close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mint-2, #eef4ea);
+  color: var(--text-2, #445a50);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3, #5b6c63);
+}
+
+/* 取景框：正方形容器，react-easy-crop 自己在里面铺满并画圆形遮罩与网格 */
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--mint, #e8f3ed);
+  touch-action: none; /* 手势全归裁剪器，别让页面跟着滚 */
+}
+
+/* 库自己会注射 .reactEasyCrop_* 样式；这里只补触摸手感 */
+.stage > div {
+  cursor: grab;
+}
+
+.stage > div:active {
+  cursor: grabbing;
+}
+
+.zoomRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-3, #5b6c63);
+}
+
+.zoomRow span {
+  flex-shrink: 0;
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--green, #16735b);
+}
+
+.err {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger, #b83b3b);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ghost,
+.main {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 13px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ghost {
+  border: 1px solid var(--line, #dce5df);
+  background: var(--card, #fff);
+  color: var(--text-2, #445a50);
+}
+
+.main {
+  border: 0;
+  background: var(--green, #16735b);
+  color: #fff;
+}
+
+.main:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

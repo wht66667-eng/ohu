@@ -1,0 +1,48 @@
+{
+  "envId": "jou-d4gq7a3cqf51e6caa",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "campusAuth",
+      "timeout": 15,
+      "runtime": "Nodejs18.15",
+      "handler": "index.main",
+      "installDependency": true,
+      "memorySize": 256
+    },
+    {
+      "name": "docParse",
+      "timeout": 20,
+      "runtime": "Nodejs18.15",
+      "handler": "index.main",
+      "installDependency": true,
+      "memorySize": 256,
+      "envVariables": {
+        "TCB_ENV": "jou-d4gq7a3cqf51e6caa"
+      }
+    },
+    {
+      "name": "examGenerator",
+      "timeout": 60,
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "installDependency": true,
+      "memorySize": 512,
+      "envVariables": {
+        "TCB_ENV": "jou-d4gq7a3cqf51e6caa",
+        "FILE_EXAM_ENABLED": "false"
+      }
+    },
+    {
+      "name": "agnesAi",
+      "timeout": 60,
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "installDependency": true,
+      "memorySize": 256,
+      "envVariables": {
+        "TCB_ENV": "jou-d4gq7a3cqf51e6caa"
+      }
+    }
+  ]
+}

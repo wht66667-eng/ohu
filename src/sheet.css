@@ -1,0 +1,398 @@
+/* ============================================================
+ * 全局浮层：toast / 底部抽屉 / 登录注册 / 资料补全
+ * 与 campus-life-h5 的 DOM 结构保持一致（auth-ui.tsx 直接复用），
+ * 但配色换成原型稿的薄荷绿 + 奶黄，并改为绝对定位贴在手机画布内。
+ * ============================================================ */
+
+/* ---------- toast ---------- */
+.toaster {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 12px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(44, 58, 44, 0.92);
+  color: #fff;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(44, 58, 44, 0.25);
+  animation: toastIn 0.22s ease both;
+  max-width: 86%;
+  text-align: center;
+}
+
+.toast--ok {
+  background: rgba(47, 143, 42, 0.95);
+}
+
+.toast--err {
+  background: rgba(214, 69, 69, 0.95);
+}
+
+.toast--warn {
+  background: rgba(230, 145, 20, 0.95);
+}
+
+.toast.is-leave {
+  animation: toastOut 0.22s ease both;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+/* ---------- 底部抽屉 ---------- */
+.sheet-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(44, 58, 44, 0.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: cbMaskIn 0.18s ease both;
+}
+
+.sheet-card {
+  width: 100%;
+  max-height: 86%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--card);
+  border-radius: 26px 26px 0 0;
+  padding: 20px 18px calc(28px + var(--safe-bottom, 0px));
+  box-shadow: 0 -14px 40px color-mix(in srgb, var(--green-deep) 18%, transparent);
+  animation: cbSheetUp 0.24s ease both;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sheet-title {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--green-ink);
+}
+
+.sheet-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.sheet-close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.sheet-close:active {
+  transform: scale(0.94);
+}
+
+/* ---------- 登录 / 注册 ---------- */
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 16px;
+  background: var(--mint);
+  border-radius: 14px;
+}
+
+.auth-tab {
+  flex: 1;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.auth-tab--on {
+  background: var(--green);
+  color: var(--on-primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+}
+
+.af-field {
+  display: grid;
+  gap: 6px;
+}
+
+.af-field > span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.field-input {
+  width: 100%;
+  height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: var(--green);
+}
+
+.field-input::placeholder {
+  color: var(--text-3);
+}
+
+/* 密码输入 + 小眼睛切换明文 */
+.pwd-wrap {
+  position: relative;
+  display: block;
+}
+
+.pwd-wrap input {
+  padding-right: 44px;
+}
+
+.pwd-eye {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pwd-eye:active {
+  color: var(--green);
+}
+
+
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+
+.code-row .field-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.send-btn {
+  flex: none;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--sun);
+  color: var(--green-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.send-btn:disabled {
+  opacity: 0.55;
+}
+
+.auth-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.auth-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 4px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--green) 32%, transparent);
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--green) 30%, transparent);
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+}
+.auth-btn[aria-busy='true'], .send-btn[aria-busy='true'] { opacity: 1; cursor: wait; }
+
+.auth-err {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.auth-err:empty {
+  display: none;
+}
+
+/* 编辑资料：换头像 */
+.avatar-edit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar-pick {
+  position: relative;
+  flex: none;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff4c2;
+  border: 3px solid #fff;
+  box-shadow: var(--shadow-sm);
+  line-height: 0;
+}
+
+.avatar-pick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-pick-tip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 0;
+  background: rgba(44, 58, 44, 0.55);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.avatar-actions {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.avatar-actions button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.avatar-actions button:disabled {
+  opacity: 0.55;
+}
+
+.avatar-pick-tip-static {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+/* 「稍后再说」弱化按钮：不打乱主按钮的视觉层级 */
+.auth-later {
+  width: 100%;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-later:active:not(:disabled) {
+  background: var(--mint);
+}
+
+.auth-later:disabled {
+  opacity: 0.55;
+}
+
+@keyframes cbMaskIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes cbSheetUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+/* Touch and appearance defaults for legacy account forms. */
+.sheet-card { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.sheet-close, .auth-tab, .avatar-actions button, .auth-later { min-height: 44px; min-width: 44px; }
+.field-input { min-height: 48px; background: var(--card); font-size: 16px; }
+.auth-btn, .auth-tab--on { color: var(--on-primary); box-shadow: none; }
+.auth-err { color: var(--danger); }
+.avatar-pick-tip { font-size: 12px; }
+
+/* 登录页：记住账号复选框 + 底部文字链接（去注册 / 忘记密码） */
+.auth-remember { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.auth-remember input { flex: none; width: 16px; height: 16px; accent-color: var(--green); }
+.auth-footer { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; margin-top: 14px; font-size: 13px; line-height: 1.6; color: var(--text-3); }
+.auth-link { min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--green-text); font-size: 13px; font-weight: 650; }
+.auth-link:hover, .auth-link:active { text-decoration: underline; }
+.auth-dot { color: var(--text-3); opacity: .5; }

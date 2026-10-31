@@ -1,0 +1,50 @@
+.panel { margin-block: 18px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+.panel h3 { font-size: 16px; color: var(--text); }
+.panel p { font-size: 12px; line-height: 1.7; color: var(--text-3); margin: 8px 0 12px; }
+.choices { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.option { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.option button { width: 100%; min-height: 156px; padding: 10px; text-align: left; color: var(--text); }
+.option button:disabled { opacity: .65; }
+.option strong,.option small,.state { display: block; line-height: 1.6; }
+.option strong { font-size: 13px; }.option small { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+.option button[aria-pressed='true'] { background: var(--mint); box-shadow: inset 0 0 0 2px var(--green); border-radius: var(--radius); }
+.state { font-size: 11px; margin-top: 8px; font-weight: 650; color: var(--green-text); }
+.option a { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 44px; padding: 8px 10px; border-top: 1px solid var(--line); color: var(--green-text); font-size: 12px; }
+.preview { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; height: 44px; padding: 6px; border-radius: 10px; margin-bottom: 10px; background: var(--mint); }
+.preview i { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 5px; }
+.preview i:first-child { grid-column: 1/-1; background: var(--green); }
+.classic { background: linear-gradient(110deg,#e7f2e5,#fff1dd); }
+.classic i:first-child { background:#176e55; }
+.fox i:first-child { background: linear-gradient(100deg,var(--mint),var(--fox)); }
+.cute { background: color-mix(in srgb,var(--fox) 10%,var(--card)); border-radius: 14px; }
+.cute i { border-radius: 10px; }.cute i:first-child { background: var(--green); }
+.minimal { background: var(--page-mid); gap: 5px; }.minimal i { box-shadow: none; border-radius: 4px; }.minimal i:first-child { background: var(--card); border-left: 3px solid var(--green); }
+.import { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; border: 1px solid var(--green); border-radius: var(--radius); background: var(--mint); color: var(--green-text); font-size: 14px; font-weight: 650; cursor: pointer; }
+.import input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.import:focus-within { outline: 2px solid var(--green); outline-offset: 3px; }
+.busy { opacity: .55; cursor: wait; }
+.panel .message { min-height: 20px; margin-bottom: 0; color: var(--green-text); }
+.panel .note { font-size: 11px; }
+@media(max-width:350px) { .panel { padding: 12px; }.option button { padding: 8px; }.option strong { font-size: 12px; } }
+.option .quickInstall { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 10px; border-top: 1px solid var(--line); background: var(--mint); color: var(--green-text); font-size: 12px; font-weight: 650; }
+.option .quickInstall:disabled { background: transparent; color: var(--text-3); opacity: .8; }
+.immersive { background:linear-gradient(120deg,var(--mint),var(--fox-belly)); border:1px solid var(--warm-line); }
+.immersive i { border-radius:8px; }.immersive i:first-child { background:var(--green); border-radius:10px; }
+
+/* 无狐五皮肤预览卡：色块直接取自各皮肤令牌，不用角色图。 */
+.subhead { margin-top: 20px; }
+.pure { background: #f3f4f5; }
+.pure i { border-color: #dde0e5; border-radius: 4px; }
+.pure i:first-child { background: #676767; }
+.bloom { background: #fbf2ef; }
+.bloom i { border-color: #efd8d4; border-radius: 12px; }
+.bloom i:first-child { background: #a7445c; }
+.glass { background: #e9f0f9; }
+.glass i { border-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(74,110,153,.12); }
+.glass i:first-child { background: #a54819; }
+.meadow { background: #f2f4e8; }
+.meadow i { border-color: #cdd5bd; border-radius: 6px; }
+.meadow i:first-child { background: #245d43; }
+.night { background: #111924; }
+.night i { background: #1d2938; border-color: #354254; border-radius: 8px; }
+.night i:first-child { background: #e7b58a; }

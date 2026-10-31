@@ -1,0 +1,5 @@
+.navigation{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.navigation>b{font-size:14px}.modes{display:flex;gap:8px;margin:10px 0}
+.modes a{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--page-mid);color:var(--green-text);font-size:14px;text-decoration:none;font-weight:600}
+.modes a:hover{background:var(--card)}.modes a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.navigation p{font-size:12px;line-height:1.6;color:var(--text-2)}.navigation summary{font-size:12px;color:var(--text-2);cursor:pointer}

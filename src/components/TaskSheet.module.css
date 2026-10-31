@@ -1,0 +1,268 @@
+/* 发布任务弹层：与 RoleApplySheet 同一套 sheet 视觉，仅补校区选择与双列表单 */
+.mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 40, 20, 0.28);
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  max-height: 88%;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 22px 22px 0 0;
+  padding: 14px 16px 22px;
+  animation: taskSheetUp 0.24s ease;
+  scrollbar-width: none;
+}
+
+.sheet::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes taskSheetUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0.5;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--line);
+  margin: 0 auto 12px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.headIc {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: #ffe4cc;
+}
+
+.headTxt {
+  flex: 1;
+  min-width: 0;
+}
+
+.headTxt b {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.headTxt span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.field > label em {
+  font-style: normal;
+  color: var(--text-3);
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* 校区：三选一，等宽按钮，选中态高饱和，避免误触漏选 */
+.campusRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.campus {
+  height: 40px;
+  border-radius: 12px;
+  background: #f2f7ea;
+  border: 1px solid transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.campus:active {
+  transform: scale(0.97);
+}
+
+.campusOn {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green-text);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.input,
+.area {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #f7fbf0;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.area {
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: none;
+}
+
+.input:focus,
+.area:focus {
+  border-color: var(--green);
+  background: var(--card);
+}
+
+.input::placeholder,
+.area::placeholder {
+  color: #b7c3b3;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: #f2f7ea;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.chip:active {
+  transform: scale(0.96);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.chipOn {
+  background: var(--green);
+  color: var(--on-primary);
+}
+
+.preview {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+  background: var(--mint);
+  border-radius: 12px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+}
+
+.preview b {
+  color: var(--green-text);
+}
+
+.err {
+  font-size: 12px;
+  color: #ff5a5f;
+  margin: -2px 0 10px;
+}
+
+.acts {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancel,
+.submit {
+  height: 46px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cancel {
+  flex: 1;
+  background: #f3f5f0;
+  color: var(--text-2);
+}
+
+.submit {
+  flex: 1.7;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-hot) 100%);
+  color: var(--on-primary);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--green) 28%, transparent);
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.submit:active {
+  transform: scale(0.985);
+}
+
+.submit:disabled,
+.cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+
+  .chip,
+  .campus,
+  .submit {
+    transition: none;
+  
+  min-height: 44px; min-width: 44px;
+}
+}

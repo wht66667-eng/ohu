@@ -1,0 +1,129 @@
+.card {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(var(--tab-h, 64px) + 62px + env(safe-area-inset-bottom, 0px));
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 26px rgba(43, 127, 255, 0.18);
+  border: 1px solid color-mix(in srgb, #ffffff 60%, transparent);
+  animation: momentUp 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+/* 里程碑：整张卡放大一档，久留一会儿 */
+.big {
+  padding: 12px 14px 12px 12px;
+  border-radius: 22px;
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--green) 28%, transparent);
+  border-color: color-mix(in srgb, var(--green) 45%, transparent);
+}
+
+@keyframes momentUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+}
+
+.stage {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: visible;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, #ffffff 70%, transparent);
+}
+
+.big .stage {
+  width: 62px;
+  height: 62px;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* 旧表情淡出 + 新表情放大淡入，形成「变脸」那一帧 */
+.faceOut {
+  animation: faceOut 0.6s ease forwards;
+}
+
+.faceIn {
+  animation: faceIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes faceOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes faceIn {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.text b {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.big .text b {
+  font-size: 16px;
+  color: var(--green-text, #2f8f2a);
+}
+
+.text i {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+:global([data-ui-variant='cute']) .card { background: var(--card); border-color: color-mix(in srgb,var(--fox) 20%,var(--line)); box-shadow: var(--shadow); border-radius: var(--radius-lg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+
+  .faceOut {
+    display: none;
+  }
+
+  .faceIn {
+    animation: none;
+  }
+}

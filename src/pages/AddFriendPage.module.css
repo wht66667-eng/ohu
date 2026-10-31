@@ -1,0 +1,150 @@
+.page {
+  min-height:100dvh;
+  background:var(--page-mid);
+  color:var(--text);
+  padding-bottom:calc(96px + env(safe-area-inset-bottom))
+}
+.main {
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:16px
+}
+.card {
+  min-width:0;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px
+}
+.card h2 {
+  font-size:17px;
+  line-height:1.4;
+  margin:0 0 8px
+}
+.card>p {
+  font-size:13px;
+  color:var(--text-2);
+  line-height:1.65;
+  margin:0 0 14px
+}
+.copyRow {
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+.ownCode {
+  min-width:0;
+  flex:1;
+  min-height:44px;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--page-mid);
+  color:var(--text);
+  font:inherit;
+  font-size:12px;
+  user-select:text
+}
+.primary,.secondary {
+  min-height:44px;
+  padding:10px 16px;
+  border:1px solid transparent;
+  border-radius:12px;
+  font:inherit;
+  font-weight:650;
+  font-size:14px;
+  cursor:pointer
+}
+.primary {
+  background:var(--green);
+  color:var(--on-primary)
+}
+.card>.primary {
+  width:100%
+}
+.secondary {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex:none;
+  background:var(--page-mid);
+  border-color:var(--line);
+  color:var(--green-text)
+}
+.field {
+  display:block;
+  font-size:14px;
+  font-weight:600;
+  margin:18px 0
+}
+.field>span {
+  font-weight:400;
+  color:var(--text-2);
+  font-size:12px
+}
+.field input,.field textarea {
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  min-height:44px;
+  margin-top:8px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--page-mid);
+  color:var(--text);
+  font:inherit;
+  font-weight:400;
+  font-size:14px;
+  line-height:1.6
+}
+.field textarea {
+  resize:vertical;
+  min-height:96px
+}
+.field input::placeholder,.field textarea::placeholder {
+  color:var(--text-2)
+}
+.error,.feedback {
+  font-size:13px;
+  line-height:1.65;
+  overflow-wrap:anywhere
+}
+.error {
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--page-mid)
+}
+.card>.feedback {
+  margin:12px 0 0;
+  color:var(--green-text)
+}
+.page button:focus-visible,.page input:focus-visible,.page textarea:focus-visible {
+  outline:3px solid var(--green);
+  outline-offset:2px
+}
+.page button:disabled {
+  opacity:.6;
+  cursor:wait
+}
+.field input:disabled,.field textarea:disabled {
+  opacity:.7
+}
+@media(max-width:360px) {
+  .main {
+  padding:12px
+}
+.card {
+  padding:14px
+}
+.copyRow {
+  align-items:stretch;
+  flex-direction:column
+}
+
+}
+
+

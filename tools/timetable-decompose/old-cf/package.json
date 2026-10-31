@@ -1,0 +1,14 @@
+{
+  "name": "getTimetable",
+  "version": "2.0.0",
+  "private": true,
+  "description": "课表查询云函数（HTTP 触发）· 模块化版：拆解自 1848 行单文件，逻辑未变",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "self-test": "node index.js"
+  },
+  "dependencies": {}
+}

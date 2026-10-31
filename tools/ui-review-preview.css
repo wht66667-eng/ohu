@@ -1,0 +1,27 @@
+body { margin: 0; min-width: 280px; background: var(--page-mid); }
+.ui-review-workspace { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
+.ui-review-shell { width: min(390px, 100%); height: 844px; margin: auto; display: flex; flex-direction: column; overflow: hidden; position: relative; background: var(--page-mid); }
+.ui-review-label { padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--card); flex-shrink: 0; }
+.ui-review-label strong { display: block; font-size: 13px; line-height: 1.5; }
+.ui-review-label span { display: block; color: var(--text-2); font-size: 11px; line-height: 1.6; margin-top: 3px; }
+.ui-review-tabs { display: flex; gap: 8px; padding: 6px 14px; flex-shrink: 0; }
+.ui-review-tabs a { min-height: 44px; flex: 1; display: grid; place-items: center; border: 1px solid var(--line); background: var(--card); border-radius: 12px; color: var(--text); font-size: 14px; }
+.ui-review-tabs a.active { color: var(--green-ink); background: var(--green-soft); border-color: var(--green); }
+.ui-review-tabs { flex-wrap: wrap; }
+.ui-review-tabs a { min-width: 88px; }
+.ui-review-controls { padding: 0 14px; font-size: 12px; flex-shrink: 0; }
+.ui-review-controls summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
+.ui-review-controls div { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.ui-review-controls button { min-height: 44px; padding: 6px 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); color: var(--text); font: inherit; }
+.ui-review-scenario { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ui-review-scenario select { min-height: 44px; min-width: 165px; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: inherit; padding: 6px 10px; }
+.ui-review-status { margin: 0; padding: 2px 14px 8px; font-size: 11px; line-height: 1.5; color: var(--text-2); flex-shrink: 0; }
+.ui-review-body { flex: 1; min-height: 0; overflow: auto; position: relative; overscroll-behavior: contain; }
+.ui-review-chat { overflow: hidden; display: flex; flex-direction: column; }
+.ui-review-chat > div { flex: 1; min-height: 0; }
+.ui-review-tabbar { height: calc(var(--tab-h) + var(--safe-bottom, 0px)); flex-shrink: 0; }
+.ui-review-placeholder { padding: 24px 18px; font-size: 14px; line-height: 1.7; }
+.ui-review-placeholder h1 { font-size: 20px; }
+.ui-review-placeholder a { min-height: 44px; display: flex; align-items: center; color: var(--green-text); }
+.ui-review-reminder-content { padding: 0 16px 24px; }
+.ui-review-reminder-mark { margin: 4px 0 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text-3); font-size: 11px; line-height: 1.6; }

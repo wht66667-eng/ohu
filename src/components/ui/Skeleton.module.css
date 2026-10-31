@@ -1,0 +1,82 @@
+/* 骨架屏：低饱和色块 + 缓慢流光。prefers-reduced-motion 时退化为静态块 */
+.block {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--fill, rgba(120, 140, 120, 0.12)) 25%, var(--fill-2, rgba(120, 140, 150, 0.2)) 37%, var(--fill, rgba(120, 140, 150, 0.12)) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+}
+
+@keyframes skeleton-sweep {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block { animation: none; }
+}
+
+.rows, .cards, .grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}
+
+.grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.rowLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.line {
+  height: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.cover {
+  height: 120px;
+  border-radius: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--card, #fff);
+}
+
+.cardTop {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.goodsCard {
+  width: calc(50% - 6px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

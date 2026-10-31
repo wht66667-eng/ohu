@@ -1,0 +1,248 @@
+/* 举报处理台 · 哦狐品牌规范：全局 token，浅/深色自适应 */
+
+.page {
+  min-height: 100%;
+  padding: 0 0 28px;
+  background: var(--page-mid);
+  color: var(--text);
+}
+
+.lead {
+  margin: 10px 16px 0;
+  padding: 11px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--green-text);
+  background: var(--green-soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* —— 顶部摘要 —— */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 12px 16px 0;
+}
+
+.summary > div {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 10px 12px;
+}
+
+.summary b {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* —— 分段筛选 —— */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab,
+.tabOn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  white-space: nowrap;
+
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.tab {
+  background: var(--card);
+  color: var(--text-2);
+}
+
+.tabOn {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-primary);
+}
+
+/* —— 举报审核卡片 —— */
+
+.list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.head b {
+  font-size: 15px;
+  color: var(--text);
+}
+
+/* 待处理琥珀浅标签 */
+.pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--service-amber);
+  color: var(--service-amber-ink);
+  flex-shrink: 0;
+}
+
+.meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* 举报详情（证据） */
+.detail {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+  background: var(--mint);
+  border-left: 3px solid var(--leaf);
+  border-radius: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  background: var(--green-soft);
+  color: var(--green-text);
+  cursor: pointer;
+
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.ok,
+.no {
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.loadMore {
+  display: block;
+  min-height: 44px;
+  margin: 12px auto 0;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loadMore:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.pageError {
+  margin: 12px 16px 0;
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+}
+
+.pageError button {
+  margin-left: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 通过绿 / 驳回红（浅底标签风按钮） */
+.ok {
+  background: var(--green);
+  color: var(--on-primary);
+}
+
+.no {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 22%, var(--line));
+}
+
+@media (min-width: 1000px) {
+  :global([data-admin-workspace]) .lead { padding: 15px 18px; border-radius: 10px; font-size: 13px; }
+  :global([data-admin-workspace]) .summary { gap: 16px; max-width: 720px; margin-top: 20px; }
+  :global([data-admin-workspace]) .summary > div { padding: 20px 22px; border-radius: 12px; box-shadow: none; }
+  :global([data-admin-workspace]) .summary b { font-size: 28px; margin-bottom: 5px; }
+  :global([data-admin-workspace]) .tabs { padding-top: 22px; padding-bottom: 6px; }
+  :global([data-admin-workspace]) .list { gap: 16px; }
+  :global([data-admin-workspace]) .card { padding: 22px; border-radius: 12px; box-shadow: none; }
+  :global([data-admin-workspace]) .detail { padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  :global([data-admin-workspace]) .meta { line-height: 1.75; overflow-wrap: anywhere; }
+  :global([data-admin-workspace]) .actions { padding-top: 6px; }
+  :global([data-admin-workspace]) .ok, :global([data-admin-workspace]) .no { flex: 0 1 150px; }
+}

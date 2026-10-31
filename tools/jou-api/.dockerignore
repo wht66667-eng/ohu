@@ -1,0 +1,25 @@
+# 构建上下文只保留运行必需的 Python 源码与依赖清单
+__pycache__/
+*.py[cod]
+*.log
+*.md
+_schedule_debug.html
+
+# 本地虚拟环境与缓存
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 版本控制与编辑器
+.git/
+.gitignore
+.idea/
+.vscode/
+.DS_Store
+
+# 部署相关（不参与镜像构建）
+Dockerfile
+.dockerignore

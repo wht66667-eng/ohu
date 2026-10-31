@@ -1,0 +1,38 @@
+.page { background: var(--page-mid); padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+.intro { margin: 0 18px 18px; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+.menu { margin: 0 16px 20px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+.menuRow { display: flex; align-items: center; width: 100%; min-height: 80px; gap: 14px; padding: 14px 0; text-align: left; color: var(--text); }
+.menuRow + .menuRow { border-top: 1px solid var(--line); }
+.menuIcon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--mint); color: var(--green-text); font-size: 23px; font-weight: 500; }
+.menuBody { flex: 1; min-width: 0; }
+.menuBody strong { display: block; font-size: 16px; font-weight: 650; line-height: 1.5; }
+.menuBody small { display: block; margin-top: 4px; font-size: 13px; line-height: 1.6; color: var(--text-2); overflow-wrap: anywhere; }
+.menuArrow { flex: none; color: var(--text-3); font-size: 22px; }
+.menuRow:active .menuBody strong { color: var(--green-text); }
+.menuRow:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; border-radius: 12px; }
+.themeChoices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.themeChoice { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 12px 6px; min-height: 52px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.themeChoice[aria-pressed="true"] { border-color: var(--green); background: var(--mint); color: var(--green-text); font-weight: 650; }
+.themeChoice:focus-visible, .diagnostics summary:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.diagnostics { margin-top: 18px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 13px; line-height: 1.65; }
+.diagnostics summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; list-style: none; cursor: pointer; font-size: 14px; }
+.diagnostics summary::-webkit-details-marker { display: none; }
+.diagnostics summary::after { content: '+'; color: var(--green-text); font-size: 20px; }
+.diagnostics[open] summary::after { content: '−'; }
+.diagnostics > p { margin: 0 0 12px; overflow-wrap: anywhere; }
+.diagnosticError { color: var(--danger); }
+.status { color: var(--text-2); font-size: 14px; line-height: 1.65; }
+.loadError { margin: 12px 0; padding: 12px; background: var(--danger-soft); border-radius: var(--radius); color: var(--danger); font-size: 14px; line-height: 1.65; }
+.loadError p { margin: 0 0 8px; }
+.loadError button { padding: 8px 12px; border: 1px solid currentColor; border-radius: 12px; color: inherit; }
+.page > section:not(.menu) { margin: 0 16px 20px; padding: 16px !important; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+.page > section:not(.menu) > h3 { margin: 0 0 14px; font-size: 17px; font-weight: 650; line-height: 1.5; }
+.page > section button { min-height: 44px; min-width: 44px; }
+.page > section:not(.menu) > button { margin: 0; padding: 14px 0; gap: 14px; border-radius: 0; box-shadow: none; background: transparent; }
+.page > section:not(.menu) > button + button { border-top: 1px solid var(--line); }
+.page > section:not(.menu) > button > span:first-child { width: 44px; height: 44px; background: var(--mint) !important; color: var(--green-text); }
+.page > section:not(.menu) > button > span:nth-child(2) > b { font-size: 15px; font-weight: 650; line-height: 1.5; }
+.page > section:not(.menu) > button > span:nth-child(2) > span { font-size: 13px; line-height: 1.65; }
+.page > section:not(.menu) > button > span:last-child { color: var(--text-2); font-size: 13px; }
+.page > section button:disabled { opacity: .55; cursor: default; }
+@media (max-width: 360px) { .menu { padding-inline: 12px; } .menuRow { gap: 10px; } }

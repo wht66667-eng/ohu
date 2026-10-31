@@ -1,0 +1,356 @@
+/* 任务详情 · 哦狐温暖校园风（全局 token，浅/深色自适应） */
+
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  color: var(--text);
+  padding-bottom: calc(96px + var(--safe-bottom, 0px));
+}
+
+/* ---------- 主卡片：白底大圆角 ---------- */
+
+.card {
+  margin: 12px 16px 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.body {
+  padding: 16px;
+}
+
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag,
+.badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tag {
+  color: var(--green-text);
+  background: var(--green-soft);
+}
+
+.badgeGreen {
+  color: var(--green-text);
+  background: var(--green-soft);
+}
+
+.badgeOrange {
+  color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 14%, var(--card));
+}
+
+.badgeMuted {
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text-3) 14%, var(--card));
+}
+
+/* 顶部浅色状态提示条 */
+.banner {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.bannerWarn {
+  color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 12%, var(--card));
+}
+
+.bannerOff {
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--text-3) 12%, var(--card));
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--text);
+  word-break: break-word;
+}
+
+/* ---------- 标题下：报酬价格行 ---------- */
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.price {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--price);
+  font-variant-numeric: tabular-nums;
+}
+
+.priceLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+/* ---------- 元信息：位置 / 时间 / 发布者 ---------- */
+
+.meta {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--mint);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 600;
+  min-width: 0;
+}
+
+.metaItem svg {
+  flex: none;
+  color: var(--green-text);
+}
+
+.metaItem span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.seller {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sellerInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.sellerInfo b {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.sellerInfo small {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* 查看后露出的联系方式 */
+.contactBox {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--green-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.contactBox span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+.contactBox b {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 描述 ---------- */
+
+.sectionLabel {
+  margin: 18px 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 快递代取类任务的物流查询：描边次按钮 */
+.expressBtn {
+  width: 100%;
+  margin-top: 14px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.expressBtn:active {
+  transform: translateY(1px);
+}
+
+/* ---------- 底部固定主操作栏 ---------- */
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px calc(10px + var(--safe-bottom, 0px));
+  background: var(--card-glass);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 24px color-mix(in srgb, var(--green-deep) 10%, transparent);
+}
+
+.primary,
+.ghostBtn,
+.ownerBtn {
+  flex: 1;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.primary:active:not(:disabled),
+.ghostBtn:active:not(:disabled),
+.ownerBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primary {
+  border: none;
+  background: var(--green);
+  color: var(--on-primary);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--green) 28%, transparent);
+}
+
+.ghostBtn {
+  flex: 0 0 108px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--green-text);
+}
+
+/* 发布者本人：橙色次按钮（下架 / 重新上架） */
+.ownerBtn {
+  border: 1px solid color-mix(in srgb, var(--orange) 45%, var(--line));
+  background: color-mix(in srgb, var(--orange) 12%, var(--card));
+  color: var(--orange);
+}
+
+.primary:disabled,
+.ghostBtn:disabled,
+.ownerBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- 管理员操作区（仅管理员渲染） ---------- */
+
+.adminCard {
+  margin: 14px 16px 0;
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+}
+
+.adminTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--danger);
+}
+
+.adminHint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.adminRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.adminRow button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.adminRow button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.adminRow button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.adminDel {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+}

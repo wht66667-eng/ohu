@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      状态栏策略：XML 里的配置只负责「JS 还没跑起来」的那一小段（冷启动 + 启动屏），
+      必须和运行时 src/lib/native.ts 设置的最终状态一致，否则会出现
+      「深绿条 → 透明条」的闪一下。
+
+      运行时行为：overlay = true（WebView 铺到状态栏下方）+ 透明底 + 深色图标。
+      因此这里也要：透明底 + windowLightStatusBar = true。
+      windowDrawsSystemBarBackgrounds 必须为 true，statusBarColor 才会生效。
+    -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/boot_fox_icon</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:windowBackground">@drawable/boot_window</item>
+        <!-- 启动屏是浅绿底 + 深色文字，状态栏沿用同一底色，避免启动瞬间出现色块断层 -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/splashBackground</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

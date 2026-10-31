@@ -1,0 +1,125 @@
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 16px 4px;
+  padding: 12px 12px 12px 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #e8f4ff 0%, #fff8e8 55%, #ffe8d4 100%);
+  border: 1px solid rgba(43, 127, 255, 0.18);
+  box-shadow: 0 8px 20px rgba(43, 127, 255, 0.1);
+  overflow: hidden;
+}
+
+.fox {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 16px;
+  flex-shrink: 0;
+  background: var(--card);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.flame {
+  font-size: 16px;
+}
+
+.streak {
+  font-size: 22px;
+  line-height: 1;
+  color: #ff6a1a;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.tag {
+  margin-left: 4px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(43, 127, 255, 0.12);
+  color: #1f6fe0;
+}
+
+.hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.35;
+}
+
+.btn {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: linear-gradient(180deg, #3d8dff, #2b7fff);
+  box-shadow: 0 6px 14px rgba(43, 127, 255, 0.28);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.pop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  backdrop-filter: blur(6px);
+  animation: popIn 0.35s var(--ease-out-soft, ease) both;
+  z-index: 2;
+}
+
+.pop img {
+  width: 72px;
+  height: auto;
+}
+
+.pop b {
+  display: block;
+  font-size: 18px;
+  color: #ff6a1a;
+}
+
+.pop span {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

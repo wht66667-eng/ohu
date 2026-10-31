@@ -1,0 +1,173 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dist-deploy
+dist.bak*
+*.local
+
+# 本地探测 / 临时产物，不入库
+.codetmp/
+_build_check/
+_verify_*
+
+# 一键同步脚本落盘的运行时课表（本地占位文件仍需保留，但不提交真实数据）
+public/last-snapshot.json
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Multi-platform build outputs
+/dist-app
+.ota-out/
+.release-out/
+
+# Capacitor native project build artifacts
+/android/app/build
+/android/app/.gradle
+/android/.gradle
+/android/build
+/android/local.properties
+/android/app/src/main/assets/public
+/ios/App/App/public
+/ios/App/build
+/ios/App/Pods
+/ios/DerivedData
+/ios/App/Podfile.lock
+
+# Secrets（若后续改成含 Key，切勿提交）
+.env*
+!.env*.example
+.env.capgo
+CLOUDBASE_API_KEY*
+cloudfunctions/**/local-secret.*
+**/TIM_SECRET*
+
+# Local credentials, test data, logs, device artifacts, and generated media
+*.ipa
+*.apk
+*.aab
+*.mobileprovision
+*.p12
+*.cer
+*.pem
+*.key
+/.host*/
+/.fox-*/
+/.home-brand-qa/
+/.meet-qa/
+/.notice-qa/
+/.plaza-qa/
+/.promotion-qa/
+/.tmp-diagnostics/
+/pace_data/
+/tmp/
+/宣传片/
+/ui.xml
+/'phone'
+/.build-qa-*.log
+/.tmp-fox-build.log
+/.vite-*.log
+
+# release signing
+android/keystore/
+*.jks
+
+# local screenshots / adb dumps / python cache
+*.pyc
+__pycache__/
+.mumu-shot*.png
+.mumu-*.png
+.mumu-*.xml
+.mumu-ui.xml
+sc-*.png
+ui.xml
+.tmp-desk-cat/
+.tmp-pet-adventure/
+.tmp-lyg-games/
+
+.capgo
+.capgo-credentials.json
+.capgo-credentials/
+_capgo_probe_cfg.ts
+capgo-mcp.cmd
+
+# AI 助手 / IDE 本地目录（个人配置与记忆，不属于源码）
+.workbuddy/
+.codex/
+.trae/
+.art-director/
+# 误建空文件（文件名本身带单引号，源自一次 adb 命令拼接失误）
+'phone'
+
+# 本地交付/备份/上传暂存（不入库）
+.hosting-upload/
+.hosting-upload-json/
+src/assets/img/_bak-sun-ip/
+android/local.properties.capgo-bak
+design/_apk-prune-bak*/
+design/collage*/
+
+# 本地设计稿导出 / 临时部署目录（体积大且可再生成）
+/output/
+/_grid/
+/dist-fox*/
+/android/_stale*/
+/.tmp-imusersig-deploy/
+/tools/_smoke_out/
+
+# 瘦身脚本留下的备份图
+*-bak.png
+/src/assets/img/*-bak.png
+
+# 归档 / 历史产物目录（不进仓库）
+artifacts/
+
+*.bak.png
+
+# OTA 打包用干净产物目录（避免清空 dist-app 触发批量删除）
+/dist-ota
+/dist-ota*
+/dist-smoke
+/.tmp-smoke
+/.tmp-ptest
+/_backup-pets-20260929
+
+# OTA 输出目录：每次推版要换全新序号绕开批量删除守卫，故用通配
+/.ota-out*/
+
+# 各版本前端构建产物（每版换目录避免旧 hash 累积）
+/dist-app*/
+
+# 真题 / 版权资料抽取产物（不进入开源仓库）
+_cet_*.txt
+*.真题*.txt
+四六级真题*.docx
+四级真题*.docx
+
+# Generated personal vocabulary packages, hosted separately from app releases.
+/public/personal-exam-packs/
+/dist-exam-review/
+/.server-private/
+/.update-backup-*/
+/release/
+
+# Isolated local map QA dependencies and evidence
+/.map-qa-runtime/
+/.map-qa-output/

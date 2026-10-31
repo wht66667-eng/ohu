@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "阳光课表同步 · 海大教务",
+  "version": "1.0.0",
+  "description": "登录学校 WebVPN 与教务后，一键/自动把课表会话同步到阳光校园 H5（可读 HttpOnly Cookie）。",
+  "permissions": ["cookies", "tabs", "storage", "scripting", "notifications"],
+  "host_permissions": [
+    "*://zfxk.jou.edu.cn/*",
+    "*://*.zfxk.jou.edu.cn/*",
+    "http://webvpn.jou.edu.cn/*",
+    "https://webvpn.jou.edu.cn/*",
+    "http://webvpn.jou.edu.cn:58888/*",
+    "*://*.jou.edu.cn/*",
+    "*://localhost/*",
+    "*://127.0.0.1/*",
+    "*://*.tcloudbaseapp.com/*",
+    "*://*.tcloudbase.com/*",
+    "*://*.cloudstudio.run/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "同步课表到阳光",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://localhost/*",
+        "*://127.0.0.1/*",
+        "*://*.tcloudbaseapp.com/*",
+        "*://*.tcloudbase.com/*",
+        "*://*.cloudstudio.run/*"
+      ],
+      "js": ["content-h5.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://zfxk.jou.edu.cn/*",
+        "http://webvpn.jou.edu.cn/*",
+        "https://webvpn.jou.edu.cn/*",
+        "http://webvpn.jou.edu.cn:58888/*",
+        "*://*.jou.edu.cn/*"
+      ],
+      "js": ["content-jw.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

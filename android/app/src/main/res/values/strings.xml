@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">哦狐</string>
+    <string name="title_activity_main">哦狐</string>
+    <string name="package_name">com.sunshinecampus.app</string>
+    <string name="custom_url_scheme">com.sunshinecampus.app</string>
+    <string name="widget_today_schedule_description">查看今天最多三节课程和教室</string>
+    <string name="widget_next_class_description">查看正在上的课或下一节课程</string>
+</resources>

@@ -1,0 +1,52 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  overflow: visible;
+  background: transparent;
+  line-height: 0;
+}
+
+.ring {
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, #ffffff 75%, transparent),
+    0 4px 12px rgba(43, 127, 255, 0.18);
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+:global([data-ui-variant='fox']) .ring { box-shadow: 0 0 0 1.5px var(--mint), 0 4px 12px #10513f20; }
+:global([data-ui-variant='cute']) .ring { border-radius: 20px; box-shadow: 0 0 0 1px color-mix(in srgb,var(--fox) 20%,transparent),var(--shadow); }
+:global([data-ui-variant='minimal']) .wrap { color: var(--green-text); border-radius: 16px; }
+:global([data-ui-variant='minimal']) .ring { box-shadow: none; }
+.wrap[role='button']::after { content: ''; position: absolute; width: max(100%,44px); height: max(100%,44px); top: 50%; left: 50%; transform: translate(-50%,-50%); border-radius: inherit; }
+.wrap[role='button']:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+
+/* 呼吸起伏：3.6s 一轮，幅度极小，只为了让静态页有「它在呼吸」的在场感 */
+.wave {
+  animation: foxWave 3.6s ease-in-out infinite;
+}
+
+@keyframes foxWave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave {
+    animation: none;
+  }
+}

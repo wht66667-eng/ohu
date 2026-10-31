@@ -1,0 +1,9 @@
+{
+  "applied_at": "2026-10-22T05:25:59.279Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "source": "docs/sql/friends-authorization-131.sql",
+  "sha256": "6b0be91cf66243795d61539241ed68ef76dbce50b6aedd4eb4228489e472eda7",
+  "scope": "Three trigger functions, three triggers, three write policies and trigger/truncate privilege revocation in one transaction. No historical business-row writes.",
+  "request_id": "4c5c1522-43b7-4042-8650-6e755d26eb26",
+  "affected_rows": 0
+}

@@ -1,0 +1,32 @@
+.panel { margin: 16px 0 24px; color: var(--text); }
+.panel h3 { margin: 0 0 6px; font-size: 18px; line-height: 1.5; }
+.intro, .hint { color: var(--text-3); font-size: 13px; line-height: 1.7; }
+.intro { margin-bottom: 14px; }
+.nodes { min-width: 0; border: 0; margin: 0; padding: 0; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 72px; margin-top: 10px; padding: 13px 14px; text-align: left; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); }
+.row > span:first-child { flex: 1; min-width: 0; }
+.row strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 650; }
+.row small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--text-3); }
+.state { display: grid; place-items: center; width: 44px; height: 30px; flex: none; border-radius: 8px; color: var(--text-2); background: var(--page-mid); font-size: 13px; }
+.row[aria-checked='true'] .state { background: var(--green); color: var(--on-primary); }
+.field { margin: 12px 0; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.field label { display: block; font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 9px; }
+.field input { width: 100%; min-width: 0; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--page-mid); color: var(--text); font-size: 16px; font-variant-numeric: tabular-nums; }
+.field input[aria-invalid='true'] { border-color: var(--danger); }
+.field .hint, .field .error { margin: 8px 0 12px; font-size: 12px; }
+.hoursInput { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); }
+.hoursInput input { flex: 1; }
+.presets { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.presets button { min-height: 44px; min-width: 0; padding: 7px 5px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text-2); font-size: 13px; }
+.presets button[aria-pressed='true'] { border-color: var(--green); color: var(--green-text); background: var(--mint); }
+.save { display: block; min-height: 48px; width: 100%; margin-top: 12px; padding: 10px; border: 0; border-radius: 9px; background: var(--green); color: var(--on-primary); font-size: 14px; font-weight: 600; }
+.panel > .hint { margin-top: 12px; }
+.error { color: var(--danger); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.feedback { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--mint); color: var(--text-2); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.panel :is(button,input) { touch-action: manipulation; }
+.panel :is(button,input):focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.panel :is(button,input):disabled { opacity: .55; }
+.row:active:enabled, .presets button:active:enabled { background: var(--mint); }
+@media (hover:hover) { .row:hover:enabled, .presets button:hover:enabled { border-color: var(--green); } }
+@media (max-width:350px) { .row, .field { padding: 12px; } }

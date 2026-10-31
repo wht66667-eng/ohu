@@ -1,0 +1,8 @@
+.dialog { position: fixed; inset: auto; margin: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; padding: 0; border: 0; background: transparent; color: var(--text); overflow: hidden; }
+.dialog::backdrop { background: var(--overlay); }
+.layer { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
+.mask { position: absolute; inset: 0; background: transparent; }
+.surface { position: relative; width: 100%; max-height: calc(100% - var(--safe-top) - 24px); overflow: auto; overscroll-behavior: contain; padding: 20px 16px max(20px, var(--safe-bottom)); border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+.layer > .surface { min-height: 0; max-height: calc(100% - var(--safe-top, 0px) - 16px); box-sizing: border-box; scroll-padding-block: 16px; }
+.full { height: 100%; max-height: 100%; border-radius: 0; padding-top: calc(var(--safe-top) + 16px); }
+.layer > .full { max-height: 100%; }

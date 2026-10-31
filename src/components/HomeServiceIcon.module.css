@@ -1,0 +1,22 @@
+/* The illustration palette belongs to the icon, so it works on every page. */
+.artwork {
+  --art-paper: #fff;
+  --art-blue: #347bfa;
+  --art-blue-light: #65a2ff;
+  --art-blue-deep: #215bd5;
+  --art-green: #20c77a;
+  --art-green-light: #7ce4b0;
+  --art-amber: #ffab18;
+  --art-amber-deep: #e9900c;
+  --art-yellow: #ffd34e;
+  --art-violet: #8d68ed;
+  --art-violet-light: #c2a9ff;
+  --art-violet-deep: #6842ca;
+  --art-cyan: #08b9df;
+  --art-cyan-light: #37cbea;
+  --art-cyan-deep: #0694bb;
+  --art-coral: #ff6753;
+  --art-coral-light: #ffab8a;
+  --art-pink: #f44596;
+  --art-pink-light: #ff9fc6;
+}

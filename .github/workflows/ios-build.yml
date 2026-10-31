@@ -1,0 +1,115 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "tools/build-multiplatform.mjs"
+      - "tools/ios-download-release.mjs"
+      - "tools/verify-ios-ipa.py"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Xcode
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app
+          xcodebuild -version
+          xcodebuild -showsdks | grep -q 'iphoneos'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify release identity
+        id: identity
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE' >> "$GITHUB_OUTPUT"
+          import { readReleaseIdentity } from './tools/release-common.mjs';
+          const identity = readReleaseIdentity();
+          if (identity.version !== identity.nativeVersion || identity.nativeBuild !== identity.webBuild) {
+            throw new Error('Web and native release identities must match before building iOS.');
+          }
+          console.log(`version=${identity.nativeVersion}`);
+          console.log(`build=${identity.nativeBuild}`);
+          NODE
+
+      - name: Build student web bundle
+        run: npm run build:app -- --shell user
+
+      - name: Generate and sync Capacitor iOS project
+        run: |
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Build unsigned iPhone app
+        env:
+          APP_VERSION: ${{ steps.identity.outputs.version }}
+          APP_BUILD: ${{ steps.identity.outputs.build }}
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/ohu-derived" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            MARKETING_VERSION="$APP_VERSION" \
+            CURRENT_PROJECT_VERSION="$APP_BUILD" \
+            INFOPLIST_KEY_CFBundleDisplayName='哦狐' \
+            build
+
+      - name: Package and verify IPA
+        env:
+          APP_VERSION: ${{ steps.identity.outputs.version }}
+          APP_BUILD: ${{ steps.identity.outputs.build }}
+        run: |
+          APP_PATH="$RUNNER_TEMP/ohu-derived/Build/Products/Release-iphoneos/App.app"
+          test -d "$APP_PATH"
+          IPA_NAME="Ohhu-user-${APP_VERSION}-${APP_BUILD}-unsigned.ipa"
+          PACKAGE_ROOT="$RUNNER_TEMP/ohu-ipa"
+          mkdir -p "$PACKAGE_ROOT/Payload" "$GITHUB_WORKSPACE/ios-release"
+          ditto "$APP_PATH" "$PACKAGE_ROOT/Payload/App.app"
+          (cd "$PACKAGE_ROOT" && /usr/bin/zip -qry "$GITHUB_WORKSPACE/ios-release/$IPA_NAME" Payload)
+          python3 tools/verify-ios-ipa.py \
+            --ipa "ios-release/$IPA_NAME" \
+            --manifest ios-release/ios-latest.json \
+            --version "$APP_VERSION" \
+            --build "$APP_BUILD"
+
+      - name: Upload unsigned IPA and verified manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohhu-ios-${{ steps.identity.outputs.version }}-${{ steps.identity.outputs.build }}
+          path: ios-release/
+          if-no-files-found: error
+          retention-days: 30

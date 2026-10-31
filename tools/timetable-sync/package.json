@@ -1,0 +1,14 @@
+{
+  "name": "jou-timetable-sync",
+  "private": true,
+  "version": "1.0.0",
+  "description": "海大课表一键同步：复用本机 Chrome/Edge 登录 WebVPN 与正方教务，抓取课表后落盘到应用 public/last-snapshot.json",
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-schedule.mjs",
+    "reparse": "node scripts/reparse-and-apply.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.2.0"
+  }
+}

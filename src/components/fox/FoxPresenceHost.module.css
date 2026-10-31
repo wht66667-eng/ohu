@@ -1,0 +1,96 @@
+.dock {
+  position: absolute;
+  right: 14px;
+  bottom: calc(var(--tab-h, 64px) + 12px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  max-width: calc(100vw - 32px);
+  border: 1px solid color-mix(in srgb, var(--card) 70%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(43, 127, 255, 0.16);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+  animation: foxIn 0.42s var(--ease-spring, ease) backwards;
+}
+
+/* 滚到底时让位，不压最后一块内容 */
+.dim {
+  opacity: 0.5;
+  transform: scale(0.94);
+}
+
+.dock:active {
+  transform: scale(0.95);
+}
+
+/* 拖动中：跟随手指 */
+.dockDrag {
+  cursor: grabbing;
+  opacity: 0.92;
+  box-shadow: 0 10px 26px rgba(43, 127, 255, 0.3);
+}
+
+.bubble {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* × 收起按钮：贴在浮岛右上角 */
+.dockClose {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(13, 90, 168, 0.85);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(2, 40, 95, 0.3);
+
+  min-height: 44px; min-width: 44px;
+}
+
+.dockClose:active {
+  background: rgba(13, 90, 168, 1);
+
+  min-height: 44px; min-width: 44px;
+}
+
+@keyframes foxIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock {
+    animation: none;
+  }
+}
+
+:global([data-ui-variant='cute']) .dock { border-color: color-mix(in srgb,var(--fox) 18%,var(--line)); background: var(--card); box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .dockDrag { box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .dockClose { width: 20px; height: 20px; min-width: 20px; min-height: 20px; top: -4px; right: -4px; color: var(--green-text); background: var(--mint); border: 1px solid var(--line); box-shadow: none; }
+:global([data-ui-variant='cute']) .dockClose::after { content: ''; position: absolute; inset: -12px; width: 44px; height: 44px; border-radius: 50%; }
+.dockClose:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }

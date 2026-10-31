@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>阳光课表同步</title>
+    <style>
+      body {
+        margin: 0;
+        font: 14px/1.5 system-ui, 'Segoe UI', sans-serif;
+        color: #1d150e;
+        background: #fff8f0;
+        width: 300px;
+        padding: 14px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      p {
+        margin: 0 0 10px;
+        color: #5c4f42;
+        font-size: 12.5px;
+      }
+      ol {
+        margin: 0 0 12px;
+        padding-left: 18px;
+        color: #5c4f42;
+        font-size: 12.5px;
+      }
+      button {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px;
+        font-weight: 800;
+        font-size: 14px;
+        color: #fff;
+        background: #ff5a1f;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .msg {
+        margin-top: 10px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .ok {
+        color: #0a7a4b;
+      }
+      .err {
+        color: #c62828;
+      }
+      label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #5c4f42;
+        margin: 10px 0 4px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1.5px solid #1d150e;
+        border-radius: 8px;
+        padding: 7px 8px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>阳光课表同步</h1>
+    <p>只需在本浏览器完成两步登录，扩展会自动带上 Cookie（含 HttpOnly）：</p>
+    <ol>
+      <li>登录学校 WebVPN</li>
+      <li>进入教务并登录（看到「欢迎您」即可）</li>
+    </ol>
+    <button id="go" type="button">立即同步课表</button>
+    <label for="h5">课表页地址（一般不用改）</label>
+    <input id="h5" placeholder="http://localhost:43123" />
+    <div id="msg" class="msg"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

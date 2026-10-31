@@ -1,0 +1,8 @@
+.page { min-height: 100%; padding-bottom: 24px; background: var(--page-mid); color: var(--text); }
+.recovery { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); }
+.recovery > div { flex: 1 1 180px; min-width: 0; }
+.recovery strong { font-size: 14px; }
+.recovery p { margin: 6px 0 0; font-size: 13px; line-height: 1.7; color: var(--text-2); overflow-wrap: anywhere; }
+.action { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--green-text); font-size: 14px; }
+.action:focus-visible, .home:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.home { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 16px; color: var(--green-text); font-size: 14px; text-decoration: none; }

@@ -1,0 +1,352 @@
+/* ============================================================
+ * 高级交互组件样式
+ * 浅色 / 深色双主题自适应，只用主题变量，不硬编码颜色
+ * ========================================================== */
+
+/* ---------- ⑧ 按压微缩与回弹 ---------- */
+.press {
+  min-width: 48px;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .16s ease, opacity .16s ease;
+  will-change: transform;
+}
+.press:active {
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(0.97);
+}
+.press:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+.rippleButton { position: relative; isolation: isolate; }
+.press.rippleButton { min-width: 48px; min-height: 48px; }
+.rippleLayer { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.ripple { position: absolute; display: block; border-radius: 50%; background: currentColor; pointer-events: none; }
+
+/* ---------- ① 3D 倾斜光影面板 ---------- */
+.tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: var(--radius-lg, 22px);
+  overflow: hidden;
+  will-change: transform;
+  touch-action: pan-y;
+}
+.tiltGlare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  mix-blend-mode: overlay;
+}
+
+/* ---------- ② 流体胶囊形变 ---------- */
+.fluid {
+  position: relative;
+  overflow: hidden;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #d7e8f5);
+  box-shadow: var(--shadow-sm, 0 5px 14px rgba(43, 127, 255, 0.1));
+}
+.fluidPill {
+  display: inline-flex;
+}
+.fluidOpen {
+  display: block;
+}
+.fluidHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  background: none;
+  border: 0;
+  color: var(--text, var(--text));
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.fluidBody {
+  padding: 4px 16px 14px;
+  transform-origin: top center;
+}
+
+/* ---------- ③ 共享元素无缝展开 ---------- */
+.sharedCard {
+  cursor: pointer;
+}
+.sharedMask {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(16, 26, 20, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.sharedDetail {
+  position: fixed;
+  z-index: 61;
+  left: 12px;
+  right: 12px;
+  top: 12%;
+  max-height: 76%;
+  overflow: auto;
+  padding: 18px 16px 22px;
+  border-radius: var(--radius-lg, 22px);
+  background: var(--card, #fff);
+  box-shadow: 0 24px 60px rgba(16, 32, 24, 0.28);
+}
+.sharedClose {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(120, 140, 120, 0.14);
+  color: var(--text-2, #5f705f);
+  font-size: 14px;
+  cursor: pointer;
+
+  min-height: 44px; min-width: 44px;
+}
+
+/* ---------- ④ 磁吸游标 + 滚动码表 ---------- */
+.roll {
+  display: inline-flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+.rollCol {
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+}
+.rollDigit {
+  display: inline-block;
+  will-change: transform;
+}
+
+.chart {
+  width: 100%;
+}
+.chartHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.chartValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 26px;
+  color: var(--text, var(--text));
+}
+.chartValue em {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-3, #6f806f);
+}
+.chartLabel {
+  font-size: 12px;
+  color: var(--text-3, #6f806f);
+}
+.chartCanvas {
+  position: relative;
+  width: 100%;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.chartSvg {
+  position: absolute;
+  inset: 0 0 18px;
+  width: 100%;
+  height: calc(100% - 18px);
+  overflow: visible;
+}
+.chartSnap {
+  position: absolute;
+  top: 0;
+  bottom: 18px;
+  width: 1px;
+  background: var(--line, #d7e8f5);
+  transform: translateX(-0.5px);
+  pointer-events: none;
+}
+.chartHalo {
+  position: absolute;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid var(--green-deep, var(--green-deep));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+}
+.chartAxis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-3, #6f806f);
+}
+.chartAxis span {
+  flex: 1;
+  text-align: center;
+  transition: transform .16s ease, opacity .16s ease;
+}
+.axisOn {
+  color: var(--green-deep, var(--green-deep));
+  font-weight: 700;
+}
+
+/* ---------- ⑤ 阻尼弹性抽屉 ---------- */
+.sheetMask {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(16, 26, 20, 0.42);
+}
+.sheet {
+  position: fixed;
+  z-index: 71;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--card, #fff);
+  box-shadow: 0 -12px 40px rgba(16, 32, 24, 0.2);
+  touch-action: none;
+}
+.sheetGrip {
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 6px;
+  border-radius: 2px;
+  background: var(--line, #d7e8f5);
+}
+.sheetBody {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 16px 24px;
+  transform-origin: top center;
+}
+.sheetTitle {
+  margin: 4px 0 12px;
+  font-size: 16px;
+  color: var(--text, var(--text));
+}
+
+/* ---------- ⑥ 动态弥散光晕边框 ---------- */
+.glow {
+  position: relative;
+  border-radius: var(--radius-lg, 22px);
+}
+.glowAura,
+.glowRing {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.glowAura {
+  inset: -6px;
+  background: radial-gradient(
+    60% 60% at 50% 40%,
+    color-mix(in srgb, var(--glow-hue) 26%, transparent),
+    transparent 70%
+  );
+  filter: blur(14px);
+  opacity: 0;
+  transition: transform .16s ease, opacity .16s ease;
+}
+.glowRing {
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--glow-hue) 90deg,
+    color-mix(in srgb, var(--glow-hue) 40%, transparent) 160deg,
+    transparent 260deg,
+    transparent 360deg
+  );
+  opacity: 0;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: transform .16s ease, opacity .16s ease;
+}
+.glowOn .glowAura {
+  opacity: 0.75;
+}
+.glowOn .glowRing {
+  opacity: 0.9;
+  animation: glowSpin 6s linear infinite;
+}
+@keyframes glowSpin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.glowInner {
+  position: relative;
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowOn .glowRing {
+    animation: none;
+  }
+}
+
+/* Quiet campus cards; expensive paint effects do not animate. */
+.press { will-change: auto; transition: transform .16s ease, opacity .16s ease; }
+.press:active { box-shadow: none; filter: none; }
+.sharedDetail { position: relative; left: auto; right: auto; top: auto; max-height: calc(100% - var(--safe-top) - 24px); padding-top: 60px; }
+.sharedClose { width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: var(--mint); }
+.sheet { position: relative; left: auto; right: auto; bottom: auto; z-index: auto; padding: 8px 0 max(16px, var(--safe-bottom)); border-radius: var(--radius-lg) var(--radius-lg) 0 0; touch-action: auto; overflow: hidden; }
+.sheetGrip { width: 56px; height: 28px; margin: 0 auto; background: transparent; touch-action: none; position: relative; }
+.sheetGrip::before { content: ''; position: absolute; width: 40px; height: 4px; left: 8px; top: 10px; border-radius: 999px; background: var(--line); }
+.sheetHead { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 12px; gap: 12px; }
+.sheetHead .sharedClose { position: static; flex: none; 
+  min-height: 44px; min-width: 44px;
+}
+.sheetTitle { margin: 0; font-size: 18px; }
+.sheetBody { padding-bottom: 8px; overscroll-behavior: contain; }
+.glow { background: var(--card); border: 1px solid var(--line); }
+.glowOn { border-color: color-mix(in srgb, var(--green) 35%, var(--line)); }
+.chartHalo { background: var(--card); }
+.chartAxis { font-size: 12px; }
+.roll, .chartValue { font-family: var(--font-numeric); }
+
+.pawRipple { position: absolute; color: var(--fox); pointer-events: none; filter: blur(.4px); }
+:global([data-ui-variant='cute']) .press { border-radius: var(--radius); }
+:global([data-ui-variant='cute']) .press:disabled { filter: saturate(.6); }
+:global([data-ui-variant='minimal']) .tilt { transform-style: flat; }
+:global([data-ui-variant='minimal']) .glow, :global([data-ui-variant='minimal']) .glowOn { border-color: var(--line); box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .sharedClose { background: var(--mint); }

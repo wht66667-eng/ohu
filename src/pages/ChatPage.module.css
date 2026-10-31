@@ -1,0 +1,208 @@
+.page {
+  min-height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #eaf8d4 0%, #f6fbf0 100%);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px 8px;
+}
+
+.back {position: relative;
+  
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.who {
+  flex: 1;
+}
+
+.avatarLg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--service-amber);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarSm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+}
+
+.assistantAvatar {
+  object-fit: contain;
+  background: var(--service-amber);
+  border: 1px solid var(--line);
+}
+
+.who b {
+  display: block;
+  font-size: 16px;
+}
+
+.who span {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 14px 8px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.row.me {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 78%;
+  background: var(--card);
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: var(--shadow-sm);
+  white-space: pre-wrap;
+}
+
+.row.me .bubble {
+  background: var(--green-soft);
+  color: var(--green-ink);
+  border-radius: 16px 16px 4px 16px;
+}
+.cancelRequest { align-self:flex-end; min-height:44px; flex:none; padding:0 12px; border:1px solid var(--line); border-radius:999px; color:var(--text-2); background:var(--card); font:inherit; font-size:11px; font-weight:700; }
+.cancelRequest:focus-visible { outline:3px solid var(--green); outline-offset:2px; }
+.cancelRequest:active { transform:scale(.98); }
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.tail {
+  margin-top: 6px;
+  color: var(--green-text);
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  overflow: auto;
+}
+
+.chip {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--card);
+  font-size: 12px;
+  color: var(--green-text);
+  border: 1px solid #d6ecc0;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.aiDisclosure {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 7px;
+  margin: 0 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--card);
+}
+.aiDisclosure p { margin: 0; color: var(--text-2); font-size: 10px; line-height: 1.55; }
+.aiDisclosure label { display: flex; align-items: flex-start; gap: 8px; color: var(--text); font-size: 11px; line-height: 1.5; }
+.aiDisclosure input { flex: 0 0 auto; width: 18px; height: 18px; margin: 0; accent-color: var(--green); }
+.aiDisclosure input:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.aiDisclosure input:disabled { opacity: .6; }
+
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 112px;
+  height: auto;
+  field-sizing: content;
+  border: 0;
+  outline: 0;
+  border-radius: 16px;
+  background: var(--card);
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-sm);
+}
+
+.send {
+  min-width: 64px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 10px;
+  color: var(--on-primary);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.send svg { width: 18px; height: 18px; }
+.send:disabled { opacity: .5; }
+.composerCount { align-self: flex-end; margin: -6px 16px 8px 0; color: var(--text-2); font-size: 10px; line-height: 1.4; }
+
+/* 人性化：命中区扩到 44px（视觉尺寸不变） */
+.back::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+/* Shared campus canvas in both appearance modes. */
+.page { background: var(--page-mid); color: var(--text); }
+:root[data-theme='dark'] .page { background: var(--page-mid); color: var(--text); }

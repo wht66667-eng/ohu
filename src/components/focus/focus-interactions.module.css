@@ -1,0 +1,164 @@
+.iconButton, .copyButton, .primaryButton, .secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.iconButton { padding: 10px; background: transparent; color: var(--text-2); flex: none; }
+.copyButton { background: transparent; color: var(--green-text); padding-inline: 8px; }
+.primaryButton { min-width: 48px; min-height: 48px; background: var(--green); color: var(--on-primary); }
+.secondaryButton { border-color: var(--line); background: var(--card); color: var(--text); }
+.iconButton:hover, .copyButton:hover { background: var(--green-soft); }
+.secondaryButton:hover { border-color: var(--green); }
+.primaryButton:active { transform: scale(.97); }
+.secondaryButton:active > svg, .iconButton:active > svg { transform: scale(.97); }
+.iconButton:disabled, .copyButton:disabled, .primaryButton:disabled, .secondaryButton:disabled { opacity: .55; cursor: default; transform: none; }
+.iconButton:focus-visible, .copyButton:focus-visible, .primaryButton:focus-visible, .secondaryButton:focus-visible,
+.dialog input:focus-visible, .dialog select:focus-visible, .navigation button:focus-visible, .floatingStart:focus-visible, .addChoice summary:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+.themeReveal { position: fixed; border-radius: 50%; z-index: 2147483000; pointer-events: none; transform: scale(0); transform-origin: center; }
+.navigation { position: absolute; z-index: 45; bottom: 0; inset-inline: 0; display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; min-height: 72px; padding: 8px 12px calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px))); border-top: 1px solid var(--line); background: var(--card); }
+.navButton, .navActive { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 44px; min-height: 52px; padding: 8px 4px; border: 0; border-radius: 14px; background: transparent; color: var(--text-3); cursor: pointer; }
+.navActive { color: var(--green-text); background: var(--green-soft); }
+.navIcon { display: grid; place-items: center; }
+.navLabel { font-size: 12px; line-height: 1.4; font-weight: 650; white-space: nowrap; }
+.floatingStart { position: absolute; z-index: 46; right: 16px; bottom: calc(88px + var(--safe-bottom, env(safe-area-inset-bottom, 0px))); display: flex; align-items: center; gap: 12px; width: 156px; height: 52px; padding: 14px 16px; border: none; border-radius: 999px; background: var(--green); color: var(--on-primary); font: inherit; font-size: 14px; font-weight: 650; white-space: nowrap; box-shadow: var(--shadow); cursor: pointer; }
+.floatingStart svg { flex: none; }
+.copyWrap { display: inline-flex; position: relative; }
+.copyIcon { display: inline-flex; width: 18px; height: 18px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.dialog { width: min(480px, calc(100vw - 24px)); max-height: calc(100dvh - var(--safe-top, 0px) - 16px); padding: 0 20px calc(20px + env(safe-area-inset-bottom, 0px)); margin: auto auto 0; border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius-lg, 22px) var(--radius-lg, 22px) 0 0; overflow: auto; overscroll-behavior: contain; background: var(--card); color: var(--text); font-family: var(--sans); box-shadow: var(--shadow); }
+.dialog::backdrop { background: color-mix(in srgb, var(--text) 32%, transparent); }
+.dialogGrip { width: 36px; height: 4px; border-radius: 10px; background: var(--line); margin: 10px auto 4px; }
+.dialogHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 8px 12px; }
+.dialogHead h2 { margin: 0; font-size: 19px; line-height: 1.5; font-weight: 700; }
+.dialogFooter { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.dialogFooter > * { flex: 1; }
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.fieldLabel { font-size: 14px; color: var(--text-2); font-weight: 600; }
+.field input, .selectTrigger { width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--page-mid); color: var(--text); font: inherit; font-size: 16px; line-height: 1.4; }
+.field input::placeholder { color: var(--text-3); opacity: 1; }
+.fieldInvalid input { border-color: var(--danger, var(--price)); outline-color: var(--danger, var(--price)); }
+.errorText { margin: 0; color: var(--danger, var(--price)); font-size: 13px; line-height: 1.5; }
+.selectWrap { position: relative; }
+.selectTrigger { appearance: none; padding-right: 44px; cursor: pointer; }
+.selectWrap > svg { position: absolute; top: 16px; right: 14px; pointer-events: none; color: var(--text-3); }
+.addChoice { color: var(--text-2); font-size: 13px; }
+.addChoice summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--green-text); }
+.addChoice[open] { display: flex; flex-direction: column; gap: 8px; }
+.addChoice input { margin-bottom: 8px; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0; margin: 4px 0 24px; list-style: none; }
+.steps li { display: flex; align-items: center; flex-direction: column; gap: 8px; color: var(--text-3); }
+.steps li > span { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: var(--page-mid); font-family: var(--display); font-size: 13px; font-weight: 650; }
+.steps em { font-style: normal; font-size: 12px; line-height: 1.4; white-space: nowrap; }
+.steps .stepActive { color: var(--green-text); }
+.steps .stepActive > span { border-color: var(--green); background: var(--green-soft); }
+.steps .stepDone > span { color: var(--green-text); background: var(--green-soft); }
+.stepViewport { overflow: hidden; min-height: 260px; }
+.stepContent h3 { margin: 0 0 20px; font-size: 17px; font-weight: 650; line-height: 1.5; }
+.numberField { display: flex; align-items: center; gap: 12px; }
+.numberField input { font-family: var(--display); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; width: min(180px, 70%); }
+.numberField > span { color: var(--text-3); font-size: 14px; }
+.durationChoices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-block: 8px 12px; }
+.durationChoices button { min-height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 4px; background: var(--card); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.durationChoices button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.durationChoices .durationSelected { background: var(--green-soft); color: var(--green-text); border-color: var(--green); font-weight: 650; }
+.helper { margin: 8px 0 16px; color: var(--text-3); font-size: 13px; line-height: 1.7; }
+.sessionPreview { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 16px; background: var(--green-soft); color: var(--green-text); }
+.sessionPreview > span { min-width: 0; overflow-wrap: anywhere; }
+.sessionPreview small { display: block; font-size: 12px; margin-top: 4px; color: var(--text-2); }
+.musicControls { display: flex; flex-direction: column; gap: 10px; }
+.musicControls .field { margin-bottom: 0; }
+.musicControls .helper { margin: 0 0 8px; }
+.importButton { align-self: flex-start; }
+.musicMetadata { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); padding: 12px; border-radius: 14px; background: var(--green-soft); color: var(--green-text); }
+.musicMetadata > svg { flex: none; }
+.musicMetadata > span { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.musicMetadata small { display: block; margin-top: 4px; color: var(--text-3); font-size: 12px; }
+.importStatus { margin: 0; color: var(--green-text); font-size: 13px; line-height: 1.5; }
+.importStatus:empty { display: none; }
+.volumeField { display: flex; flex-direction: column; gap: 8px; margin-block: 8px 12px; }
+.volumeField > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; }
+.volumeField output { color: var(--green-text); font-family: var(--display); font-variant-numeric: tabular-nums; }
+.volumeField input[type='range'] { width: 100%; height: 44px; margin: 0; padding: 0; accent-color: var(--green); cursor: pointer; }
+.volumeField input:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; border-radius: 8px; }
+.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sectionHead h2 { margin: 0; font-size: 17px; line-height: 1.5; }
+.taskList { display: flex; flex-direction: column; gap: 12px; }
+.taskCard { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+.taskCategory { color: var(--green-text); font-size: 12px; font-weight: 650; }
+.taskCard h3 { font-size: 16px; margin: 6px 0; line-height: 1.5; overflow-wrap: anywhere; }
+.taskCard p { margin: 0; color: var(--text-3); font-size: 13px; }
+.taskActions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.taskActions > .copyWrap { margin-right: auto; }
+.emptyTasks { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--card); color: var(--text-3); text-align: center; }
+.emptyTasks p { margin: 4px 0; font-size: 15px; color: var(--text-2); }
+.emptyTasks > span { font-size: 13px; }
+
+/* Shared timer bar: a real flex item so it does not cover the routed page. */
+.timerBar { flex: none; position: relative; z-index: 44; margin: calc(8px + var(--safe-top, env(safe-area-inset-top, 0px))) 16px 0; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--text); box-shadow: var(--shadow-sm); }
+.timerBarWide { margin-inline: 16px; }
+.timerBarTrigger { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 16px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.timerBarTrigger > svg { flex: none; color: var(--green-text); }
+.barClock { font-family: var(--display); font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.barTitle { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.barState { font-size: 12px; color: var(--text-3); flex: none; }
+.barProgress { height: 3px; overflow: hidden; margin-inline: 12px; background: var(--line); border-radius: 999px; }
+.barProgress i { display: block; width: 100%; height: 100%; background: var(--green); transform-origin: left; }
+.timerActions { padding: 12px; }
+.timerActions > p { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 12px; font-size: 14px; overflow-wrap: anywhere; }
+.timerActions > p > span { flex: none; color: var(--text-3); font-size: 12px; }
+.actionRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.actionRow button, .returnTimer { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--page-mid); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.actionRow button { flex: 1; }
+.actionRow .dangerText, .dangerText { color: var(--danger, var(--price)); }
+.returnTimer { width: 100%; margin-top: 8px; background: var(--green-soft); color: var(--green-text); }
+.timerBar button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.reminderStatus { margin: 8px 12px; font-size: 12px; line-height: 1.5; color: var(--text-3); }
+@media (min-width: 600px) { .dialog { margin: auto; border-bottom: 1px solid var(--line); border-radius: var(--radius-lg, 22px); padding-bottom: 24px; } .dialogGrip { display: none; } .dialogHead { padding-top: 16px; } }
+@media (prefers-reduced-motion: reduce) { .primaryButton:active, .secondaryButton:active > svg, .iconButton:active > svg { transform: none; } }
+
+/* Keep timer controls consistent with the installed student UI pack. */
+:global([data-ui-variant='cute']) .primaryButton, :global([data-ui-variant='cute']) .secondaryButton { min-height: 48px; border-radius: 20px; transition: transform .35s var(--ease-jelly, cubic-bezier(.34,1.56,.64,1)), opacity .2s; }
+:global([data-ui-variant='cute']) .primaryButton { border: 1px solid rgba(255,154,61,.35); box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .secondaryButton { background: var(--mint); border-color: color-mix(in srgb, var(--card) 75%, transparent); box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .primaryButton:active, :global([data-ui-variant='cute']) .secondaryButton:active { transform: scale(.96); }
+:global([data-ui-variant='cute']) .primaryButton:disabled, :global([data-ui-variant='cute']) .secondaryButton:disabled { filter: saturate(.6); transform: none; }
+:global([data-ui-variant='cute']) .iconButton { position: relative; border-radius: 50%; background: var(--mint); }
+:global([data-ui-variant='cute']) .iconButton::after { content: ''; position: absolute; width: 44px; height: 44px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+:global([data-ui-variant='cute']) .navigation { border-radius: 24px 24px 0 0; border-color: color-mix(in srgb, var(--fox-orange) 14%, var(--line)); box-shadow: var(--shadow); }
+:global([data-ui-variant='cute']) .navActive { background: var(--mint); border-radius: 20px; }
+:global([data-ui-variant='cute']) .navIcon { position: relative; isolation: isolate; }
+:global([data-ui-variant='cute']) .navActive .navIcon::before, :global([data-ui-variant='cute']) .navActive .navIcon::after { content: ''; position: absolute; width: 8px; height: 9px; top: -5px; background: var(--fox-orange); border-radius: 5px 5px 2px 2px; z-index: -1; }
+:global([data-ui-variant='cute']) .navActive .navIcon::before { left: 0; rotate: -20deg; }
+:global([data-ui-variant='cute']) .navActive .navIcon::after { right: 0; rotate: 20deg; }
+:global([data-ui-variant='cute']) .floatingStart { border: 1px solid rgba(255,154,61,.35); }
+:global([data-ui-variant='cute']) .dialog { border-radius: 24px 24px 0 0; }
+:global([data-ui-variant='minimal']) .primaryButton, :global([data-ui-variant='minimal']) .secondaryButton { min-height: 48px; border-radius: 16px; box-shadow: none; transition: transform .24s var(--ease-out-soft, cubic-bezier(.22,1,.36,1)), opacity .24s; }
+:global([data-ui-variant='minimal']) .primaryButton { border: 0; background: var(--green); }
+:global([data-ui-variant='minimal']) .secondaryButton { background: var(--card); border-color: var(--line); }
+:global([data-ui-variant='minimal']) .primaryButton:active, :global([data-ui-variant='minimal']) .secondaryButton:active { transform: scale(.98); }
+:global([data-ui-variant='minimal']) .iconButton { position: relative; border-radius: 16px; }
+:global([data-ui-variant='minimal']) .iconButton::after { content: ''; position: absolute; width: 44px; height: 44px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+:global([data-ui-variant='minimal']) .navigation { padding-top: 12px; border-top-color: var(--line); }
+:global([data-ui-variant='minimal']) .navActive { background: transparent; }
+:global([data-ui-variant='minimal']) .navActive .navIcon { color: var(--green); }
+:global([data-ui-variant='minimal']) .floatingStart { border-radius: 16px; box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .dialog { border-radius: 20px 20px 0 0; box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .taskCard { border-radius: 20px; }
+@media (prefers-reduced-motion: reduce) { :global([data-ui-variant='cute']) .primaryButton:active, :global([data-ui-variant='cute']) .secondaryButton:active, :global([data-ui-variant='minimal']) .primaryButton:active, :global([data-ui-variant='minimal']) .secondaryButton:active { transform: none; } }
+

@@ -1,0 +1,33 @@
+.sheet { box-sizing:border-box; width:min(720px,100%); min-height:100%; margin:auto; padding:calc(var(--safe-top,0px) + 16px) 16px max(18px,var(--safe-bottom,0px)); color:var(--text); }
+.header { position:sticky; z-index:5; top:var(--safe-top,0px); display:flex; align-items:center; justify-content:space-between; margin:-16px -16px 0; padding:12px 16px 9px; background:var(--card); }
+.header span { color:var(--green-text); font-size:11px; font-weight:800; letter-spacing:.08em; }
+.header h2 { margin:4px 0 0; font-size:19px; }
+.close { width:44px; height:44px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font-size:23px; }
+.hint { margin:10px 0; color:var(--text-2); font-size:12px; line-height:1.55; }
+.ratios { display:flex; gap:7px; margin:10px 0; }
+.ratios button,.selectedSticker button { min-height:40px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--text-2); font:inherit; font-size:12px; }
+.ratios button[aria-pressed='true'] { border-color:var(--green); background:var(--mint); color:var(--green-text); font-weight:700; }
+.stage { position:relative; width:100%; height:min(48dvh,520px); min-height:240px; overflow:hidden; border-radius:16px; background:#101410; touch-action:none; }
+.stickerLayer { position:absolute; z-index:3; inset:0; pointer-events:none; }
+.sticker { position:absolute; transform:translate(-50%,-50%); display:grid; place-items:center; aspect-ratio:1; min-width:35px; padding:0; border:0; border-radius:50%; background:transparent; font-size:clamp(24px,8vw,64px); line-height:1; touch-action:none; pointer-events:auto; cursor:grab; user-select:none; -webkit-user-select:none; }
+.sticker:active { cursor:grabbing; }
+.photoSticker { overflow:hidden; border:3px solid #fff; box-shadow:0 2px 12px #0007; background:#fff; }
+.photoSticker img { display:block; width:100%; height:100%; border-radius:50%; object-fit:cover; pointer-events:none; }
+.zoom { display:flex; align-items:center; gap:12px; margin:10px 0; color:var(--text-2); font-size:12px; }
+.zoom input,.selectedSticker input { width:100%; accent-color:var(--green); }
+.stickerTools { display:grid; gap:8px; margin:12px 0; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--page-mid,var(--card)); }
+.stickerTools > strong { font-size:13px; }
+.emojiList { display:flex; flex-wrap:wrap; gap:6px; }
+.emojiList button { min-width:42px; min-height:42px; padding:0 8px; border:1px solid var(--line); border-radius:12px; background:var(--card); font-size:20px; }
+.emojiList button:last-of-type { color:var(--green-text); font-size:12px; }
+.photoStickerChoices { display:flex; flex-wrap:wrap; gap:6px; }
+.photoStickerChoices button { min-height:38px; padding:0 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text-2); font-size:11px; }
+.selectedSticker { display:flex; align-items:center; gap:10px; }
+.selectedSticker label { display:flex; flex:1; align-items:center; gap:8px; color:var(--text-2); font-size:11px; }
+.error { padding:10px 12px; border-radius:11px; background:color-mix(in srgb,#d94d43 10%,var(--card)); color:#a12620; font-size:12px; line-height:1.5; }
+.actions { position:sticky; bottom:var(--safe-bottom,0px); display:flex; justify-content:flex-end; gap:8px; margin:14px -16px -16px; padding:11px 16px max(16px,var(--safe-bottom,0px)); border-top:1px solid var(--line); background:var(--card); }
+.actions button { min-height:46px; padding:0 15px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-weight:700; }
+.actions .save { border-color:var(--green); background:var(--green); color:var(--on-primary); }
+.actions button:disabled { opacity:.55; }
+:where(.sheet) button:focus-visible,:where(.sheet) input:focus-visible { outline:3px solid color-mix(in srgb,var(--green) 40%,transparent); outline-offset:2px; }
+@media(max-width:420px) { .stage { height:42dvh; min-height:220px; } .selectedSticker { align-items:stretch; flex-direction:column; } .selectedSticker button { width:100%; } }

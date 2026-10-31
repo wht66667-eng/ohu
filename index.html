@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN" class="boot-lock">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
+    <link rel="stylesheet" href="%BASE_URL%boot/campus-start.css" />
+    <meta name="theme-color" content="#faf7ef" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="format-detection" content="telephone=no,email=no,address=no" />
+    <title>哦狐</title>
+    <script>
+      window.__OHU_BOOT_STARTED_AT__ = Date.now()
+      try {
+        var choice = localStorage.getItem('app.theme') || 'system'
+        var dark = choice === 'dark' || (choice === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        /* 无狐皮肤提前挂上属性：启动屏 CSS 会隐去狐狸奔跑与陪伴文案，也避免 React 恢复前闪出旧版 */
+        var uv = localStorage.getItem('ohfox.ui.variant.v1')
+        if (uv === 'pure') document.documentElement.dataset.uiVariant = uv
+      } catch (_) {}
+    </script>
+  </head>
+  <body>
+    <!-- A real transparent mascot, with a complete static first frame before React. -->
+    <section id="boot-splash" data-layout="face" aria-labelledby="boot-title">
+      <button id="boot-skip" class="boot-skip" type="button" hidden>跳过动画</button>
+      <div class="boot-content">
+        <header class="boot-brand" data-boot-animate><h1 id="boot-title">哦狐</h1><p>校园每一步</p></header>
+        <div class="boot-story">
+          <div class="boot-face">
+            <div class="boot-face-orbit" data-boot-animate><img id="boot-face-image" src="%BASE_URL%brand/ohu-v1/stickers/01_login_day_01.png" width="512" height="512" alt="" fetchpriority="high" data-boot-hero /></div>
+            <h2 id="boot-face-title" data-boot-animate>校园里，又见面啦</h2>
+            <p id="boot-face-copy" data-boot-animate>带上好心情，开始今天的校园生活。</p>
+          </div>
+          <div class="boot-achievement">
+            <span class="boot-record-label" data-boot-animate>阿狐的相伴记录</span>
+            <img id="boot-achievement-image" src="%BASE_URL%brand/ohu-v1/stickers/01_login_day_01.png" width="512" height="512" alt="" data-boot-animate />
+            <h2 data-boot-animate>每一步，都算数</h2>
+            <div class="boot-stat-grid" data-boot-animate><div><strong id="boot-total-days">—</strong><span>累计登录日</span></div><div><strong id="boot-streak-days">—</strong><span>当前连续天数</span></div></div>
+            <p id="boot-achievement-copy" data-boot-animate>登录记录恢复后，会在这里与你相见。</p>
+          </div>
+          <div class="boot-comic">
+            <div class="boot-comic-panels">
+              <figure data-boot-animate><span>01</span><img id="boot-comic-first" src="%BASE_URL%brand/ohu-v1/stickers/01_login_day_01.png" width="512" height="512" alt="" /><figcaption id="boot-comic-caption-first">带上好心情</figcaption></figure>
+              <figure data-boot-animate><span>02</span><img id="boot-comic-second" src="%BASE_URL%brand/ohu-v1/stickers/14_random_study.png" width="512" height="512" alt="" /><figcaption id="boot-comic-caption-second">按自己的节奏</figcaption></figure>
+              <figure data-boot-animate><span>03</span><img id="boot-comic-third" src="%BASE_URL%brand/ohu-v1/stickers/13_random_chaos.png" width="512" height="512" alt="" /><figcaption id="boot-comic-caption-third">校园里见</figcaption></figure>
+            </div>
+            <h2 id="boot-comic-title" data-boot-animate>校园日常，阿狐在场</h2>
+            <p data-boot-animate>今天的故事，从这里开始。</p>
+          </div>
+        </div>
+        <div class="boot-foot">
+          <p id="boot-label">正在准备你的校园…</p>
+          <p id="boot-status" role="status" aria-live="polite" aria-atomic="true">正在恢复登录状态</p>
+          <button id="boot-retry" class="boot-retry" type="button" hidden>重试</button>
+        </div>
+      </div>
+    </section>
+    <script>
+      document.getElementById('boot-retry').onclick = function () { location.reload() }
+      function bootRecovery(message) {
+        var splash = document.getElementById('boot-splash')
+        if (splash && !splash.dataset.dismissed) {
+          splash.dataset.failed = '1'
+          document.getElementById('boot-label').textContent = '页面还没有准备好'
+          document.getElementById('boot-status').textContent = message
+          document.getElementById('boot-retry').hidden = false
+        }
+      }
+      window.addEventListener('error', function (event) {
+        if (event.target && event.target.tagName === 'SCRIPT') bootRecovery('页面资源加载失败，请重试')
+      }, true)
+      window.setTimeout(function () {
+        var splash = document.getElementById('boot-splash')
+        if (splash && !splash.dataset.dismissed && !splash.dataset.preview && !splash.dataset.runtime) bootRecovery('加载较慢，请检查网络，或重试')
+      }, Math.max(0, 3000 - (Date.now() - window.__OHU_BOOT_STARTED_AT__)))
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+.workspace {
+  display: flex;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--text);
+  background: var(--page-mid);
+  font-family: var(--sans);
+  overflow: hidden;
+}
+
+.workspace :is(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+.skipLink { position: fixed; left: 16px; top: -80px; z-index: 200; padding: 12px 18px; background: var(--card); border: 2px solid var(--green); border-radius: 8px; }
+.skipLink:focus { top: 12px; }
+.sidebar { display: flex; flex-direction: column; flex: 0 0 236px; min-width: 0; padding: 30px 16px 16px; background: var(--card); border-right: 1px solid var(--line); }
+.brand { display: inline-flex; align-items: center; align-self: flex-start; gap: 11px; color: var(--text); text-decoration: none; min-height: 48px; padding: 0 8px; }
+.brandMark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px 13px 13px 4px; color: var(--on-primary); background: var(--green); font-size: 22px; font-weight: 750; }
+.brand > span:last-child { display: grid; gap: 2px; }
+.brand strong { font-size: 22px; font-weight: 750; line-height: 1.2; letter-spacing: .04em; }
+.brand small { color: var(--text-3); font-size: 11px; letter-spacing: .1em; }
+.navigation { flex: 1; overflow-y: auto; padding-top: 34px; }
+.navGroup + .navGroup { margin-top: 30px; }
+.groupLabel { margin: 0 12px 10px; color: var(--text-3); font-size: 11px; letter-spacing: .08em; font-weight: 600; }
+.navLink { display: flex; align-items: center; gap: 12px; position: relative; min-height: 46px; padding: 10px 12px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 10px; color: var(--text-2); font-size: 14px; text-decoration: none; transition: background 120ms ease, color 120ms ease; }
+.navLink > svg { flex-shrink: 0; }
+.navLink:active { background: var(--mint); }
+.navSelected { color: var(--green-text); background: var(--green-soft); font-weight: 700; }
+.navIndicator { width: 5px; height: 5px; margin-left: auto; border-radius: 50%; background: var(--green); }
+.sidebarAccount { display: flex; align-items: center; gap: 9px; margin-top: 24px; padding: 16px 5px 0; border-top: 1px solid var(--line); }
+.avatar { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border-radius: 50%; background: var(--mint); color: var(--green-text); font-size: 14px; font-weight: 750; }
+.sidebarAccount > div { display: grid; min-width: 0; gap: 3px; }
+.sidebarAccount strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 102px; font-size: 13px; }
+.sidebarAccount div > span { color: var(--text-3); font-size: 11px; }
+.logout { margin-left: auto; padding: 0 6px; min-height: 44px; min-width: 44px; border-radius: 8px; color: var(--text-2); font-size: 12px; }
+.surface { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.topbar { display: flex; align-items: center; gap: 16px; flex: 0 0 76px; padding: 0 36px; border-bottom: 1px solid var(--line); background: var(--card); }
+.breadcrumb { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--text-3); font-size: 13px; }
+.breadcrumb strong { color: var(--text); font-weight: 650; white-space: nowrap; }
+.role { margin-left: auto; flex-shrink: 0; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 11px; color: var(--green-text); background: var(--green-soft); }
+.menuButton { display: none; }
+.content { flex: 1; overflow: auto; min-width: 0; min-height: 0; padding: 26px clamp(20px, 3vw, 48px) 40px; overscroll-behavior: contain; }
+.content:focus { outline: none; }
+.routeDescription { max-width: 1360px; margin: 0 auto 10px; padding: 0 16px; color: var(--text-3); font-size: 12px; }
+.pageContent { max-width: 1360px; min-width: 0; margin: 0 auto; }
+.pageContent > div { min-height: 0; }
+.pageContent > div > header:first-child { padding-top: 0; margin-bottom: 16px; }
+.pageContent > div > header:first-child > button[aria-label='返回'] { display: none; }
+.pageContent > div > header:first-child > h1 { font-size: 26px; font-weight: 750; letter-spacing: -.02em; }
+.pageContent > div > header:first-child > div:last-child > button { min-height: 42px; }
+.pageError { display: grid; align-content: center; min-height: 320px; }
+.gate { display: flex; flex-direction: column; width: 100%; min-height: 0; overflow-y: auto; padding: 32px 40px 24px; }
+.gateCard { width: min(100%, 520px); margin: auto; padding: 48px 42px; border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 16px; background: var(--card); }
+.gateCard:focus { outline: none; }
+.eyebrow { display: block; color: var(--green-text); font-size: 12px; font-weight: 700; letter-spacing: .08em; margin-bottom: 20px; }
+.gateCard h1 { margin: 0; font-size: clamp(24px, 3vw, 32px); line-height: 1.35; font-weight: 750; letter-spacing: -.025em; }
+.gateLead { margin: 16px 0 0; color: var(--text-2); font-size: 15px; line-height: 1.85; }
+.gateFeatures { display: flex; flex-wrap: wrap; gap: 12px; padding: 28px 0; margin: 0 0 28px; border-bottom: 1px solid var(--line); color: var(--text-3); font-size: 12px; }
+.gateFeatures > span { display: inline-flex; align-items: center; gap: 6px; }
+.gateFeatures > span::before { content: ''; width: 4px; height: 4px; background: var(--green); border-radius: 50%; }
+.primaryButton, .secondaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 44px; min-width: 44px; padding: 11px 18px; border-radius: 9px; font-size: 14px; font-weight: 650; cursor: pointer; }
+.primaryButton { color: var(--on-primary); background: var(--green); border: 1px solid var(--green); }
+.secondaryButton { color: var(--text-2); background: var(--card); border: 1px solid var(--line); }
+.gateCard > .primaryButton { width: 100%; }
+.gateNote { margin: 14px 0 0; color: var(--text-3); font-size: 12px; line-height: 1.7; }
+.gateActions { display: flex; flex-wrap: wrap; gap: 10px; }
+.gateFooter { margin: 30px 0 0; text-align: center; color: var(--text-3); font-size: 11px; letter-spacing: .04em; }
+.actionError { margin: 14px 0 0; color: var(--danger); font-size: 13px; line-height: 1.6; }
+.errorBanner { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 36px; color: var(--danger); background: var(--danger-soft); font-size: 13px; }
+.workspace button:disabled { opacity: .55; cursor: wait; }
+.workspace :global(.sheet-mask) { position: fixed; inset: 0; }
+.workspace :global(.sheet-card) { max-width: 520px; }
+:global([data-admin-app][data-native]) .workspace { height: 100dvh; padding: var(--safe-top, 0px) var(--safe-right, 0px) var(--safe-bottom, 0px) var(--safe-left, 0px); box-sizing: border-box; }
+
+@media (min-width: 821px) {
+  .workspace :global(.sheet-mask) { align-items: center; padding: 24px; }
+  .workspace :global(.sheet-card) { border-radius: 18px; }
+}
+
+@media (hover: hover) {
+  .navLink:hover, .logout:hover, .secondaryButton:hover { color: var(--green-text); background: var(--green-soft); }
+  .primaryButton:hover { background: var(--green-hot); border-color: var(--green-hot); }
+}
+
+@media (max-width: 1000px) {
+  .sidebar { flex-basis: 214px; padding-inline: 12px; }
+  .topbar { padding-inline: 24px; }
+  .content { padding-inline: 16px; }
+}
+
+@media (max-width: 820px) {
+  .workspace { flex-direction: column; }
+  .sidebar { display: none; flex: none; order: 1; padding: 12px 16px 16px; border-right: 0; border-bottom: 1px solid var(--line); max-height: 65dvh; overflow: auto; }
+  .sidebarOpen { display: flex; }
+  .sidebar > .brand { display: none; }
+  .navigation { overflow: visible; padding-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .navGroup + .navGroup { margin-top: 0; }
+  .navLink { padding: 8px 10px; gap: 8px; font-size: 13px; }
+  .groupLabel { margin-left: 10px; }
+  .sidebarAccount { margin-top: 12px; padding-top: 8px; }
+  .sidebarAccount strong { max-width: 180px; }
+  .surface { display: contents; }
+  .topbar { order: 0; flex: 0 0 64px; padding: 0 16px; gap: 12px; }
+  .menuButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 64px; min-height: 44px; padding: 0 8px; margin-left: -8px; color: var(--text); border-radius: 8px; font-size: 12px; }
+  .breadcrumb { gap: 8px; font-size: 13px; }
+  .breadcrumb > span { display: none; }
+  .role { font-size: 10px; padding-inline: 7px; }
+  .content { order: 3; padding: 20px 0 32px; }
+  .errorBanner { order: 2; padding: 10px 16px; }
+  .pageContent > div > header:first-child > h1 { font-size: 23px; }
+  .routeDescription { margin-bottom: 8px; }
+  .gate { padding: 22px 18px; }
+  .gateCard { padding: 32px 24px; margin-block: auto; }
+  .gate > .brand { margin-bottom: 32px; }
+  .gateFooter { margin-top: 24px; }
+}
+
+@media (max-width: 420px) {
+  .navLink { font-size: 12px; gap: 6px; }
+  .navigation { gap: 8px; }
+  .gateCard { padding: 28px 20px; }
+  .gateFeatures { gap: 10px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navLink { transition: none; }
+}
+
+/* Keep the administration workspace in the same visual family. */
+.navLink:hover{background:var(--green-soft);color:var(--green-text)}
+.navSelected{border-color:color-mix(in srgb,var(--green) 25%,var(--line))}
+.topbar{box-shadow:none}
+.pageContent :is(input:not([type=checkbox]):not([type=radio]),select){min-height:44px;border-radius:10px}
+.pageContent button{min-height:44px}
+@media(max-width:420px){.breadcrumb strong{white-space:normal;line-height:1.4}.role{max-width:90px;white-space:normal}}
+

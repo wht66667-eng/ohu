@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      与 Web 端品牌令牌保持一致（见 src/index.css 的 :root）。
+      Capacitor 7 的 styles.xml 会引用 colorPrimary / colorPrimaryDark / colorAccent，
+      但模板未随附 colors.xml，缺失会直接导致资源编译失败，故在此补齐。
+    -->
+    <color name="colorPrimary">#16735B</color>
+    <color name="colorPrimaryDark">#10513F</color>
+    <color name="colorAccent">#ED9A48</color>
+    <!-- 页面底色 / 启动屏底色：与 index.html 的 #boot-splash 及 CSS 变量 mint 完全一致，
+         让「原生启动图 → HTML 启动屏」之间没有色差跳变 -->
+    <color name="splashBackground">#FAF7EF</color>
+</resources>

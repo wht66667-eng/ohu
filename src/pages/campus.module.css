@@ -1,0 +1,751 @@
+/* 校园页共用样式 · 哦狐温暖校园风（任务 / 二手 / 食堂 / 信息站 / 服务）
+   只使用全局 token，浅/深色模式自动适配。类名保持与各页面 tsx 一一对应，勿删勿改。 */
+
+/* —— 页面画布 —— */
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  color: var(--text);
+  padding-bottom: 24px;
+}
+
+/* —— 顶部分段切换（胶囊分段控件） —— */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 16px 16px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.tab.on {
+  color: var(--green-text);
+  background: var(--mint);
+  font-weight: 750;
+}
+
+.tab:hover {
+  background: color-mix(in srgb, var(--mint) 55%, var(--card));
+}
+
+/* —— 筛选 chip 行 —— */
+.chips {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+  overflow: auto;
+}
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip.on {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-primary);
+  font-weight: 750;
+}
+
+.favoriteRecovery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--green-soft);
+  color: var(--text);
+}
+.favoriteRecovery > div { min-width: 0; display: grid; gap: 4px; }
+.favoriteRecovery strong { color: var(--green-text); font-size: 13px; }
+.favoriteRecovery span { color: var(--text-2); font-size: 12px; line-height: 1.45; }
+.favoriteRecovery button {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green);
+  color: var(--on-primary, #fff);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 390px) {
+  .favoriteRecovery { align-items: stretch; flex-direction: column; }
+}
+
+/* —— 服务宫格（ServicesPage 另用 services.module.css，这里保留兼容类） —— */
+.svcGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.svc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.svc:hover,
+.svc:active {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--mint) 40%, var(--card));
+}
+
+/* 注意：--art-* 是 HomeServiceIcon 像素插画的作品色板（内容资产，非界面用色），
+   ServicesPage 视觉依赖，替换会造成服务图标回退，故保留原值。 */
+.svcIcon {
+  --art-paper: #fff;
+  --art-blue: #347bfa;
+  --art-blue-light: #65a2ff;
+  --art-blue-deep: #215bd5;
+  --art-green: #20c77a;
+  --art-green-light: #7ce4b0;
+  --art-amber: #ffab18;
+  --art-amber-deep: #e9900c;
+  --art-yellow: #ffd34e;
+  --art-violet: #8d68ed;
+  --art-violet-light: #c2a9ff;
+  --art-violet-deep: #6842ca;
+  --art-cyan: #08b9df;
+  --art-cyan-light: #37cbea;
+  --art-cyan-deep: #0694bb;
+  --art-coral: #ff6753;
+  --art-coral-light: #ffab8a;
+  --art-pink: #f44596;
+  --art-pink-light: #ff9fc6;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+}
+
+.svcIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.svcText {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+
+.svcText b {
+  display: block;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.svcDesc {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.svcGo {
+  flex: none;
+  color: var(--text-3);
+  font-size: 24px;
+}
+
+.expressEntry {
+  margin: 0 16px 16px;
+  width: calc(100% - 32px);
+  background: var(--mint);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.serviceIntro {
+  margin: 0 16px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* —— 跑腿任务卡 —— */
+.task {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.taskBody {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.taskBody > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.taskThumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--mint);
+  margin-top: 6px;
+}
+
+.taskTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-text);
+  background: var(--mint);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* 任务卡片：类型 + 校区并排；校区用海洋蓝调与绿色类型标签区分 */
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.campus {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--service-blue-ink);
+  background: var(--service-blue);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* 页头「发布」按钮：狐狸橙，任务大厅 / 二手市场的新建入口 */
+.pub {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--orange) 32%, transparent);
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.pub:active {
+  transform: scale(0.96);
+}
+
+/* 状态胶囊（具体配色由页面按状态内联覆盖，此处给统一形状与默认浅绿底） */
+.status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--green-text);
+  background: var(--mint);
+  white-space: nowrap;
+}
+
+.taskTitle {
+  margin: 8px 0 6px;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text);
+}
+
+.price {
+  color: var(--price);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.meta {
+  display: flex;
+  gap: 14px;
+  color: var(--text-3);
+  font-size: 12px;
+  margin: 6px 0 10px;
+  align-items: center;
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* —— 二手市场商品网格 —— */
+.prodGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.prod {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.prodPic {
+  height: 130px;
+  position: relative;
+  background: var(--mint);
+  overflow: hidden;
+}
+
+.prodTag {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--green-text);
+  font-weight: 700;
+}
+
+.prod b {
+  display: block;
+  padding: 8px 10px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.prod .price {
+  font-size: 16px;
+  padding: 4px 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 浅绿底小提示（成色 / 议价 / 描述块共用） */
+.note {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-text);
+  background: var(--mint);
+  border-radius: 8px;
+  padding: 3px 8px;
+}
+
+/* —— 信息站信息流 —— */
+.feed {
+  /* 底部留出悬浮「发布」按钮的占位：.fabWrap 用 margin-top: -48px 上浮，
+     不留白就会正好压住最后一张卡片页脚右侧的操作按钮（实测删除按钮被完全覆盖）。 */
+  padding: 0 16px 56px;
+}
+
+.post {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.postFocus {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 22%, transparent), var(--shadow-sm);
+}
+
+.postMain {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 8px 0 10px;
+}
+
+.postMain > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.postBody {
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--text-2);
+}
+
+.postBody b {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--mint);
+  flex-shrink: 0;
+}
+
+.fabWrap {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px;
+  pointer-events: none;
+  margin-top: -48px;
+}
+
+.postFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* 管理员删除（只在互助卡片上出现）：危险色，与「联系方式」按钮区分开 */
+.acts .del {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.acts button {
+  margin-left: 10px;
+  color: var(--text-3);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 信息站悬浮发布钮：狐狸橙圆形 FAB */
+.fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--on-primary);
+  font-size: 28px;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--orange) 42%, transparent);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* —— 食堂页头横幅 —— */
+.banner {
+  margin: 4px 16px 12px;
+  background: var(--mint-2) right 10px center / auto 92% no-repeat;
+  image-rendering: pixelated;
+  border-radius: var(--radius-lg);
+  aspect-ratio: 16 / 8;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px 8px 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--mint) 70%, transparent) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.banner h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 22px;
+  color: var(--green-ink);
+  font-weight: 800;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--card) 60%, transparent);
+}
+
+/* 胶囊小按钮：换一换 / 下单（重点动作，狐狸橙实心） */
+.spin {
+  margin-top: 10px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--orange);
+  border: 1px solid transparent;
+  color: var(--on-primary);
+  font: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.spin:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.stallHead {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.stall {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stallTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* 营业中：浅绿底 + 深绿字 */
+.open {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-text);
+  background: var(--mint);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+/* 非营业态胶囊（已打烊 / 今日休息 / 平台暂停营业）：中性弱化 */
+.openOff {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text-3) 12%, var(--card));
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+/* 平台强制营业等提醒态：琥珀软底（service-amber 系列，深色自适应） */
+.openWarn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--service-amber-ink);
+  background: var(--service-amber);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.dish:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dishes {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  margin-top: 10px;
+}
+
+.dish {
+  flex: 0 0 78px;
+  cursor: pointer;
+}
+
+.dishPic {
+  width: 100%;
+  height: 58px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  margin-bottom: 4px;
+  object-fit: cover;
+  background: var(--mint);
+}
+
+.dish span {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.reviewLink:active {
+  color: var(--green-text);
+}
+
+/* 加载 / 空列表 / 错误占位：居中、弱化文案 */
+.empty {
+  margin: 48px 24px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* —— 订餐购物车（底部悬浮主操作栏：白底 + 上浮阴影 + 浅边） —— */
+.cart {
+  position: sticky;
+  bottom: 8px;
+  margin: 4px 16px 0;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.cartHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.cartHead em {
+  font-style: normal;
+  color: var(--price);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.cartInput {
+  width: 100%;
+  height: 38px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cartInput::placeholder {
+  color: var(--text-3);
+}
+
+.cartInput:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
+}
+
+/* 列表视图：单列铺开，配合 motion layout 平滑重排 */
+.prodList {
+  grid-template-columns: 1fr;
+}
+
+/* 键盘可达性：统一绿色聚焦描边（新增，不影响既有鼠标交互） */
+.chip:focus-visible,
+.tab:focus-visible,
+.pub:focus-visible,
+.spin:focus-visible,
+.fab:focus-visible,
+.dish:focus-visible,
+.reviewLink:focus-visible,
+.task:focus-visible,
+.prod:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+:global([data-ui-variant='cute']) :is(.card,.tabs) { border-radius: var(--radius); border-color: var(--warm-line); box-shadow: var(--shadow); }
+:global([data-ui-variant='minimal']) .tabs { background: var(--mint); border: 0; box-shadow: none; padding: 4px; margin-inline: 20px; }
+:global([data-ui-variant='minimal']) .tab.on { background: var(--card); box-shadow: var(--shadow-sm); }
+:global([data-ui-variant='minimal']) .serviceIntro { margin-inline: 20px; line-height: 1.8; }

@@ -1,0 +1,7 @@
+.picker { display: grid; gap: 8px; margin-top: 2px; }
+.picker p { margin: 0; color: var(--text-2); font-size: 12px; font-weight: 650; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.grid button { display: grid; place-items: center; min-width: 0; min-height: 52px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--mint); cursor: pointer; }
+.grid button:hover, .grid button:focus-visible { border-color: var(--green); outline-offset: 2px; }
+.grid button:disabled { opacity: .55; cursor: default; }
+.grid img { display: block; width: 100%; height: 60px; object-fit: contain; }

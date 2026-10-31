@@ -1,0 +1,16 @@
+.banner { position:relative; width:100%; aspect-ratio:800/317; overflow:hidden; border-radius:inherit; background:var(--green-soft); }
+.banner > a,.banner > div:first-child { display:block; width:100%; height:100%; }
+.banner img { display:block; width:100%; height:100%; object-fit:cover; }
+.caption { position:absolute; inset:auto 0 0; display:grid; gap:3px; padding:25px 16px 13px; color:#fff; background:linear-gradient(transparent,rgba(0,30,20,.88)); text-shadow:0 1px 3px #0008; }
+.caption small { font-size:11px; } .caption strong { font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .caption span { font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dots { position:absolute; right:10px; top:10px; display:flex; gap:5px; } .dots button { width:18px; height:18px; border:0; border-radius:50%; background:transparent; padding:5px; } .dots button::after { content:''; display:block; width:8px; height:8px; border-radius:50%; background:#ffffff99; } .dots button[aria-current=true]::after { background:#fff; }
+.simpleBanner { position:relative; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); }
+.simpleBanner > a { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:4px 10px; min-height:48px; padding:10px 12px; color:inherit; text-decoration:none; }
+.simpleBanner > a > span:first-child { grid-row:1; font-size:12px; color:var(--text-2); }
+.simpleBanner > a > strong { grid-row:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; }
+.simpleBanner > a > span:nth-child(3):not(:last-child) { grid-column:2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--text-2); }
+.simpleBanner > a > span:last-child { grid-column:3; grid-row:1; font-size:20px; }
+.simpleDots { display:flex; gap:2px; padding:0 8px 4px; }
+.simpleDots button { width:28px; height:24px; border:0; background:transparent; padding:8px; }
+.simpleDots button::after { content:''; display:block; width:7px; height:7px; border-radius:50%; background:var(--text-3); opacity:.45; }
+.simpleDots button[aria-current=true]::after { opacity:1; }

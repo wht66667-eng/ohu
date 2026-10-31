@@ -1,0 +1,365 @@
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderAlarm.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderAlarm.java
+new file mode 100644
+index 0000000..9444706
+--- /dev/null
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderAlarm.java
+@@ -0,0 +1,22 @@
++package com.capacitorjs.plugins.localnotifications;
++
++import android.app.AlarmManager;
++import android.app.PendingIntent;
++import android.os.Build;
++
++/** Schedules only explicitly enabled, user-facing course alarms. */
++final class CourseReminderAlarm {
++    private CourseReminderAlarm() {}
++
++    static boolean schedule(String source, AlarmManager alarms, long at, PendingIntent show, PendingIntent operation) {
++        if (!CourseReminderPolicy.usesAlarmClock(source)) return false;
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarms.canScheduleExactAlarms()) return false;
++        try {
++            alarms.setAlarmClock(new AlarmManager.AlarmClockInfo(at, show), operation);
++        } catch (SecurityException permissionChanged) {
++            // Exact permission can change after the check. Preserve a best-effort course notice.
++            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, operation);
++        }
++        return true;
++    }
++}
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderPolicy.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderPolicy.java
+new file mode 100644
+index 0000000..714d9c3
+--- /dev/null
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/CourseReminderPolicy.java
+@@ -0,0 +1,113 @@
++package com.capacitorjs.plugins.localnotifications;
++
++import java.text.ParsePosition;
++import java.text.SimpleDateFormat;
++import java.util.Date;
++import java.util.Locale;
++import java.util.TimeZone;
++import org.json.JSONObject;
++
++/** Host course policy shared by scheduling, delivery and the offline replenisher. */
++public final class CourseReminderPolicy {
++    public static final long MAX_LATENESS_MS = 60 * 1000L;
++
++    private CourseReminderPolicy() {}
++
++    private static JSONObject parse(String source) {
++        try { return source == null ? null : new JSONObject(source); }
++        catch (Exception invalid) { return null; }
++    }
++    public static boolean isCourse(String source) { return isCourse(parse(source)); }
++    public static boolean isManagedReminder(String source) { return isManagedReminder(parse(source)); }
++    public static long originalAt(String source) { return originalAt(parse(source)); }
++    public static long expiresAt(String source) { return expiresAt(parse(source)); }
++    public static boolean usesAlarmClock(String source) { return usesAlarmClock(parse(source)); }
++
++    public static boolean isCourse(JSONObject source) {
++        JSONObject extra = source == null ? null : source.optJSONObject("extra");
++        String type = extra == null ? "" : extra.optString("type");
++        if (!type.isEmpty()) return "class".equals(type);
++        int id = source == null ? 0 : source.optInt("id");
++        // Old course records may have no extras. Their missing time/owner is not a licence to ring.
++        return id == 40999 || (id >= 41000 && id < 50000);
++    }
++
++    public static boolean isManagedReminder(JSONObject source) {
++        JSONObject extra = source == null ? null : source.optJSONObject("extra");
++        String type = extra == null ? "" : extra.optString("type");
++        return isCourse(source) || "todo".equals(type) || "exam".equals(type) || "cert".equals(type);
++    }
++
++    /** Keep the original event time even when an imminent alarm was moved by one second. */
++    public static long originalAt(JSONObject source) {
++        if (source == null) return -1;
++        JSONObject extra = source.optJSONObject("extra");
++        String value = extra == null ? "" : extra.optString("reminderAt", "");
++        if (value.isEmpty()) {
++            JSONObject schedule = source.optJSONObject("schedule");
++            value = schedule == null ? "" : schedule.optString("at", "");
++        }
++        return parseAt(value);
++    }
++
++    private static long parseAt(String value) {
++        // The host uses Date.toISOString(), matching the plugin's UTC date contract.
++        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
++        format.setTimeZone(TimeZone.getTimeZone("UTC"));
++        format.setLenient(false);
++        ParsePosition position = new ParsePosition(0);
++        Date parsed = format.parse(value, position);
++        return parsed == null || position.getIndex() != value.length() ? -1 : parsed.getTime();
++    }
++
++    /** Apply the one-minute cutoff to class, exam, todo and certification alarms. */
++    public static long expiresAt(JSONObject source) {
++        long at = originalAt(source);
++        if (at <= 0 || at > Long.MAX_VALUE - MAX_LATENESS_MS) return -1;
++        long expires = at + MAX_LATENESS_MS;
++        JSONObject extra = source == null ? null : source.optJSONObject("extra");
++        if (extra != null && ("todo".equals(extra.optString("type")) || "exam".equals(extra.optString("type")) || "cert".equals(extra.optString("type")))) return expires;
++        if (extra == null) return expires;
++        long start = extra.has("classStartAt") ? parseAt(extra.optString("classStartAt", "")) : -1;
++        long end = extra.has("classEndAt") ? parseAt(extra.optString("classEndAt", "")) : -1;
++        if ((extra.has("classStartAt") && start <= 0) || (extra.has("classEndAt") && (end <= 0 || (start > 0 && end <= start)))) return -1;
++        String kind = extra.optString("reminderKind", "");
++        if ("class-soon".equals(kind) && start > 0) expires = Math.min(expires, start);
++        if ("class-start".equals(kind) && end > 0) expires = Math.min(expires, end);
++        return expires;
++    }
++
++    public static boolean isExpired(JSONObject source, long now) {
++        if (!isManagedReminder(source)) return false;
++        long expires = expiresAt(source);
++        return expires <= 0 || now >= expires;
++    }
++
++    public static boolean usesAlarmClock(JSONObject source) {
++        JSONObject extra = source == null ? null : source.optJSONObject("extra");
++        return isCourse(source) && extra != null && extra.optBoolean("courseAlarmClock", true);
++    }
++
++    /** A broadcast already in flight must not consume a replacement with a reused ID. */
++    public static boolean sameCourseEvent(String expectedJson, JSONObject current) {
++        JSONObject expected = parse(expectedJson);
++        if (!isManagedReminder(expected) || !isManagedReminder(current)) return false;
++        JSONObject before = expected.optJSONObject("extra"), after = current.optJSONObject("extra");
++        if (before == null || after == null) return false;
++        if (!before.optString("type").equals(after.optString("type"))) return false;
++        JSONObject beforeSchedule = expected.optJSONObject("schedule"), afterSchedule = current.optJSONObject("schedule");
++        if (beforeSchedule == null || afterSchedule == null) return false;
++        return expected.optInt("id") == current.optInt("id")
++            && originalAt(expected) == originalAt(current)
++            && before.optString("ownerUid").equals(after.optString("ownerUid"))
++            && before.optString("todoId").equals(after.optString("todoId"))
++            && before.optString("reminderKind").equals(after.optString("reminderKind"))
++            && before.optString("classStartAt").equals(after.optString("classStartAt"))
++            && before.optString("classEndAt").equals(after.optString("classEndAt"))
++            && before.optString("expiresAt").equals(after.optString("expiresAt"))
++            && before.optBoolean("courseAlarmClock", true) == after.optBoolean("courseAlarmClock", true)
++            && beforeSchedule.optString("at").equals(afterSchedule.optString("at"))
++            && expected.optString("channelId").equals(current.optString("channelId"))
++            && expected.optString("title").equals(current.optString("title"))
++            && expected.optString("body").equals(current.optString("body"));
++    }
++}
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationManager.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationManager.java
+index 0b826a5..21b4664 100644
+--- a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationManager.java
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationManager.java
+@@ -326,6 +326,10 @@ public class LocalNotificationManager {
+         Intent notificationIntent = new Intent(context, TimedNotificationPublisher.class);
+         notificationIntent.putExtra(NOTIFICATION_INTENT_KEY, request.getId());
+         notificationIntent.putExtra(TimedNotificationPublisher.NOTIFICATION_KEY, notification);
++        if (CourseReminderPolicy.isManagedReminder(request.getSource())) {
++            notificationIntent.putExtra(TimedNotificationPublisher.COURSE_AT_KEY, CourseReminderPolicy.originalAt(request.getSource()));
++            notificationIntent.putExtra(TimedNotificationPublisher.COURSE_SOURCE_KEY, request.getSource());
++        }
+         int flags = PendingIntent.FLAG_CANCEL_CURRENT;
+         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+             flags = flags | PendingIntent.FLAG_MUTABLE;
+@@ -343,7 +347,16 @@ public class LocalNotificationManager {
+                 long interval = at.getTime() - new Date().getTime();
+                 alarmManager.setRepeating(AlarmManager.RTC, at.getTime(), interval, pendingIntent);
+             } else {
+-                setExactIfPossible(alarmManager, schedule, at.getTime(), pendingIntent);
++                boolean courseClockScheduled = false;
++                if (CourseReminderPolicy.usesAlarmClock(request.getSource())) {
++                    // User-visible course alarms are exempt from Doze's allow-while-idle batching.
++                    // The info intent opens the course without consuming its still-pending notification.
++                    Intent info = buildIntent(request, "view-reminder");
++                    info.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, false);
++                    PendingIntent show = PendingIntent.getActivity(context, request.getId() + 1000000, info, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
++                    courseClockScheduled = CourseReminderAlarm.schedule(request.getSource(), alarmManager, at.getTime(), show, pendingIntent);
++                }
++                if (!courseClockScheduled) setExactIfPossible(alarmManager, schedule, at.getTime(), pendingIntent);
+             }
+             return;
+         }
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationRestoreReceiver.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationRestoreReceiver.java
+index 134fd06..6f9727e 100644
+--- a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationRestoreReceiver.java
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotificationRestoreReceiver.java
+@@ -5,12 +5,14 @@ import static android.os.Build.VERSION.SDK_INT;
+ import android.content.BroadcastReceiver;
+ import android.content.Context;
+ import android.content.Intent;
++import android.content.SharedPreferences;
+ import android.os.Build;
+ import android.os.UserManager;
+ import com.getcapacitor.CapConfig;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.List;
++import org.json.JSONObject;
+ 
+ public class LocalNotificationRestoreReceiver extends BroadcastReceiver {
+ 
+@@ -21,13 +23,32 @@ public class LocalNotificationRestoreReceiver extends BroadcastReceiver {
+             if (um == null || !um.isUserUnlocked()) return;
+         }
+ 
++        // Host contract: opt-out affects recovery only, not TimedNotificationPublisher.
++        SharedPreferences boot = context.getSharedPreferences("reminder.boot.v1", Context.MODE_PRIVATE);
++        boolean adminShell = "com.sunshinecampus.admin".equals(context.getPackageName());
++        if (!adminShell && !boot.getBoolean("enabled", true)) return;
++        String owner = boot.getString("ownerUid", "");
++        if (!adminShell && owner.isEmpty()) return;
++
+         NotificationStorage storage = new NotificationStorage(context);
+         List<String> ids = storage.getSavedNotificationIds();
+ 
+         ArrayList<LocalNotification> notifications = new ArrayList<>(ids.size());
+-        ArrayList<LocalNotification> updatedNotifications = new ArrayList<>();
+         for (String id : ids) {
++            JSONObject source = storage.getSavedNotificationAsJSObject(id);
++            int storedId = source == null ? 0 : source.optInt("id");
++            try { storedId = Integer.parseInt(id); } catch (NumberFormatException ignored) {}
++            if (adminShell && StudentReminderPolicy.isStudent(source, storedId)) {
++                storage.deleteNotification(id);
++                continue;
++            }
++            JSONObject extra = source == null ? null : source.optJSONObject("extra");
++            if (!adminShell && (extra == null || !owner.equals(extra.optString("ownerUid")) || ("self-test".equals(extra.optString("type")) && !extra.optBoolean("restoreAfterReboot", false)))) continue;
+             LocalNotification notification = storage.getSavedNotification(id);
++            if (CourseReminderPolicy.isExpired(source, System.currentTimeMillis())) {
++                storage.deleteNotification(id);
++                continue;
++            }
+             if (notification == null) {
+                 continue;
+             }
+@@ -35,22 +56,16 @@ public class LocalNotificationRestoreReceiver extends BroadcastReceiver {
+             LocalNotificationSchedule schedule = notification.getSchedule();
+             if (schedule != null) {
+                 Date at = schedule.getAt();
+-                if (at != null && at.before(new Date())) {
+-                    // modify the scheduled date in order to show notifications that would have been delivered while device was off.
+-                    long newDateTime = new Date().getTime() + 15 * 1000;
+-                    schedule.setAt(new Date(newDateTime));
+-                    notification.setSchedule(schedule);
+-                    updatedNotifications.add(notification);
++                if (at != null && !at.after(new Date())) {
++                    // A missed personal reminder is stale after reboot. Never move it to now + 15s.
++                    storage.deleteNotification(id);
++                    continue;
+                 }
+             }
+ 
+             notifications.add(notification);
+         }
+ 
+-        if (updatedNotifications.size() > 0) {
+-            storage.appendNotifications(updatedNotifications);
+-        }
+-
+         CapConfig config = CapConfig.loadDefault(context);
+         LocalNotificationManager localNotificationManager = new LocalNotificationManager(storage, null, context, config);
+ 
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/StudentReminderPolicy.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/StudentReminderPolicy.java
+new file mode 100644
+index 0000000..db8a5a5
+--- /dev/null
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/StudentReminderPolicy.java
+@@ -0,0 +1,24 @@
++package com.capacitorjs.plugins.localnotifications;
++
++import org.json.JSONObject;
++
++/** Personal student reminders must not leak from an older admin APK into its work shell. */
++public final class StudentReminderPolicy {
++    private StudentReminderPolicy() {}
++
++    public static boolean isStudent(JSONObject source) { return isStudent(source, source == null ? 0 : source.optInt("id")); }
++
++    public static boolean isStudent(JSONObject source, int id) {
++        JSONObject extra = source == null ? null : source.optJSONObject("extra");
++        String type = extra == null ? "" : extra.optString("type");
++        // Work notifications remain work notifications even if an older ID was reused.
++        if ("admin-work".equals(type)) return false;
++        if ("class".equals(type) || "exam".equals(type) || "todo".equals(type) || "cert".equals(type) || "self-test".equals(type)) return true;
++        return id == 40999 || (id >= 41000 && id < 50000) || (id >= 51000 && id < 53000) || (id >= 60000 && id < 60080) || id == 70011;
++    }
++
++    public static boolean isStudent(String source) {
++        try { return source != null && isStudent(new JSONObject(source)); }
++        catch (Exception invalid) { return false; }
++    }
++}
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.java
+index 0a5c0ad..9ac6ced 100644
+--- a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.java
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/TimedNotificationPublisher.java
+@@ -12,6 +12,7 @@ import com.getcapacitor.JSObject;
+ import com.getcapacitor.Logger;
+ import java.text.SimpleDateFormat;
+ import java.util.Date;
++import org.json.JSONObject;
+ 
+ /**
+  * Class used to create notification from timer event
+@@ -21,12 +22,15 @@ public class TimedNotificationPublisher extends BroadcastReceiver {
+ 
+     public static String NOTIFICATION_KEY = "NotificationPublisher.notification";
+     public static String CRON_KEY = "NotificationPublisher.cron";
++    public static String COURSE_AT_KEY = "NotificationPublisher.courseOriginalAt";
++    public static String COURSE_SOURCE_KEY = "NotificationPublisher.courseSource";
+ 
+     /**
+      * Restore and present notification
+      */
+     @Override
+     public void onReceive(Context context, Intent intent) {
++        if (intent == null) return;
+         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+ 
+         Notification notification;
+@@ -37,14 +41,44 @@ public class TimedNotificationPublisher extends BroadcastReceiver {
+             notification = getParcelableExtraLegacy(intent, NOTIFICATION_KEY);
+         }
+ 
+-        notification.when = System.currentTimeMillis();
+-
+         int id = intent.getIntExtra(LocalNotificationManager.NOTIFICATION_INTENT_KEY, Integer.MIN_VALUE);
+         if (id == Integer.MIN_VALUE) {
+             Logger.error(Logger.tags("LN"), "No valid id supplied", null);
++            return;
+         }
+         NotificationStorage storage = new NotificationStorage(context);
+         JSObject notificationJson = storage.getSavedNotificationAsJSObject(Integer.toString(id));
++        // A cancelled/previously consumed alarm can already be queued by Android. Never resurrect it.
++        if (notification == null || notificationJson == null || notificationManager == null) return;
++        if ("com.sunshinecampus.admin".equals(context.getPackageName())) {
++            if (StudentReminderPolicy.isStudent(notificationJson, id)) {
++                storage.deleteNotification(Integer.toString(id));
++                notificationManager.cancel(id);
++                return;
++            }
++            // An already queued student parcel must not consume a newly saved work event.
++            if (StudentReminderPolicy.isStudent(intent.getStringExtra(COURSE_SOURCE_KEY))) return;
++        }
++        long now = System.currentTimeMillis();
++        if (CourseReminderPolicy.isManagedReminder(notificationJson)) {
++            long originalAt = CourseReminderPolicy.originalAt(notificationJson);
++            long expectedAt = intent.getLongExtra(COURSE_AT_KEY, 0);
++            String expectedSource = intent.getStringExtra(COURSE_SOURCE_KEY);
++            // A stale in-flight broadcast must not consume a newly scheduled event reusing this ID.
++            // A queued pre-130 intent has no trustworthy identity and cannot consume the replacement.
++            if (expectedAt <= 0 || expectedSource == null || expectedAt != originalAt || !CourseReminderPolicy.sameCourseEvent(expectedSource, notificationJson)) return;
++            JSONObject extra = notificationJson.optJSONObject("extra");
++            String owner = context.getSharedPreferences("reminder.boot.v1", Context.MODE_PRIVATE).getString("ownerUid", "");
++            if (CourseReminderPolicy.isExpired(notificationJson, now) || extra == null || owner.isEmpty() || !owner.equals(extra.optString("ownerUid"))) {
++                storage.deleteNotification(Integer.toString(id));
++                Logger.debug(Logger.tags("LN"), "Discarded expired or revoked personal reminder " + id);
++                return;
++            }
++            notification.when = originalAt;
++        } else {
++            notification.when = now;
++        }
+         LocalNotificationsPlugin.fireReceived(notificationJson);
+         notificationManager.notify(id, notification);
+         if (!rescheduleNotificationIfNeeded(context, intent, id)) {

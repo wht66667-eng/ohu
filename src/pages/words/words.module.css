@@ -1,0 +1,463 @@
+/* 单词记忆 · 哦狐温暖校园风（沿用全局 token，浅/深色自适应） */
+
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.main {
+  padding: 0 16px;
+}
+
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* —— 今日学习卡 —— */
+.todayCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px 16px;
+  margin-bottom: 12px;
+}
+
+.todayKicker {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green-text);
+  letter-spacing: 0.02em;
+}
+
+.todayCard h2 {
+  margin: 4px 0 0;
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0 12px;
+}
+
+.statGrid > div {
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.statGrid b {
+  display: block;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statGrid span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.progress > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--orange));
+  transition: width 0.4s ease;
+}
+
+.progressLabel {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* —— 学习卡 —— */
+.studyCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px 16px 18px;
+  margin-bottom: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.word {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.phonetic {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.wordActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.chipBtn:disabled {
+  opacity: 0.5;
+}
+
+.chipBtn img {
+  image-rendering: pixelated;
+}
+
+.foxTip {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.meaning {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.gradeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.gradeBtn {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.gradeBtn:active {
+  transform: translateY(1px);
+}
+
+.gradeForget {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: transparent;
+}
+
+.gradeKnow {
+  background: var(--green-soft);
+  color: var(--green-text);
+  border-color: transparent;
+}
+
+.gradeBest {
+  background: var(--green);
+  color: var(--on-primary);
+  border-color: var(--green);
+}
+
+/* —— 完成状态 —— */
+.doneCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px 16px;
+  margin-bottom: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.doneCard img {
+  image-rendering: pixelated;
+}
+
+.doneCard b {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.doneCard p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.doneLinks {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* —— 玩法入口 —— */
+.gameRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.gameCard {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 13px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+}
+
+.gameCard b {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.gameCard span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* —— 分区 —— */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.sectionHead h2 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.sectionHead h2 small {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.headActions {
+  display: flex;
+  gap: 8px;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.linkDanger {
+  color: var(--danger);
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.chip {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.chipOn {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-primary);
+}
+
+.wordChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wordChip button {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  font: inherit;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+/* —— 表单卡 —— */
+.formCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formCard label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.inputNum {
+  width: 72px;
+  padding: 8px 10px;
+}
+
+.formHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.formSave {
+  align-self: flex-start;
+}
+.downloadSection { margin:18px 0; }
+.downloadList { border:1px solid var(--line); border-radius:var(--radius); background:var(--card); padding:16px; }
+.downloadRow { display:flex; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid var(--line); padding:14px 0; }
+.downloadRow:first-of-type { margin-top:12px; }.downloadRow small { display:block; margin-top:6px; color:var(--text-2); font-size:12px; }
+.downloadRow button { flex-shrink:0; min-height:44px; }.downloadSection > .sectionHead button { min-height:44px; }
+.downloadMessage,.wordExample { font-size:14px; color:var(--text-2); line-height:1.7; white-space:pre-wrap; }
+.downloadList button:disabled { opacity:.5; cursor:default; }
+.downloadList button:focus-visible { outline:2px solid var(--green-text); outline-offset:3px; }
+@media(max-width:360px) { .downloadRow { flex-wrap:wrap; } }

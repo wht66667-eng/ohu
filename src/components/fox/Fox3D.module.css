@@ -1,0 +1,11 @@
+.root{position:relative;display:inline-flex;flex-direction:column;align-items:center;max-width:100%;color:var(--primary)}
+.stage{position:relative;display:block;border:0;padding:0;min-width:44px;min-height:44px;width:100%;height:100%;background:transparent;color:inherit;cursor:pointer;border-radius:20px;overflow:hidden;outline-offset:3px}
+.stage img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.canvas{position:absolute;inset:0;pointer-events:none}
+.canvas canvas{display:block;width:100%;height:100%;pointer-events:none}
+.toggle{min-height:44px;padding:0 13px;border:0;border-radius:999px;background:color-mix(in srgb,var(--primary) 9%,var(--card));color:var(--primary);font:inherit;font-size:11px;font-weight:600;cursor:pointer;outline-offset:3px;white-space:nowrap}
+.toggle:disabled{opacity:.6;cursor:default}
+.status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:11px;pointer-events:none;background:color-mix(in srgb,var(--card) 80%,transparent);border-radius:20px}
+.notice{font-size:11px;color:var(--muted);line-height:1.6;margin:4px 0 0;text-align:center;max-width:180px}
+.stage:focus-visible,.toggle:focus-visible{outline:2px solid var(--primary)}
+@media(prefers-reduced-motion:reduce){.root *{transition:none!important;animation:none!important}}

@@ -1,0 +1,466 @@
+{
+  "captured_at": "2026-10-21T09:22:19.717Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "scope": "Catalog SELECT only; no personal posts, user authentication, inserts or business RPCs.",
+  "friend_columns": [
+    {
+      "table_name": "friend_requests",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_avatar",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "to_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "message",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "user_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_avatar",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "remark",
+      "data_type": "text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "friend_policies": [
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_insert_own",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(from_uid = auth.uid())"
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_select_own",
+      "cmd": "SELECT",
+      "qual": "((from_uid = auth.uid()) OR (to_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_update_own",
+      "cmd": "UPDATE",
+      "qual": "(to_uid = auth.uid())",
+      "with_check": "(to_uid = auth.uid())"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_delete_own",
+      "cmd": "DELETE",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_insert_own",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_uid = auth.uid())"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_select_own",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    }
+  ],
+  "permissions": [
+    {
+      "name": "moments",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_delete": "false"
+    },
+    {
+      "name": "moments",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_delete": "true"
+    },
+    {
+      "name": "moments_comments",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_delete": "false"
+    },
+    {
+      "name": "moments_comments",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_delete": "true"
+    },
+    {
+      "name": "moments_likes",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_delete": "false"
+    },
+    {
+      "name": "moments_likes",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_delete": "true"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "moments",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('moments_id_seq'::regclass)"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "creator_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "moments",
+      "column_name": "creator_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "creator_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "moments",
+      "column_name": "body",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "media_urls",
+      "data_type": "ARRAY",
+      "is_nullable": "NO",
+      "column_default": "'{}'::text[]"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "media_type",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'image'::text"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "visibility",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'friends_only'::text"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "likes_count",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "comments_count",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "moments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('moments_comments_id_seq'::regclass)"
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "moment_id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "commenter_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "commenter_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "body",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "moments_comments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "moments_likes",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('moments_likes_id_seq'::regclass)"
+    },
+    {
+      "table_name": "moments_likes",
+      "column_name": "moment_id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "moments_likes",
+      "column_name": "liker_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "moments_likes",
+      "column_name": "liker_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "moments_likes",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "moments",
+      "policyname": "moments_delete_own",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "(creator_uid = auth.uid())",
+      "with_check": null
+    },
+    {
+      "tablename": "moments",
+      "policyname": "moments_insert_own",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(creator_uid = auth.uid())"
+    },
+    {
+      "tablename": "moments",
+      "policyname": "moments_select_visible",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((creator_uid = auth.uid()) OR (visibility = 'public'::text) OR ((visibility = 'friends_only'::text) AND (EXISTS ( SELECT 1\n   FROM friends f\n  WHERE ((f.user_uid = auth.uid()) AND (f.friend_uid = moments.creator_uid))))))",
+      "with_check": null
+    },
+    {
+      "tablename": "moments",
+      "policyname": "moments_update_own",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "(creator_uid = auth.uid())",
+      "with_check": "(creator_uid = auth.uid())"
+    },
+    {
+      "tablename": "moments_comments",
+      "policyname": "moments_comments_delete_own",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "(commenter_uid = auth.uid())",
+      "with_check": null
+    },
+    {
+      "tablename": "moments_comments",
+      "policyname": "moments_comments_insert_own",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(commenter_uid = auth.uid())"
+    },
+    {
+      "tablename": "moments_comments",
+      "policyname": "moments_comments_select_all",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "tablename": "moments_likes",
+      "policyname": "moments_likes_delete_own",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "(liker_uid = auth.uid())",
+      "with_check": null
+    },
+    {
+      "tablename": "moments_likes",
+      "policyname": "moments_likes_insert_own",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(liker_uid = auth.uid())"
+    },
+    {
+      "tablename": "moments_likes",
+      "policyname": "moments_likes_select_all",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "moments",
+      "conname": "moments_media_type_check",
+      "contype": "c",
+      "definition": "CHECK ((media_type = ANY (ARRAY['image'::text, 'video'::text, 'mixed'::text])))"
+    },
+    {
+      "table_name": "moments",
+      "conname": "moments_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "moments",
+      "conname": "moments_visibility_check",
+      "contype": "c",
+      "definition": "CHECK ((visibility = ANY (ARRAY['public'::text, 'friends_only'::text, 'private'::text])))"
+    },
+    {
+      "table_name": "moments_comments",
+      "conname": "moments_comments_moment_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (moment_id) REFERENCES moments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "moments_comments",
+      "conname": "moments_comments_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "moments_likes",
+      "conname": "moments_likes_moment_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (moment_id) REFERENCES moments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "moments_likes",
+      "conname": "moments_likes_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "rls": [
+    {
+      "name": "moments",
+      "rls": "true"
+    },
+    {
+      "name": "moments_comments",
+      "rls": "true"
+    },
+    {
+      "name": "moments_likes",
+      "rls": "true"
+    }
+  ]
+}

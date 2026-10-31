@@ -1,0 +1,9 @@
+.scene { --study-fox-ink: #10513f; position: relative; flex: none; perspective: 550px; }
+.layers { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; }
+.halo { position: absolute; inset: 13% 8% 7%; border-radius: 50%; background: color-mix(in srgb, var(--mint) 85%, var(--fox-belly, #fff0dc)); transform: translateZ(-10px); }
+.tail, .character { width: 100%; height: 100%; position: absolute; inset: 0; overflow: visible; }
+.tail { transform: translateZ(2px); }
+.character { translate: 0 0 12px; transform-origin: 50% 90%; }
+.ground { position: absolute; bottom: 5%; left: 21%; width: 58%; height: 7%; border-radius: 50%; background: color-mix(in srgb, var(--green) 12%, transparent); transform: translateZ(-4px); }
+:global([data-theme='dark']) .halo { background: color-mix(in srgb, var(--mint) 90%, var(--fox-orange) 10%); }
+@media (prefers-reduced-motion: reduce) { .scene { perspective: none; } .layers { transform-style: flat; } .halo, .tail, .character, .ground { transform: none; translate: none; } }

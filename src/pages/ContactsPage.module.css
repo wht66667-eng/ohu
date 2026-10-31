@@ -1,0 +1,163 @@
+.page {
+  min-height:100dvh;
+  background:var(--page-mid);
+  color:var(--text);
+  padding-bottom:calc(96px + env(safe-area-inset-bottom))
+}
+.main {
+  padding:16px
+}
+.headerAction,.primary,.inlineError button {
+  min-height:44px;
+  border:0;
+  border-radius:12px;
+  padding:10px 16px;
+  font:inherit;
+  font-weight:650;
+  cursor:pointer
+}
+.headerAction {
+  display:flex;
+  gap:6px;
+  align-items:center;
+  background:transparent;
+  color:var(--green-text)
+}
+.primary {
+  background:var(--green);
+  color:var(--on-primary)
+}
+.requestEntry,.friend {
+  width:100%;
+  min-height:72px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  font:inherit;
+  text-align:left;
+  cursor:pointer
+}
+.requestEntry {
+  border-radius:18px
+}
+.entryIcon {
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:var(--page-mid);
+  color:var(--green-text)
+}
+.info {
+  min-width:0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:5px
+}
+.info strong {
+  font-size:15px;
+  font-weight:650;
+  overflow-wrap:anywhere
+}
+.info>span {
+  font-size:12px;
+  color:var(--text-2);
+  overflow-wrap:anywhere;
+  line-height:1.5
+}
+.badge {
+  background:var(--green);
+  color:var(--on-primary);
+  min-width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  border-radius:20px;
+  padding:0 6px;
+  font-size:12px
+}
+.sectionHeading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:24px 2px 10px
+}
+.sectionHeading h2 {
+  font-size:17px;
+  margin:0
+}
+.sectionHeading>span {
+  font-size:13px;
+  color:var(--text-2)
+}
+.list {
+  list-style:none;
+  margin:0;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--card)
+}
+.friend {
+  border:0;
+  border-bottom:1px solid var(--line)
+}
+.list li:last-child .friend {
+  border-bottom:0
+}
+.friend>svg {
+  flex:none;
+  color:var(--green-text)
+}
+.friend:disabled {
+  cursor:wait;
+  opacity:.65
+}
+.inlineError {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  justify-content:space-between;
+  margin:12px 0;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+  font-size:13px;
+  line-height:1.6;
+  overflow-wrap:anywhere
+}
+.inlineError button {
+  flex:none;
+  background:var(--page-mid);
+  color:var(--green-text);
+  font-size:13px
+}
+.page button:focus-visible {
+  outline:3px solid var(--green);
+  outline-offset:3px
+}
+.page button:disabled {
+  cursor:wait;
+  opacity:.6
+}
+@media(max-width:360px) {
+  .main {
+  padding:12px
+}
+.friend,.requestEntry {
+  padding:12px;
+  gap:10px
+}
+
+}
+
+

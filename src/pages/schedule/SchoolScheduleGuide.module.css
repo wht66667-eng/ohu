@@ -1,0 +1,49 @@
+.page { min-height: 100%; background: var(--page-top, var(--bg-light)); color: var(--text); padding-bottom: calc(var(--tab-h) + var(--safe-bottom, 0px) + 20px); }
+.picker { margin: 14px 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+.picker label { display: block; font-size: 12px; font-weight: 700; color: var(--text-2); margin-bottom: 7px; }
+.picker select { width: 100%; min-width: 0; min-height: 44px; font: inherit; font-size: 15px; font-weight: 650; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 34px 9px 11px; }
+.picker select:focus-visible, .copy:focus-visible, .links a:focus-visible, .guide summary:focus-visible, .queryAction:focus-visible, .queryOptions button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.queryCard { margin: 16px; }
+.queryOptions { display: flex; width: fit-content; margin: 0 auto; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--page-top, var(--bg-light)); }
+.queryOptions button { min-height: 44px; min-width: 74px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 13px; font-weight: 650; color: var(--text-2); cursor: pointer; }
+.queryOptions button[aria-pressed='true'] { background: var(--mint); color: var(--green-text); }
+.queryAction { display: flex; width: fit-content; margin: 12px auto 8px; padding: 10px 18px; border-radius: 12px; background: var(--green); color: var(--on-primary); font-size: 14px; font-weight: 650; align-items: center; justify-content: center; min-height: 44px; text-decoration: none; }
+.queryHint { margin: 0 0 5px; text-align: center; font-size: 12px; line-height: 1.75; color: var(--text-2); }
+.queryNote { margin: 0; text-align: center; font-size: 12px; line-height: 1.75; color: var(--text-3); }
+.guide { margin: 0 16px; }
+.guide > summary { min-height: 44px; padding: 12px 2px; color: var(--text-2); font-size: 13px; cursor: pointer; }
+.guideBody { padding: 15px 0; border-top: 1px solid var(--line); }
+.guideBody h2 { font-size: 14px; line-height: 1.5; margin: 18px 0 12px; }
+.access, .help p, .sources p { margin: 0; font-size: 13px; line-height: 1.8; color: var(--text-2); }
+.links { display: grid; gap: 8px; }
+.link { min-height: 58px; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text); background: var(--card); }
+.links strong, .links small { display: block; }
+.links strong { font-size: 14px; line-height: 1.5; }
+.links small { font-size: 12px; margin-top: 4px; opacity: .8; overflow-wrap: anywhere; }
+.links a:hover { filter: brightness(.97); }
+.note { margin: 12px 0 17px; font-size: 12px; color: var(--text-2); line-height: 1.8; }
+.steps { margin: 0; padding-left: 23px; }
+.steps li { padding: 0 0 14px 5px; font-size: 14px; line-height: 1.85; }
+.steps li::marker { color: var(--green-text); font-weight: 700; }
+.copy { display: block; min-height: 44px; margin-top: 12px; padding: 10px 14px; width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--green-text); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.copy:disabled { opacity: .6; cursor: wait; }
+.feedback { min-height: 18px; font-size: 12px; color: var(--green-text); margin: 8px 0 12px; }
+.sources { margin-top: 18px; color: var(--text-2); font-size: 12px; }
+.sources summary { cursor: pointer; min-height: 44px; padding: 12px 0; }
+.sources a { display: inline-block; padding: 12px 10px 12px 0; color: var(--green-text); overflow-wrap: anywhere; }
+.nationalCard { margin: 12px 16px 16px; padding: 17px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(135deg, var(--mint), var(--card)); }
+.nationalCard h2 { margin: 8px 0; font-size: 17px; }
+.nationalCard p { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.7; }
+.nationalCard small { display: block; margin-top: 8px; color: var(--text-3); font-size: 11px; line-height: 1.6; }
+.nationalBadge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: var(--card); color: var(--green-text); font-size: 11px; font-weight: 700; }
+.requestForm { display: grid; gap: 13px; padding: 5px 0 3px; }
+.requestForm p { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.7; }
+.requestForm label { display: grid; gap: 6px; color: var(--text); font-size: 13px; font-weight: 650; }
+.requestForm input,.requestForm select { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font: inherit; font-weight: 450; }
+.requestForm input:focus-visible,.requestForm select:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.moduleChoices { display:flex; flex-wrap:wrap; gap:8px 14px; margin:0; padding:10px 11px; border:1px solid var(--line); border-radius:11px; }
+.moduleChoices legend { padding:0 5px; color:var(--text-2); font-size:12px; font-weight:650; }
+.moduleChoices label { display:flex; grid-auto-flow:column; align-items:center; gap:6px; font-size:12px; font-weight:500; }
+.moduleChoices input { width:17px; min-height:17px; accent-color:var(--green); }
+.requestForm button:disabled { opacity: .65; }
+@media (min-width: 700px) { .picker { max-width: 760px; margin: 18px auto; } .queryCard { max-width: 760px; margin: 16px auto; } .nationalCard { max-width: 760px; margin: 12px auto 16px; } .guide { max-width: 760px; margin: 0 auto; } }

@@ -1,0 +1,7 @@
+.entry { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--green-text); }
+.entry:active { transform: scale(.97); }
+.entry:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+.badge { position: absolute; top: -2px; right: -4px; display: grid; place-items: center; height: 18px; min-width: 18px; padding: 0 4px; border-radius: 999px; background: var(--price); color: var(--on-primary); font-size: 12px; font-weight: 700; line-height: 18px; }
+.unavailable { position: absolute; top: -2px; right: -4px; display: grid; place-items: center; height: 18px; min-width: 18px; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--text-3); font-size: 12px; font-weight: 700; line-height: 18px; }
+@media (prefers-reduced-motion: reduce) { .entry:active { transform: none; } }
+.wrap { display: inline-flex; flex: none; align-items: center; gap: 4px; }

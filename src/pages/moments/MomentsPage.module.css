@@ -1,0 +1,405 @@
+.page {
+  min-height: 100vh;
+  background: #fffaf1;
+  padding-bottom: 88px;
+}
+
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #fffaf1;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+
+.header h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--green);
+}
+.headerFox { width: 28px; height: 28px; object-fit: contain; border-radius: 50%; vertical-align: -4px;  }
+.emptyFox { display: block; width: 104px; height: 104px; object-fit: contain; margin: 0 auto 8px; }
+.emptyState strong { display: block; font-size: 18px; color: var(--green); }
+
+
+.refreshBtn {
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--green);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+.refreshBtn:active {
+  transform: scale(0.92);
+  opacity: 0.6;
+}
+
+.refreshBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.main {
+  padding: 0;
+}
+
+.momentsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.momentCard {
+  background: var(--card);
+  padding: 16px 20px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+
+.momentHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+
+.timeText {
+  font-size: 14px;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+
+
+.moreBtn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 24px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+
+.moreBtn:active {
+  opacity: 0.6;
+}
+
+.actionsMenu {
+  position: absolute;
+  top: 52px;
+  right: 20px;
+  background: var(--card);
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 5;
+}
+
+
+.actionsMenu button {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 16px;
+  color: var(--danger);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.actionsMenu button:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+
+.momentBody {
+  font-size: 17px;
+  line-height: 1.47;
+  color: var(--text);
+  margin-bottom: 12px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  letter-spacing: -0.01em;
+}
+
+
+.imageGrid {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.grid1 {
+  grid-template-columns: 1fr;
+  max-width: 280px;
+}
+
+.grid2 {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 280px;
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid9 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.imageItem {
+  border: 0;
+  padding-top: 0;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  background: #f2f2f7;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.headerActions, .dialogHead, .previewControls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.headerActions { flex-shrink: 0; }
+.header { gap: 12px; }
+.header h1 { font-size: 26px; }
+.subtitle { color: var(--text-2); font-size: 12px; margin: 4px 0 0; }
+.publishBtn, .submitBtn { min-height: 44px; border: 0; border-radius: 12px; background: var(--green); color: white; padding: 10px 16px; font-weight: 650; cursor: pointer; }
+.errorState { margin: 16px; padding: 16px; border-radius: 12px; background: var(--card); color: var(--text); overflow-wrap: anywhere; }
+.errorState p { margin: 0 0 10px; }
+.errorState p + p { color: var(--text-2); font-size: 14px; }
+.errorState button, .dialogHead button, .previewControls button, .secondaryBtn { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line, #d4d4d4); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; }
+.momentBodyButton { display: block; width: 100%; padding: 0; text-align: left; border: 0; background: transparent; cursor: pointer; }
+.momentBodyButton .momentBody { display: block; }
+.dialogPanel { padding: 20px; color: var(--text); background: var(--card); max-height: min(88dvh, 900px); overflow-y: auto; }
+.dialogHead { margin-bottom: 16px; }
+.dialogHead h2 { margin: 0; font-size: 21px; }
+.field { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 8px; font-size: 14px; font-weight: 600; color: var(--text); }
+.field textarea, .field select { width: 100%; box-sizing: border-box; min-height: 44px; border: 1px solid var(--line, #d4d4d4); border-radius: 12px; padding: 12px; color: var(--text); background: var(--card); font: inherit; font-weight: 400; }
+.field textarea { resize: vertical; line-height: 1.6; }
+.counter { color: var(--text-2); font-size: 12px; text-align: right; margin: 0 0 12px; }
+.composeImages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.composeImages img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; }
+.composeImages button { width: 100%; min-height: 36px; background: transparent; border: 0; color: var(--danger); cursor: pointer; }
+.photoEditor { margin:12px 0; padding:12px; border:1px solid var(--line); border-radius:15px; background:var(--page-mid,var(--card)); }
+.photoEditorHead { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; color:var(--text); font-size:13px; }
+.photoEditorHead span { color:var(--text-2); font-size:11px; }
+.composeImages article { min-width:0; }
+.composeImages article > div { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+.composeImages article > div button { min-width:0; padding:0 3px; color:var(--green-text); font-size:11px; }
+.composeImages article > div button + button { color:var(--danger); }
+.whiteSlot { display:grid; place-items:center; aspect-ratio:1; border:1px solid #e8e8e8; border-radius:10px; background:#fff; color:#999; font-size:10px; }
+.whiteOption { display:grid; grid-template-columns:20px auto; align-items:center; gap:2px 8px; margin-top:10px; color:var(--text); font-size:12px; font-weight:650; }
+.whiteOption input { grid-row:span 2; width:18px; height:18px; margin:0; accent-color:var(--green); }
+.whiteOption small { color:var(--text-2); font-size:10px; font-weight:400; }
+.dialogHead small { display:block; margin-top:4px; color:var(--text-2); font-size:11px; font-weight:400; }
+.submitBtn { width: 100%; margin-top: 16px; }
+.formError { color: var(--danger); margin: 12px 0; font-size: 14px; overflow-wrap: anywhere; }
+.formError button { margin-left: 10px; min-height: 36px; background: transparent; border: 0; text-decoration: underline; color: inherit; }
+.commentsSection { margin-top: 20px; border-top: 1px solid var(--line, #d4d4d4); }
+.commentsSection h3 { font-size: 17px; }
+.commentRow { border-bottom: 1px solid var(--line, #d4d4d4); padding: 12px 0; }
+.commentRow > div { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.commentRow time { color: var(--text-2); font-size: 12px; }
+.commentRow p { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.commentForm { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.imagePreview { padding: 16px; color: var(--text); background: var(--card); }
+.imagePreview > img { display: block; max-width: 100%; max-height: 65dvh; object-fit: contain; margin: 0 auto 16px; }
+.momentVideo { max-width: 100%; max-height: 360px; }
+.page button:focus-visible, .dialogPanel button:focus-visible, .imagePreview button:focus-visible, .field textarea:focus-visible, .field select:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+.page button:disabled, .dialogPanel button:disabled, .imagePreview button:disabled { opacity: .5; cursor: not-allowed; }
+
+
+.imageItem:active {
+  opacity: 0.8;
+}
+
+.imageItem img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.momentFooter {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+
+.likeBtn,
+.commentBtn {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-radius: 8px;
+}
+
+
+.likeBtn:active,
+.commentBtn:active {
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(0.96);
+}
+
+
+.likeBtn.liked {
+  color: var(--danger);
+}
+
+.emptyState,
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.emptyState svg {
+  margin-bottom: 20px;
+  color: var(--text-2);
+}
+
+
+.emptyState p {
+  margin: 8px 0;
+  font-size: 17px;
+  color: var(--text-2);
+}
+
+
+.emptyHint {
+  font-size: 14px !important;
+  color: var(--text-2) !important;
+}
+
+
+.emptyState button {
+  margin-top: 20px;
+  padding: 12px 28px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+
+.emptyState button:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingState p {
+  margin-top: 20px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+
+@media (max-width: 375px) {
+  .header {
+    padding: 10px 16px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .momentCard {
+    padding: 14px 16px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .momentBody {
+    font-size: 16px;
+  }
+}

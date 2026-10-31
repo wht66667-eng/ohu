@@ -1,0 +1,384 @@
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--pd-paper);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--pd-line);
+  margin-bottom: 12px;
+  box-shadow: none;
+}
+
+.ringWrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.ring {
+  display: block;
+}
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.stepNum {
+  font-family: var(--pd-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--pd-pine);
+  line-height: 1;
+}
+
+.stepGoal {
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+}
+
+.heroStats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(31, 61, 46, 0.05);
+  border-radius: 14px;
+}
+
+.statBox b {
+  display: block;
+  font-size: 1.05rem;
+  color: var(--pd-ink);
+  line-height: 1;
+}
+
+.statBox span {
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+}
+
+.statEmoji {
+  font-size: 1.2rem;
+}
+
+/* 数据源条 */
+.sourceBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sourceTag {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pd-fox-deep);
+  background: rgba(224, 122, 61, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 122, 61, 0.28);
+}
+
+.sensorBtn {
+  border: 1px solid var(--pd-line);
+  background: var(--pd-paper);
+  color: var(--pd-pine);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.stepAdjust {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.stepAdjust button {
+  border: 1px solid var(--pd-line);
+  background: var(--pd-paper);
+  color: var(--pd-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.stepAdjust button:active {
+  transform: scale(0.95);
+}
+
+/* 周趋势 */
+.weekCard {
+  background: var(--pd-paper);
+  border: 1px solid var(--pd-line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding-bottom: 4px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.barFillWrap {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.barFill {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 4px 4px 0 0;
+  background: var(--green);
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.barLabel {
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+}
+
+.weekSummary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--pd-line);
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+}
+
+.weekSummary b {
+  color: var(--pd-pine);
+}
+
+/* 健康卡片 */
+.metricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metricCard {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--pd-line);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metricHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metricEmoji {
+  font-size: 1.1rem;
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--pd-ink);
+}
+
+.metricValue {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.metricValue b {
+  font-family: var(--pd-font-display);
+  font-size: 1.4rem;
+  color: var(--pd-pine);
+  line-height: 1;
+}
+
+.metricValue span {
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+}
+
+.metricEmpty {
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 700;
+  padding: 6px 0;
+}
+
+.metricAdd {
+  align-self: flex-start;
+  border: 1px dashed var(--pd-line);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--pd-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.metricEdit {
+  display: flex;
+  gap: 6px;
+}
+
+.metricEdit input {
+  flex: 1;
+  border: 1px solid var(--pd-line);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  background: var(--card);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metricEdit button {
+  border: none;
+  background: var(--pd-pine);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 设置面板 */
+.settingsSheet {
+  width: 100%;
+  background: var(--pd-cream);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.settingsSheet h3 {
+  margin: 0 0 16px;
+  font-family: var(--pd-font-display);
+  font-size: 1.15rem;
+  color: var(--pd-pine);
+}
+
+.setRow {
+  margin-bottom: 16px;
+}
+
+.setRow label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--pd-muted);
+  margin-bottom: 8px;
+}
+
+.goalBtns,
+.cardToggles,
+.unitBtns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.goalBtns button,
+.cardToggles button,
+.unitBtns button {
+  border: 1px solid var(--pd-line);
+  background: var(--pd-paper);
+  color: var(--pd-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.goalBtns button.goalOn,
+.cardToggles button.toggleOn,
+.unitBtns button.toggleOn {
+  background: var(--pd-pine);
+  color: var(--on-primary);
+  border-color: var(--pd-pine);
+}
+
+.settingsClose {
+  width: 100%;
+  border: none;
+  background: var(--green);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.metricSource { color: var(--text-3); font-size: 12px; line-height: 1.5; }
+.metricError { color: var(--danger); font-size: 12px; line-height: 1.5; }
+.estimateHint { margin: -8px 0 16px; color: var(--text-3); font-size: 12px; line-height: 1.6; }
+.sensorStatus { margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--green-soft); color: var(--text-2); font-size: 13px; line-height: 1.65; }
+.sensorBtn:disabled, .stepAdjust button:disabled { opacity: .5; cursor: default; }
+.stepAdjust button:disabled:active { transform: none; }
+.teamEntry { display: flex; align-items: center; gap: 12px; min-height: 84px; margin-bottom: 24px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--green-soft); color: var(--green-text); }
+.teamIcon { flex: none; width: 40px; height: 40px; }
+.teamIcon svg { display: block; width: 100%; height: 100%; }
+.teamEntry > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; gap: 6px; }
+.teamEntry b { font-size: 16px; }
+.teamEntry small { color: var(--text-2); font-size: 13px; }
+.teamEntry > span:last-child { font-size: 22px; }
+.stepAdjust button, .metricAdd, .metricEdit button, .metricEdit input, .goalBtns button, .cardToggles button, .unitBtns button { min-width: 44px; min-height: 44px; }
+.teamEntry:focus-visible, .sensorBtn:focus-visible, .settingsClose:focus-visible, .stepAdjust button:focus-visible, .metricAdd:focus-visible, .metricEdit button:focus-visible, .metricEdit input:focus-visible, .goalBtns button:focus-visible, .cardToggles button:focus-visible, .unitBtns button:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+@media (max-width: 350px) { .hero { gap: 10px; padding: 12px; } .statBox { padding: 8px; gap: 6px; } .stepAdjust { width: 100%; justify-content: flex-end; } }
+@media (prefers-reduced-motion: reduce) { .stepAdjust button:active { transform: none; } .barFill { transition: none; } }

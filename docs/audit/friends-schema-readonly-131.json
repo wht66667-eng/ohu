@@ -1,0 +1,374 @@
+{
+  "captured_at": "2026-10-22T05:26:48.380Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "source": "docs/sql/friends-authorization-131.sql",
+  "source_sha256": "6b0be91cf66243795d61539241ed68ef76dbce50b6aedd4eb4228489e472eda7",
+  "scope": "Catalog SELECT only; no personal business rows, end-user authentication, business writes or RPCs.",
+  "request_ids": [
+    "08f660bc-1ae1-485f-8f64-e934ba9df042",
+    "4b90a7a0-ec70-4846-bf0c-6a8069da0953",
+    "000358c9-3cc3-4b13-90e4-57d50dd6a7f2",
+    "8dd1ab35-856f-4508-a3b7-512b0f4690cb",
+    "398c8053-6ea3-462a-a79d-00c208ed8a28",
+    "d7dba59d-c17c-4c89-a1bf-4765904c0fe3",
+    "b3d378ac-36af-4c5c-abd2-3d39f60d7cb7",
+    "3611172c-66a9-4d3f-9cde-fcd529869ac7",
+    "f1face30-a429-4b94-8d5d-fc41056fe7d9"
+  ],
+  "context": [
+    {
+      "current_user": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "session_user": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "version": "PostgreSQL 17.10 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.0, 64-bit",
+      "client_schema_create": "false",
+      "client_bypass_rls": "false"
+    }
+  ],
+  "tables": [
+    {
+      "relname": "friend_requests",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "rls": "true",
+      "force_rls": "false"
+    },
+    {
+      "relname": "friends",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "rls": "true",
+      "force_rls": "false"
+    }
+  ],
+  "privileges": [
+    {
+      "name": "friend_requests",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_update": "false",
+      "can_delete": "false",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    },
+    {
+      "name": "friend_requests",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_update": "true",
+      "can_delete": "true",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    },
+    {
+      "name": "friends",
+      "role": "anon",
+      "can_select": "true",
+      "can_insert": "false",
+      "can_update": "false",
+      "can_delete": "false",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    },
+    {
+      "name": "friends",
+      "role": "authenticated",
+      "can_select": "true",
+      "can_insert": "true",
+      "can_update": "true",
+      "can_delete": "true",
+      "can_trigger": "false",
+      "can_truncate": "false"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_insert_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((from_uid = auth.uid()) AND (status = 'pending'::text) AND (from_uid <> to_uid) AND (btrim(to_uid) <> ''::text))"
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((from_uid = auth.uid()) OR (to_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friend_requests",
+      "policyname": "friend_requests_update_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "((to_uid = auth.uid()) AND (status = 'pending'::text))",
+      "with_check": "((to_uid = auth.uid()) AND (status = ANY (ARRAY['accepted'::text, 'rejected'::text])))"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_delete_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_insert_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "false"
+    },
+    {
+      "tablename": "friends",
+      "policyname": "friends_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR (friend_uid = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "tablename": "moments",
+      "policyname": "moments_select_visible",
+      "permissive": "PERMISSIVE",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((creator_uid = auth.uid()) OR (visibility = 'public'::text) OR ((visibility = 'friends_only'::text) AND (EXISTS ( SELECT 1\n   FROM friends f\n  WHERE (((f.user_uid = auth.uid()) AND (f.friend_uid = moments.creator_uid)) OR ((f.friend_uid = auth.uid()) AND (f.user_uid = moments.creator_uid))))) AND (EXISTS ( SELECT 1\n   FROM friend_requests r\n  WHERE ((r.status = 'accepted'::text) AND (((r.from_uid = auth.uid()) AND (r.to_uid = moments.creator_uid)) OR ((r.to_uid = auth.uid()) AND (r.from_uid = moments.creator_uid))))))))",
+      "with_check": null
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "friend_requests",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('friend_requests_id_seq'::regclass)"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "from_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "to_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'pending'::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "message",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friend_requests",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('friends_id_seq'::regclass)"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "user_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_uid",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "friends",
+      "column_name": "friend_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "remark",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "friends",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "friend_requests",
+      "conname": "friend_requests_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "friend_requests",
+      "conname": "friend_requests_status_check",
+      "contype": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'rejected'::text])))"
+    },
+    {
+      "table_name": "friends",
+      "conname": "friends_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_from",
+      "indexdef": "CREATE INDEX friend_requests_from ON public.friend_requests USING btree (from_uid, id DESC)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_pending_pair",
+      "indexdef": "CREATE UNIQUE INDEX friend_requests_pending_pair ON public.friend_requests USING btree (from_uid, to_uid) WHERE (status = 'pending'::text)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_pkey",
+      "indexdef": "CREATE UNIQUE INDEX friend_requests_pkey ON public.friend_requests USING btree (id)"
+    },
+    {
+      "tablename": "friend_requests",
+      "indexname": "friend_requests_to",
+      "indexdef": "CREATE INDEX friend_requests_to ON public.friend_requests USING btree (to_uid, status, id DESC)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_pair",
+      "indexdef": "CREATE UNIQUE INDEX friends_pair ON public.friends USING btree (user_uid, friend_uid)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_pkey",
+      "indexdef": "CREATE UNIQUE INDEX friends_pkey ON public.friends USING btree (id)"
+    },
+    {
+      "tablename": "friends",
+      "indexname": "friends_uid",
+      "indexdef": "CREATE INDEX friends_uid ON public.friends USING btree (user_uid, id DESC)"
+    }
+  ],
+  "triggers": [
+    {
+      "relname": "friend_requests",
+      "tgname": "friend_request_accept_edge_131",
+      "definition": "CREATE TRIGGER friend_request_accept_edge_131 AFTER UPDATE OF status ON public.friend_requests FOR EACH ROW EXECUTE FUNCTION friend_request_accept_edge_131()",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "friend_requests",
+      "tgname": "friend_request_guard_131",
+      "definition": "CREATE TRIGGER friend_request_guard_131 BEFORE INSERT OR UPDATE ON public.friend_requests FOR EACH ROW EXECUTE FUNCTION friend_request_guard_131()",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "friends",
+      "tgname": "friend_edge_legacy_insert_131",
+      "definition": "CREATE TRIGGER friend_edge_legacy_insert_131 BEFORE INSERT ON public.friends FOR EACH ROW EXECUTE FUNCTION friend_edge_legacy_insert_131()",
+      "tgenabled": "O"
+    }
+  ],
+  "functions": [
+    {
+      "proname": "friend_edge_legacy_insert_131",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "prosecdef": "false",
+      "proconfig": "{\"search_path=pg_catalog, public, pg_temp\"}",
+      "body_source": "\nBEGIN\n  -- The security-definer acceptance trigger runs as the verified migration owner.\n  -- Unprivileged inherited roles follow the same compatibility path as clients.\n  IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_roles r ON r.rolname = current_user\n    WHERE c.oid = TG_RELID AND (c.relowner = r.oid OR r.rolsuper OR r.rolbypassrls)) THEN\n    RETURN NEW;\n  END IF;\n  IF auth.uid() IS NOT NULL AND NEW.user_uid = auth.uid()\n    AND NEW.friend_uid <> auth.uid()\n    AND EXISTS (SELECT 1 FROM public.friend_requests r\n      WHERE r.from_uid = NEW.friend_uid AND r.to_uid = auth.uid() AND r.status = 'pending') THEN\n    -- PostgreSQL skips the row, including the INSERT WITH CHECK. This acknowledges\n    -- the old client's preparatory step without creating an unconfirmed friend.\n    RETURN NULL;\n  END IF;\n  RAISE EXCEPTION 'Friend edges are created only by an accepted incoming request'\n    USING ERRCODE = '42501';\nEND;\n",
+      "definition": "CREATE OR REPLACE FUNCTION public.friend_edge_legacy_insert_131()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public', 'pg_temp'\nAS $function$\nBEGIN\n  -- The security-definer acceptance trigger runs as the verified migration owner.\n  -- Unprivileged inherited roles follow the same compatibility path as clients.\n  IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_roles r ON r.rolname = current_user\n    WHERE c.oid = TG_RELID AND (c.relowner = r.oid OR r.rolsuper OR r.rolbypassrls)) THEN\n    RETURN NEW;\n  END IF;\n  IF auth.uid() IS NOT NULL AND NEW.user_uid = auth.uid()\n    AND NEW.friend_uid <> auth.uid()\n    AND EXISTS (SELECT 1 FROM public.friend_requests r\n      WHERE r.from_uid = NEW.friend_uid AND r.to_uid = auth.uid() AND r.status = 'pending') THEN\n    -- PostgreSQL skips the row, including the INSERT WITH CHECK. This acknowledges\n    -- the old client's preparatory step without creating an unconfirmed friend.\n    RETURN NULL;\n  END IF;\n  RAISE EXCEPTION 'Friend edges are created only by an accepted incoming request'\n    USING ERRCODE = '42501';\nEND;\n$function$\n",
+      "anon_execute": "false",
+      "client_execute": "false"
+    },
+    {
+      "proname": "friend_request_accept_edge_131",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "prosecdef": "true",
+      "proconfig": "{\"search_path=pg_catalog, public, pg_temp\"}",
+      "body_source": "\nBEGIN\n  IF OLD.status = 'pending' AND NEW.status = 'accepted' THEN\n    -- Recheck the end-user identity inside the privileged trigger as well.\n    IF auth.uid() IS NULL OR NEW.to_uid IS DISTINCT FROM auth.uid()\n      OR NEW.from_uid IS DISTINCT FROM OLD.from_uid\n      OR NEW.to_uid IS DISTINCT FROM OLD.to_uid\n      OR NEW.from_uid = NEW.to_uid THEN\n      RAISE EXCEPTION 'Invalid friend request acceptance' USING ERRCODE = '42501';\n    END IF;\n    -- Opposite pending requests can be accepted concurrently. Serialize by the\n    -- unordered pair so that a pre-existing edge is reused in either direction.\n    PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(\n      least(NEW.from_uid, NEW.to_uid) || ':' ||\n      greatest(NEW.from_uid, NEW.to_uid), 131));\n    IF NOT EXISTS (SELECT 1 FROM public.friends f WHERE\n      (f.user_uid = NEW.to_uid AND f.friend_uid = NEW.from_uid)\n      OR (f.user_uid = NEW.from_uid AND f.friend_uid = NEW.to_uid)) THEN\n      INSERT INTO public.friends (user_uid, friend_uid, friend_name, friend_avatar, created_at)\n      VALUES (NEW.to_uid, NEW.from_uid, COALESCE(NEW.from_name, ''), COALESCE(NEW.from_avatar, ''), CURRENT_TIMESTAMP)\n      ON CONFLICT (user_uid, friend_uid) DO NOTHING;\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n",
+      "definition": "CREATE OR REPLACE FUNCTION public.friend_request_accept_edge_131()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'public', 'pg_temp'\nAS $function$\nBEGIN\n  IF OLD.status = 'pending' AND NEW.status = 'accepted' THEN\n    -- Recheck the end-user identity inside the privileged trigger as well.\n    IF auth.uid() IS NULL OR NEW.to_uid IS DISTINCT FROM auth.uid()\n      OR NEW.from_uid IS DISTINCT FROM OLD.from_uid\n      OR NEW.to_uid IS DISTINCT FROM OLD.to_uid\n      OR NEW.from_uid = NEW.to_uid THEN\n      RAISE EXCEPTION 'Invalid friend request acceptance' USING ERRCODE = '42501';\n    END IF;\n    -- Opposite pending requests can be accepted concurrently. Serialize by the\n    -- unordered pair so that a pre-existing edge is reused in either direction.\n    PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(\n      least(NEW.from_uid, NEW.to_uid) || ':' ||\n      greatest(NEW.from_uid, NEW.to_uid), 131));\n    IF NOT EXISTS (SELECT 1 FROM public.friends f WHERE\n      (f.user_uid = NEW.to_uid AND f.friend_uid = NEW.from_uid)\n      OR (f.user_uid = NEW.from_uid AND f.friend_uid = NEW.to_uid)) THEN\n      INSERT INTO public.friends (user_uid, friend_uid, friend_name, friend_avatar, created_at)\n      VALUES (NEW.to_uid, NEW.from_uid, COALESCE(NEW.from_name, ''), COALESCE(NEW.from_avatar, ''), CURRENT_TIMESTAMP)\n      ON CONFLICT (user_uid, friend_uid) DO NOTHING;\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "anon_execute": "false",
+      "client_execute": "false"
+    },
+    {
+      "proname": "friend_request_guard_131",
+      "owner": "cloudbase_postgres_pgdb_6fi2ox3p",
+      "prosecdef": "false",
+      "proconfig": "{\"search_path=pg_catalog, public, pg_temp\"}",
+      "body_source": "\nBEGIN\n  -- Only actual privileged maintenance roles may bypass validation. A different\n  -- role name can inherit authenticated, so a literal name check is unsafe.\n  IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_roles r ON r.rolname = current_user\n    WHERE c.oid = TG_RELID AND (c.relowner = r.oid OR r.rolsuper OR r.rolbypassrls)) THEN\n    RETURN NEW;\n  END IF;\n  IF TG_OP = 'INSERT' THEN\n    IF auth.uid() IS NULL OR NEW.from_uid IS DISTINCT FROM auth.uid()\n      OR NEW.status IS DISTINCT FROM 'pending' OR NEW.from_uid = NEW.to_uid\n      OR NEW.to_uid IS NULL OR btrim(NEW.to_uid) = '' THEN\n      RAISE EXCEPTION 'A new friend request must be pending and sent by its authenticated sender'\n        USING ERRCODE = '42501';\n    END IF;\n    RETURN NEW;\n  END IF;\n  IF auth.uid() IS NULL OR OLD.to_uid IS DISTINCT FROM auth.uid()\n    OR (to_jsonb(NEW) - 'status') IS DISTINCT FROM (to_jsonb(OLD) - 'status')\n    OR OLD.status IS DISTINCT FROM 'pending'\n    OR NEW.status NOT IN ('accepted', 'rejected') THEN\n    RAISE EXCEPTION 'Only the recipient may decide a pending friend request; participants and request details are immutable'\n      USING ERRCODE = '42501';\n  END IF;\n  RETURN NEW;\nEND;\n",
+      "definition": "CREATE OR REPLACE FUNCTION public.friend_request_guard_131()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public', 'pg_temp'\nAS $function$\nBEGIN\n  -- Only actual privileged maintenance roles may bypass validation. A different\n  -- role name can inherit authenticated, so a literal name check is unsafe.\n  IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_roles r ON r.rolname = current_user\n    WHERE c.oid = TG_RELID AND (c.relowner = r.oid OR r.rolsuper OR r.rolbypassrls)) THEN\n    RETURN NEW;\n  END IF;\n  IF TG_OP = 'INSERT' THEN\n    IF auth.uid() IS NULL OR NEW.from_uid IS DISTINCT FROM auth.uid()\n      OR NEW.status IS DISTINCT FROM 'pending' OR NEW.from_uid = NEW.to_uid\n      OR NEW.to_uid IS NULL OR btrim(NEW.to_uid) = '' THEN\n      RAISE EXCEPTION 'A new friend request must be pending and sent by its authenticated sender'\n        USING ERRCODE = '42501';\n    END IF;\n    RETURN NEW;\n  END IF;\n  IF auth.uid() IS NULL OR OLD.to_uid IS DISTINCT FROM auth.uid()\n    OR (to_jsonb(NEW) - 'status') IS DISTINCT FROM (to_jsonb(OLD) - 'status')\n    OR OLD.status IS DISTINCT FROM 'pending'\n    OR NEW.status NOT IN ('accepted', 'rejected') THEN\n    RAISE EXCEPTION 'Only the recipient may decide a pending friend request; participants and request details are immutable'\n      USING ERRCODE = '42501';\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "anon_execute": "false",
+      "client_execute": "false"
+    }
+  ],
+  "verification": {
+    "has_all_enabled_triggers": true,
+    "client_functions_not_executable": true,
+    "function_bodies_match_reviewed_sql": true,
+    "friends_direct_insert_denied": true,
+    "requests_start_pending": true,
+    "decisions_require_pending": true,
+    "no_client_trigger_or_truncate": true
+  },
+  "verified": true
+}

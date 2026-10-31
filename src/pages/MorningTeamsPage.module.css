@@ -1,0 +1,55 @@
+.page { min-height: 100%; background: var(--page-mid); color: var(--text); padding-bottom: calc(24px + var(--safe-bottom)); }
+.main { padding: 8px 16px 24px; }
+.hero { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 16px 12px; padding: 20px; border-radius: var(--radius-lg); background: var(--green-soft); margin-bottom: 24px; }
+.heroIcon { display: grid; place-items: center; width: 48px; height: 48px; background: var(--card); color: var(--green-text); border-radius: 16px; }
+.eyebrow { font-size: 12px; color: var(--green-text); }
+.hero h2 { margin: 5px 0 8px; font-size: 20px; line-height: 1.4; letter-spacing: -.02em; }
+.hero p, .sheetIntro { margin: 0; color: var(--text-3); font-size: 14px; line-height: 1.65; }
+.hero > button { grid-column: 1 / -1; }
+.primary, .secondary, .textButton, .headerLink, .refresh, .close { min-height: 48px; min-width: 48px; padding: 12px 16px; display: inline-flex; justify-content: center; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 650; line-height: 1.4; text-decoration: none; cursor: pointer; }
+.primary { background: var(--green); color: var(--on-primary); }
+.secondary { background: var(--card); color: var(--green-text); border-color: var(--line); }
+.textButton, .headerLink, .refresh, .close { background: transparent; color: var(--green-text); padding-inline: 8px; }
+.close { font-size: 24px; color: var(--text-3); flex-shrink: 0; }
+.listHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 4px; }
+.filters button { min-height: 48px; padding: 8px 12px; font: inherit; font-size: 14px; font-weight: 600; border: 0; border-radius: 12px; background: transparent; color: var(--text-3); }
+.filters .filterOn { background: var(--green-soft); color: var(--green-text); }
+.list { display: flex; flex-direction: column; gap: 16px; }
+.card { padding: 18px; border: 1px solid var(--line); background: var(--card); border-radius: var(--radius); }
+.cardTop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.time { display: flex; align-items: flex-start; gap: 6px; color: var(--green-text); font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.time svg { flex-shrink: 0; margin-top: 2px; }
+.status { font-size: 12px; line-height: 1.5; color: var(--text-3); flex-shrink: 0; }
+.card h3 { margin: 14px 0 8px; font-size: 18px; line-height: 1.5; overflow-wrap: anywhere; }
+.location { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.description { margin: 0 0 16px; font-size: 14px; line-height: 1.65; color: var(--text-3); white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; line-height: 1.6; color: var(--text-3); overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 12px; }
+.actions > :first-child { margin-right: auto; }
+.joined { color: var(--green-text); font-size: 13px; }
+.state { padding: 24px 12px; text-align: center; display: grid; justify-items: center; gap: 16px; }
+.errorBox { border-radius: 14px; background: var(--danger-soft); color: var(--danger); padding: 16px; margin: 12px 0; overflow-wrap: anywhere; }
+.errorBox p { margin: 0 0 8px; font-size: 14px; line-height: 1.6; }
+.note { margin: 24px 4px 0; color: var(--text-3); font-size: 12px; line-height: 1.7; }
+.sheetHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.sheetHeader h2 { margin: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }
+.sheetIntro { margin-bottom: 20px; }
+.form { display: flex; flex-direction: column; gap: 20px; }
+.form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.field label { font-size: 14px; font-weight: 650; }
+.field input, .field textarea, .field select { width: 100%; min-width: 0; max-width: 100%; min-height: 48px; padding: 12px; background: var(--page-mid); color: var(--text); border: 1px solid var(--line); border-radius: 12px; font: inherit; font-size: 16px; }
+.field textarea { resize: vertical; }
+.field small { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+.fieldPair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.error { color: var(--danger); background: var(--danger-soft); padding: 12px; font-size: 14px; line-height: 1.6; border-radius: 12px; margin: 0; overflow-wrap: anywhere; }
+.detail { margin: 16px 0; }
+.detail dt { color: var(--text-3); font-size: 13px; margin-bottom: 6px; }
+.detail dd { margin: 0 0 20px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.members { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.members li { padding: 14px; background: var(--page-mid); border-radius: 14px; display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
+.members span, .members small { color: var(--text-3); line-height: 1.5; font-size: 14px; }
+.page button:disabled, .form button:disabled { opacity: .55; cursor: default; }
+.page :is(button, a):focus-visible, .field :is(input, textarea, select):focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+@media (max-width: 340px) { .hero, .card { padding: 16px; } .fieldPair { grid-template-columns: 1fr; } .listHead { align-items: flex-start; } .filters button { padding-inline: 8px; font-size: 13px; } }

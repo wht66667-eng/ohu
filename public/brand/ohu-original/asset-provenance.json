@@ -1,0 +1,269 @@
+[
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "home-campus-banner.webp",
+    "crop": [
+      32,
+      218,
+      832,
+      535
+    ],
+    "size": [
+      800,
+      317
+    ]
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "fox-avatar.webp",
+    "crop": [
+      48,
+      105,
+      145,
+      201
+    ],
+    "size": [
+      97,
+      96
+    ]
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "fox-reading-scene.webp",
+    "crop": [
+      338,
+      912,
+      816,
+      1106
+    ],
+    "size": [
+      478,
+      194
+    ]
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-schedule.webp",
+    "crop": [
+      40,
+      1115,
+      124,
+      1198
+    ],
+    "size": [
+      84,
+      83
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-grades.webp",
+    "crop": [
+      135,
+      1115,
+      220,
+      1198
+    ],
+    "size": [
+      85,
+      83
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-exams.webp",
+    "crop": [
+      231,
+      1115,
+      316,
+      1198
+    ],
+    "size": [
+      85,
+      83
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-english.webp",
+    "crop": [
+      452,
+      1115,
+      537,
+      1198
+    ],
+    "size": [
+      85,
+      83
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-messages.webp",
+    "crop": [
+      574,
+      526,
+      678,
+      623
+    ],
+    "size": [
+      104,
+      97
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-todo.webp",
+    "crop": [
+      182,
+      526,
+      289,
+      623
+    ],
+    "size": [
+      107,
+      97
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-map.webp",
+    "crop": [
+      310,
+      526,
+      416,
+      623
+    ],
+    "size": [
+      106,
+      97
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "heading-schedule.webp",
+    "crop": [
+      42,
+      568,
+      101,
+      620
+    ],
+    "size": [
+      59,
+      52
+    ],
+    "mask": "edge-connected warm white only; enclosed white details retained"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "heading-tasks.webp",
+    "crop": [
+      45,
+      877,
+      100,
+      925
+    ],
+    "size": [
+      55,
+      48
+    ],
+    "mask": "edge-connected warm white only; enclosed white details retained"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "heading-services.webp",
+    "crop": [
+      43,
+      1148,
+      102,
+      1197
+    ],
+    "size": [
+      59,
+      49
+    ],
+    "mask": "edge-connected warm white only; enclosed white details retained"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "heading-news.webp",
+    "crop": [
+      43,
+      1392,
+      91,
+      1438
+    ],
+    "size": [
+      48,
+      46
+    ],
+    "mask": "edge-connected warm white only; enclosed white details retained"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\fec65159-7b01-4b6c-990d-84f1c24113c5.png",
+    "asset": "heading-help.webp",
+    "crop": [
+      453,
+      1392,
+      500,
+      1438
+    ],
+    "size": [
+      47,
+      46
+    ],
+    "mask": "edge-connected warm white only; enclosed white details retained"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-market.webp",
+    "crop": [
+      135,
+      1578,
+      220,
+      1660
+    ],
+    "size": [
+      85,
+      82
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-tasks.webp",
+    "crop": [
+      231,
+      1578,
+      316,
+      1660
+    ],
+    "size": [
+      85,
+      82
+    ],
+    "mask": "rounded tile corners, 22px"
+  },
+  {
+    "source": "C:\\Users\\upwar\\Desktop\\新建文件夹 (5)\\0f47d08b-56af-42db-9041-5a4ccda7b3a9.png",
+    "asset": "icon-focus.webp",
+    "crop": [
+      734,
+      1578,
+      819,
+      1660
+    ],
+    "size": [
+      85,
+      82
+    ],
+    "mask": "rounded tile corners, 22px"
+  }
+]

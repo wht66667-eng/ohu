@@ -1,0 +1,317 @@
+/* 阳光萌宠 · 喵粮公益模块：绿色渐变公益卡 + 兑换档位网格 + 券码 */
+
+.wrap {
+  padding: 14px 16px calc(28px + var(--safe-bottom, 0px));
+}
+
+.hint {
+  margin: 0;
+  padding: 18px 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.err {
+  margin: 0;
+  padding: 4px 2px;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--mint) 0%, var(--green-soft) 60%, var(--leaf) 100%);
+  border: 1px solid color-mix(in srgb, var(--green) 28%, transparent);
+  margin-bottom: 12px;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--card);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--green-deep) 18%, transparent);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.body b {
+  font-size: 15px;
+  color: #2f5e2b;
+  font-weight: 800;
+}
+
+.body b em {
+  font-style: normal;
+  font-size: 21px;
+  margin-right: 2px;
+}
+
+.body span {
+  font-size: 12px;
+  color: #55734f;
+  line-height: 1.4;
+}
+
+.total {
+  flex-shrink: 0;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2f5e2b;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+
+/* ---- 兑换档位 ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fafcf7;
+  border: 1px solid var(--line);
+}
+
+.item b {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.itemName {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.itemDesc {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.45;
+  min-height: 32px;
+}
+
+.cost {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green-text);
+  background: var(--green-soft);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+.btn {
+  width: 100%;
+  height: 34px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform .16s ease, opacity .16s ease;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* ---- 我的兑换券 ---- */
+.vouchers {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.vouchers > p {
+  margin: 0;
+}
+
+.voucher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: #fffdf3;
+  border: 1px dashed rgba(232, 179, 58, 0.6);
+  font-size: 12.5px;
+}
+
+.voucher span {
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.voucher code {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #b8860b;
+}
+
+/* ---- 全校公益进度 ---- */
+.progress {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--mint);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.progress b {
+  color: var(--green-text);
+  font-size: 13.5px;
+}
+
+.progress p {
+  margin: 0;
+}
+
+/* ---- 兑换成功弹层 ---- */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  animation: catFadeIn 0.18s ease;
+}
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100vw, 430px);
+  box-sizing: border-box;
+  background: var(--card);
+  border-radius: 22px 22px 0 0;
+  padding: 24px 22px calc(26px + var(--safe-bottom, 0px));
+  z-index: 201;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  animation: catSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sheetEmoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.sheet h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.sheet > p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.sheetSub {
+  font-size: 12px !important;
+  color: var(--text-3) !important;
+}
+
+.code {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fffdf3;
+  border: 1px dashed rgba(232, 179, 58, 0.7);
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #b8860b;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.btnRow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+
+  min-height: 44px; min-width: 44px;
+}
+
+.ghost,
+.main {
+  height: 44px;
+  border-radius: 13px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ghost {
+  flex: 0 0 100px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--text-2);
+}
+
+.main {
+  flex: 1;
+  border: 0;
+  background: var(--green);
+  color: var(--on-primary);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--green) 32%, transparent);
+}
+
+@keyframes catFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes catSlideUp {
+  from { transform: translate(-50%, 100%); }
+  to { transform: translate(-50%, 0); }
+}

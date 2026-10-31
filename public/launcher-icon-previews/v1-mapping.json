@@ -1,0 +1,21 @@
+{
+  "source": "brand/ohu-v1/stickers",
+  "note": "Legacy alias IDs are compatibility identifiers, not day labels.",
+  "opaque_background": "#fff5e2",
+  "source_canvas_fraction": 0.82,
+  "states": {
+    "default": "01_login_day_01.png",
+    "streak_1": "01_login_day_01.png",
+    "streak_3": "02_login_day_03.png",
+    "streak_7": "03_login_day_07.png",
+    "streak_14": "04_login_day_30.png",
+    "away_2": "05_miss_day_01.png",
+    "away_5": "06_miss_day_02.png",
+    "away_8": "07_miss_day_03.png",
+    "away_12": "08_miss_day_07.png",
+    "away_15": "09_miss_day_15.png",
+    "away_20": "09_miss_day_15.png",
+    "away_25": "09_miss_day_15.png",
+    "away_30": "10_miss_day_30.png"
+  }
+}

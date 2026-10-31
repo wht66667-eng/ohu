@@ -1,0 +1,187 @@
+.chrome {
+  min-height: 0;
+  height: var(--app-viewport-height, 100%);
+  box-sizing: border-box;
+  position: relative;
+  top: var(--app-viewport-top, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-grad-from);
+  padding: 16px;
+}
+
+.phone {
+  width: var(--phone-w);
+  height: min(var(--phone-h), var(--app-viewport-height, 100dvh) - 24px);
+  max-height: var(--app-viewport-height, 100dvh);
+  background: var(--page-mid);
+  border-radius: 36px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 10px color-mix(in srgb, var(--card) 92%, #d0d0d0),
+    0 0 0 12px color-mix(in srgb, var(--line) 80%, #c8c8c8),
+    0 24px 60px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 430px) {
+  .chrome {
+    padding: 0;
+    background: var(--page-mid);
+  }
+  .phone {
+    width: 100%;
+    height: var(--app-viewport-height, 100dvh);
+    max-height: var(--app-viewport-height, 100dvh);
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* 电脑浏览器：略加宽机壳，方便看综测长文 */
+@media (min-width: 900px) {
+  .phone {
+    width: min(430px, 100%);
+    height: min(860px, var(--app-viewport-height, 100dvh) - 32px);
+  }
+}
+
+/* 超宽屏：双栏感 —— 机壳更大，内容更易读 */
+@media (min-width: 1200px) {
+  .phone {
+    width: min(480px, 42vw);
+    height: min(900px, var(--app-viewport-height, 100dvh) - 40px);
+  }
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  /* 状态栏沉浸时，刘海/灵动岛会遮挡内容，用安全区顶部内边距避让。
+     --safe-top 在 H5 下等于 env(safe-area-inset-top)，套壳下由 native.ts
+     使用原生 WindowInsets 兜底（部分安卓机型 WebView 不上报 env） */
+  padding-top: var(--safe-top, 0px);
+  padding-inline: var(--safe-left, 0px) var(--safe-right, 0px);
+  padding-bottom: var(--safe-bottom, 0px);
+  /* 交给 usePullRefresh 处理下拉手势，禁用 WebView 自身的滚动链回弹 */
+  overscroll-behavior-y: contain;
+}
+
+/* The in-flow timer already owns the top inset; the page beneath it starts immediately. */
+:global([data-focus-timer-bar]) ~ .page {
+  padding-top: 0;
+}
+
+.withTab {
+  /* tab 栏高度 + 基础间距 + 底部安全区（Home 指示条等） */
+  padding-bottom: calc(var(--tab-h) + 10px + var(--safe-bottom, 0px));
+}
+
+:global(:root[data-keyboard-open]) .withTab { padding-bottom: 10px; }
+:global(:root[data-native]) .chrome { padding: 0; }
+:global(:root[data-native]) .phone { width: 100%; height: var(--app-viewport-height, 100dvh); border-radius: 0; box-shadow: none; }
+
+/* ---------- 下拉刷新指示器 ---------- */
+/* 位置在状态栏安全区之下、页面内容之上；静止时 opacity 为 0，
+   位移与透明度由 usePullRefresh 直接写 style，避免拖动时每帧 setState */
+.pull {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.pullPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--green-deep) 18%, transparent);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line);
+}
+
+.pullRing {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--leaf);
+  border-top-color: transparent;
+}
+
+/* 已过阈值：提示「松手即刷新」，配色从待机灰绿切到主色绿 */
+.pullArmed .pullPill {
+  color: var(--green-text);
+}
+
+.pullArmed .pullRing {
+  border-color: var(--green);
+  border-top-color: transparent;
+}
+
+.pullBusy .pullRing {
+  border-color: var(--leaf);
+  border-top-color: var(--green);
+  animation: pullSpin 0.7s linear infinite;
+}
+
+@keyframes pullSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pullBusy .pullRing { animation: none; }
+}
+
+.fill {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.fill > * {
+  flex: 1;
+  min-height: 0;
+}
+
+:global(.app-toast) {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  background: rgba(45, 70, 40, 0.92);
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  z-index: 80;
+  white-space: nowrap;
+  pointer-events: none;
+}

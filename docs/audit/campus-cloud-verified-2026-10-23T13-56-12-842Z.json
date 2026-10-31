@@ -1,0 +1,729 @@
+{
+  "at": "2026-10-23T13:56:05.590Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "mode": "verify",
+  "tables": [
+    {
+      "relname": "campus_campuses",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_link_opens",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_links",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_poi_checkins",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_poi_submissions",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_pois",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_post_comments",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_post_likes",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_posts",
+      "relrowsecurity": "true"
+    },
+    {
+      "relname": "campus_schools",
+      "relrowsecurity": "true"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "campus_campuses",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "school_id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "center_lng",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "center_lat",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "enabled",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_campuses",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "link_id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "href",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "tag",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "stuid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "copied",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_link_opens",
+      "column_name": "opened_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "desc_text",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "href",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "tag",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "cred",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "link_group",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_links",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "poi_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "user_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "note",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "is_public",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_checkins",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "campus_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "user_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "category",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "lng",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "lat",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "note",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "reviewed_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_poi_submissions",
+      "column_name": "image_urls",
+      "data_type": "ARRAY"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "campus_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "category",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "lng",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "lat",
+      "data_type": "double precision"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "enabled",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "source_url",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "source_license",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "verification_status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "verified_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "image_urls",
+      "data_type": "ARRAY"
+    },
+    {
+      "table_name": "campus_pois",
+      "column_name": "note",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "post_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "user_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "body",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_post_comments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_post_likes",
+      "column_name": "post_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_post_likes",
+      "column_name": "user_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_post_likes",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "school_id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "campus_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "poi_id",
+      "data_type": "bigint"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "author_uid",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "author_name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "author_avatar",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "body",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "image_urls",
+      "data_type": "ARRAY"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "audience",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "like_count",
+      "data_type": "integer"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_posts",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "id",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "city",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "map_style_url",
+      "data_type": "text"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "enabled",
+      "data_type": "boolean"
+    },
+    {
+      "table_name": "campus_schools",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "campus_campuses",
+      "policyname": "campus_campuses_admin",
+      "roles": "{authenticated}",
+      "cmd": "ALL",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_campuses",
+      "policyname": "campus_campuses_read",
+      "roles": "{anon,authenticated}",
+      "cmd": "SELECT",
+      "qual": "(enabled OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_link_opens",
+      "policyname": "campus_link_opens_insert_own",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(uid = auth.uid())"
+    },
+    {
+      "tablename": "campus_link_opens",
+      "policyname": "campus_link_opens_select_own",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "(uid = auth.uid())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_links",
+      "policyname": "campus_links_select",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_poi_checkins",
+      "policyname": "campus_poi_checkins_delete",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((user_uid = auth.uid()) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_poi_checkins",
+      "policyname": "campus_poi_checkins_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((user_uid = auth.uid()) AND (((NOT is_public) AND (status = 'private'::text)) OR (is_public AND (status = 'pending'::text))) AND (EXISTS ( SELECT 1\n   FROM campus_pois p\n  WHERE ((p.id = campus_poi_checkins.poi_id) AND p.enabled))))"
+    },
+    {
+      "tablename": "campus_poi_checkins",
+      "policyname": "campus_poi_checkins_moderate",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_poi_checkins",
+      "policyname": "campus_poi_checkins_read",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR (is_public AND (status = 'published'::text)) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_poi_submissions",
+      "policyname": "campus_poi_submissions_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((user_uid = auth.uid()) AND (status = 'pending'::text) AND (EXISTS ( SELECT 1\n   FROM campus_campuses c\n  WHERE ((c.id = campus_poi_submissions.campus_id) AND c.enabled))))"
+    },
+    {
+      "tablename": "campus_poi_submissions",
+      "policyname": "campus_poi_submissions_moderate",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_poi_submissions",
+      "policyname": "campus_poi_submissions_read",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_pois",
+      "policyname": "campus_pois_admin",
+      "roles": "{authenticated}",
+      "cmd": "ALL",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_pois",
+      "policyname": "campus_pois_read",
+      "roles": "{anon,authenticated}",
+      "cmd": "SELECT",
+      "qual": "(enabled OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_post_comments",
+      "policyname": "campus_comments_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((user_uid = auth.uid()) AND (status = 'published'::text) AND (EXISTS ( SELECT 1\n   FROM campus_posts p\n  WHERE ((p.id = campus_post_comments.post_id) AND (p.status = 'published'::text) AND (p.audience = 'guest_public'::text)))))"
+    },
+    {
+      "tablename": "campus_post_comments",
+      "policyname": "campus_comments_moderate",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_post_comments",
+      "policyname": "campus_comments_read",
+      "roles": "{anon,authenticated}",
+      "cmd": "SELECT",
+      "qual": "((status = 'published'::text) AND (EXISTS ( SELECT 1\n   FROM campus_posts p\n  WHERE ((p.id = campus_post_comments.post_id) AND (p.status = 'published'::text) AND (p.audience = 'guest_public'::text)))))",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_post_likes",
+      "policyname": "campus_likes_delete",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((user_uid = auth.uid()) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_post_likes",
+      "policyname": "campus_likes_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((user_uid = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM campus_posts p\n  WHERE ((p.id = campus_post_likes.post_id) AND (p.status = 'published'::text) AND (p.audience = 'guest_public'::text)))))"
+    },
+    {
+      "tablename": "campus_post_likes",
+      "policyname": "campus_likes_read",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((user_uid = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM campus_posts p\n  WHERE ((p.id = campus_post_likes.post_id) AND (p.status = 'published'::text) AND (p.audience = 'guest_public'::text)))))",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_posts",
+      "policyname": "campus_posts_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((author_uid = auth.uid()) AND (status = 'pending'::text) AND (audience = 'guest_public'::text))"
+    },
+    {
+      "tablename": "campus_posts",
+      "policyname": "campus_posts_moderate",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_posts",
+      "policyname": "campus_posts_owner_delete",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((author_uid = auth.uid()) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_posts",
+      "policyname": "campus_posts_owner_read",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((author_uid = auth.uid()) OR is_admin_user())",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_posts",
+      "policyname": "campus_posts_public_read",
+      "roles": "{anon,authenticated}",
+      "cmd": "SELECT",
+      "qual": "((status = 'published'::text) AND (audience = 'guest_public'::text))",
+      "with_check": null
+    },
+    {
+      "tablename": "campus_schools",
+      "policyname": "campus_schools_admin",
+      "roles": "{authenticated}",
+      "cmd": "ALL",
+      "qual": "is_admin_user()",
+      "with_check": "is_admin_user()"
+    },
+    {
+      "tablename": "campus_schools",
+      "policyname": "campus_schools_read",
+      "roles": "{anon,authenticated}",
+      "cmd": "SELECT",
+      "qual": "(enabled OR is_admin_user())",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "proname": "is_admin_user",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_admin_user()\n RETURNS boolean\n LANGUAGE sql\n STABLE\nAS $function$ SELECT EXISTS (\n     SELECT 1 FROM public.profiles p\n     WHERE p.uid = auth.uid() AND p.is_admin\n   ) $function$\n"
+    },
+    {
+      "proname": "campus_post_like_count_delta",
+      "definition": "CREATE OR REPLACE FUNCTION public.campus_post_like_count_delta()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nbegin\n  if tg_op = 'INSERT' then\n    update public.campus_posts set like_count = like_count + 1 where id = new.post_id;\n    return new;\n  end if;\n  update public.campus_posts set like_count = greatest(0, like_count - 1) where id = old.post_id;\n  return old;\nend;\n$function$\n"
+    },
+    {
+      "proname": "campus_poi_submission_approval",
+      "definition": "CREATE OR REPLACE FUNCTION public.campus_poi_submission_approval()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nbegin\n  if new.status='approved' and old.status='pending' then\n    if not public.is_admin_user() then raise exception 'admin approval required'; end if;\n    insert into public.campus_pois(campus_id,name,category,lng,lat,enabled,verification_status,verified_at,image_urls,note)\n    values (new.campus_id,new.name,new.category,new.lng,new.lat,true,'verified',now(),new.image_urls,new.note)\n    on conflict (campus_id,name) do nothing;\n    if not found then\n      raise exception '同名地点已存在，请核对已有地点并修改名称后重新审核';\n    end if;\n    new.reviewed_at=now();\n  elsif new.status='rejected' and old.status='pending' then\n    if not public.is_admin_user() then raise exception 'admin review required'; end if;\n    new.reviewed_at=now();\n  end if;\n  return new;\nend;\n$function$\n"
+    },
+    {
+      "proname": "campus_valid_photo_urls",
+      "definition": "CREATE OR REPLACE FUNCTION public.campus_valid_photo_urls(urls text[])\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select coalesce(cardinality(urls) <= 3 and not exists (\n    select 1 from unnest(urls) u where u is null or length(u) > 2048 or u !~* '^https?://'\n  ), false);\n$function$\n"
+    }
+  ],
+  "roleCheck": {
+    "RequestId": "486e24fd-01e2-4637-99b2-af38a65b1982",
+    "ExecutionTimeMs": 16,
+    "Columns": [
+      "QUERY PLAN"
+    ],
+    "Rows": [
+      "[\"Update on campus_poi_submissions  (cost=0.00..0.00 rows=0 width=0)\"]",
+      "[\"  ->  Result  (cost=0.00..0.00 rows=0 width=38)\"]",
+      "[\"        One-Time Filter: false\"]"
+    ],
+    "AffectedRows": 0
+  },
+  "scope": "Public map reads and EXPLAIN only (without ANALYZE); no user rows inserted or updated."
+}

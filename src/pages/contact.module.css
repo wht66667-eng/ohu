@@ -1,0 +1,22 @@
+.page { padding-bottom: 24px; }
+.intro { display: flex; align-items: flex-start; gap: 14px; margin: 12px 16px 20px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--mint); }
+.introIcon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--card); color: var(--green-text); }
+.intro h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.4; color: var(--text); }
+.intro p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-2); }
+.form { margin: 0 16px; padding: 18px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.formTitle { margin: 0 0 18px; font-size: 17px; font-weight: 700; line-height: 1.4; color: var(--text); }
+.fieldLabel, .form label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+.categories { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.category { min-height: 48px; min-width: 48px; padding: 0 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--page-top); color: var(--text-2); font-size: 13px; font-weight: 600; }
+.selected { background: var(--mint); border-color: var(--green); color: var(--green-text); }
+.category:focus-visible, .submit:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+.category:disabled { opacity: .55; }
+.form input, .form textarea { min-height: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--page-top); color: var(--text); font-size: 16px; }
+.form input:focus-visible, .form textarea:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.form :is(input, textarea)[aria-invalid="true"] { border-color: var(--danger); }
+.success { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: var(--green-text); }
+.error { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: var(--danger); }
+.submitWrap { display: grid; margin-top: 16px; }
+.submit { min-height: 48px; padding: 10px 14px; border: 0; border-radius: var(--radius); background: var(--green); color: var(--on-primary); font-size: 15px; font-weight: 700; }
+.submit:disabled { opacity: .65; }
+@media (max-width: 359px) { .intro, .form { padding: 14px; } .intro { gap: 10px; } .intro h2 { font-size: 18px; } }

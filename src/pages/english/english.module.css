@@ -1,0 +1,641 @@
+/* 英语学习 · 题库 / 试卷：统一校园风（只用全局 token，浅/深色自动适配） */
+
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  color: var(--text);
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.main {
+  padding: 0 16px;
+}
+
+/* —— 今日学习任务 —— */
+.todayCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px 16px;
+  margin-bottom: 10px;
+}
+
+.todayKicker {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green-text);
+  letter-spacing: 0.02em;
+}
+
+.todayTitle {
+  margin: 4px 0 0;
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.todayDesc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0 12px;
+}
+
+.statGrid > div {
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.statGrid b {
+  display: block;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statGrid span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.continueBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 50px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-primary);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.continueBtn:active {
+  background: var(--green-hot);
+}
+
+/* —— 同步状态 —— */
+.syncCard {
+  margin-bottom: 12px;
+}
+
+.syncLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-3);
+}
+
+.syncRetry {
+  flex: none;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.recoveryCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.recoveryCard > div { flex: 1 1 180px; min-width: 0; }
+.recoveryCard strong { display: block; font-size: 14px; font-weight: 650; line-height: 1.5; }
+.recoveryCard p { margin: 4px 0 0; color: var(--text-2); font-size: 12px; line-height: 1.65; }
+
+/* —— 分区标题 —— */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.headActions {
+  display: flex;
+  gap: 8px;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* —— 入口卡片网格 —— */
+.entryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.entryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+  transition: transform 0.16s ease;
+}
+
+.entryCard:active {
+  transform: scale(0.98);
+}
+
+.entryIcon {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.entryTitle {
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.entryDesc {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* —— 通用卡片 —— */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.muted {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.tagFox {
+  color: var(--price);
+  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
+  background: color-mix(in srgb, var(--orange) 12%, transparent);
+}
+
+/* —— 表单 —— */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+.textarea {
+  min-height: 130px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.searchRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* —— 按钮 —— */
+.btnMain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnMain:active {
+  background: var(--green-hot);
+}
+
+.btnMain:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btnGhost:disabled {
+  opacity: 0.5;
+}
+
+.btnDanger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: var(--danger-soft);
+}
+
+/* —— 筛选 chip —— */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.chipOn {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-primary);
+}
+
+/* —— 题目 / 列表卡片 —— */
+.qList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.qRowCheck {
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: var(--green);
+}
+.qPick { display: grid; place-items: center; flex: none; min-height: 44px; min-width: 44px; cursor: pointer; }
+
+.qBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.qStem {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.qMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.del {
+  min-height: 44px;
+  min-width: 44px;
+  flex: none;
+  border: none;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--danger);
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* —— 答卷 —— */
+.notice {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.opt {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--card);
+  cursor: pointer;
+  line-height: 1.45;
+}
+
+.optOn {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.optRight {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.optWrong {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.markOn,
+.markRight {
+  border-color: var(--green);
+  color: var(--on-primary);
+  background: var(--green);
+}
+
+.markWrong {
+  border-color: var(--danger);
+  color: var(--on-primary);
+  background: var(--danger);
+}
+
+.explain {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.explainRight {
+  color: var(--green-text);
+}
+
+.explainWrong {
+  color: var(--danger);
+}
+
+/* —— 结算 —— */
+.scoreHero {
+  text-align: center;
+  padding: 26px 16px 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--card);
+  margin-bottom: 12px;
+}
+
+.scoreNum {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.scoreActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* —— 底部吸底操作条 —— */
+.bar {
+  position: sticky;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+
+.barText {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— 折叠帮助 —— */
+.help {
+  margin: 12px 0 0;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.helpSummary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-3);
+}
+
+.helpSummary::-webkit-details-marker {
+  display: none;
+}
+
+.helpBody {
+  padding: 0 12px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+
+.paidHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.paidHint { font-size: 13px; line-height: 1.65; color: var(--text-3); margin: 10px 0; overflow-wrap: anywhere; }
+.paidPrice { font-size: 16px; font-weight: 800; color: var(--green-text); font-variant-numeric: tabular-nums; margin: 12px 0; }
+.paidError { color: var(--danger); font-size: 14px; line-height: 1.6; }
+.paidActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.paidActions button { min-height: 44px; min-width: 44px; }
+.paidPreview { padding: 0 16px 12px 32px; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }

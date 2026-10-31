@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#faf7ef">
+  <meta name="robots" content="noindex">
+  <title>哦狐 · 学生端下载</title>
+  <style>
+    :root { color-scheme: light; --green: #16735b; --ink: #1d3029; --muted: #66786d; --paper: #faf7ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.6; }
+    main { width: min(100%, 480px); min-height: 100svh; margin: auto; padding: max(44px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)); }
+    .brand { display: flex; gap: 14px; align-items: center; margin: 14px 0 34px; }
+    .icon { width: 64px; height: 64px; border-radius: 18px; object-fit: cover; }
+    .brand-name { font-size: 28px; font-weight: 750; letter-spacing: .08em; }
+    .tagline { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    .card { padding: 28px 22px; border: 1px solid #dce5dc; border-radius: 22px; background: #fff; }
+    .eyebrow { margin: 0 0 10px; color: var(--green); font-size: 13px; font-weight: 650; }
+    h1 { margin: 0; font-size: 26px; line-height: 1.3; letter-spacing: -.02em; }
+    .description { color: var(--muted); font-size: 15px; margin: 16px 0 24px; }
+    .meta { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
+    .download { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 56px; padding: 12px 16px; border-radius: 18px; background: var(--green); color: white; text-decoration: none; font-weight: 700; font-size: 17px; }
+    .download:active { transform: scale(.98); }
+    .download[aria-disabled="true"] { opacity: .55; cursor: wait; }
+    :focus-visible { outline: 3px solid #ed9a48; outline-offset: 4px; }
+    .hint { margin: 16px 0 0; font-size: 12px; color: var(--muted); }
+    .wechat { background: #e9f2eb; padding: 18px 20px; border-radius: 18px; margin: 20px 0; font-size: 14px; }
+    .wechat strong { color: var(--green); }
+    .wechat p { margin: 5px 0 0; }
+    .steps { margin-top: 26px; font-size: 14px; color: var(--muted); }
+    .steps p { margin: 10px 0; }
+    .steps b { display: inline-block; color: var(--green); margin-right: 8px; }
+    .status { min-height: 23px; color: var(--muted); font-size: 13px; margin: 16px 0 0; }
+    .ios { margin-top: 20px; font-size: 14px; color: var(--muted); }
+    [hidden] { display: none !important; }
+    @media (prefers-reduced-motion: reduce) { .download:active { transform: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <img class="icon" src="./student-icon.png" width="64" height="64" alt="">
+      <div><div class="brand-name">哦狐</div><p class="tagline">校园每一步，阿狐陪你。</p></div>
+    </div>
+    <section class="card" aria-labelledby="download-title">
+      <p class="eyebrow">官方学生端 · 安卓安装包</p>
+      <h1 id="download-title">把校园装进口袋</h1>
+      <p class="description">课表、单词记忆、番茄专注和校园互助，都在这里。</p>
+      <p class="meta" id="release-meta">正在读取最新安装包</p>
+      <a class="download" id="download" aria-disabled="true">正在读取安装包…</a>
+      <p class="hint">适用于 64 位安卓手机，Android 6.0 及以上。</p>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="wechat" id="wechat-tip" hidden aria-label="微信下载提示">
+      <strong>在微信里没有开始下载？</strong>
+      <p>点右上角「···」，选择「在浏览器打开」，再点击下载按钮。</p>
+    </section>
+    <div class="steps" aria-label="安装步骤">
+      <p><b>01</b>下载完成，打开安装包。</p>
+      <p><b>02</b>若手机询问安装权限，允许当前浏览器安装。</p>
+      <p><b>03</b>打开「哦狐」，登录你的校园账号。</p>
+    </div>
+    <p class="ios" id="ios-tip" hidden>这是安卓 APK，苹果手机无法安装。</p>
+  </main>
+  <script id="download-release" type="application/json">{}</script>
+  <script>
+    (function () {
+      var link = document.getElementById('download');
+      var meta = document.getElementById('release-meta');
+      var status = document.getElementById('status');
+      var currentBuild = 0;
+      var wechat = /MicroMessenger/i.test(navigator.userAgent);
+      document.getElementById('wechat-tip').hidden = !wechat;
+      document.getElementById('ios-tip').hidden = !/iPhone|iPad|iPod/i.test(navigator.userAgent);
+      link.addEventListener('click', function (event) {
+        if (!link.hasAttribute('href')) { event.preventDefault(); return; }
+        status.textContent = wechat ? '若没有出现下载，请按下方提示在浏览器打开。' : '请在浏览器的下载列表查看进度。';
+      });
+      var abort = new AbortController();
+      var timeout = setTimeout(function () { abort.abort(); }, 8000);
+      function activate(release) {
+        var url = new URL(release.url, location.href);
+        if (url.origin !== location.origin || !/^\/downloads\/SunshineCampus-User-\d+\.\d+\.\d+\.apk$/.test(url.pathname) || url.search || url.hash || url.username || url.password) throw new Error('Invalid download');
+        if (!/^\d+\.\d+\.\d+$/.test(release.nativeVersion) || !Number.isSafeInteger(release.nativeBuild) || release.nativeBuild < 1 || !Number.isSafeInteger(release.size) || release.size <= 0 || !/^[a-f0-9]{64}$/.test(release.sha256)) throw new Error('Invalid release');
+        if (url.pathname !== '/downloads/SunshineCampus-User-' + release.nativeVersion + '.apk') throw new Error('Version mismatch');
+        if (release.nativeBuild < currentBuild) return;
+        currentBuild = release.nativeBuild;
+        link.href = url.href;
+        link.download = url.pathname.split('/').pop();
+        link.textContent = '一键下载学生端';
+        link.removeAttribute('aria-disabled');
+        meta.textContent = '安装包 ' + release.nativeVersion + ' · ' + (release.size / 1024 / 1024).toFixed(1) + ' MB';
+      }
+      try { activate(JSON.parse(document.getElementById('download-release').textContent)); } catch (_) { /* Unprepared development template waits for the current manifest. */ }
+      // The local preview server supplies verified APK bytes and metadata here;
+      // published pages receive the same file from release preparation.
+      var localRelease = fetch('student-latest.json?t=' + Date.now(), { cache: 'no-store', signal: abort.signal })
+        .then(function (res) { if (!res.ok) throw new Error('Unavailable'); return res.json(); })
+        .then(function (release) { activate(release); })
+        .catch(function () { /* The canonical manifest and embedded release remain fallbacks. */ });
+      var canonicalFailed = false;
+      var canonicalRelease = fetch('../update.json?t=' + Date.now(), { cache: 'no-store', signal: abort.signal })
+        .then(function (res) { if (!res.ok) throw new Error('Unavailable'); return res.json(); })
+        .then(function (manifest) {
+          var asset = manifest.flavors && manifest.flavors.user && manifest.flavors.user.androidArm64 || manifest.assets && manifest.assets.androidArm64;
+          if (!asset) throw new Error('Student package missing');
+          activate({ nativeVersion: manifest.latestVersion, nativeBuild: manifest.latestBuild, url: asset.url, size: asset.size, sha256: asset.sha256 });
+        })
+        .catch(function () { canonicalFailed = true; });
+      Promise.all([localRelease, canonicalRelease]).then(function () {
+        status.textContent = currentBuild ? (canonicalFailed ? '最新信息暂时无法读取，可下载本页已核验的安装包。' : '安装包信息已核验，请点击下载。') : '暂时无法读取安装包信息，请检查网络后刷新页面。';
+        clearTimeout(timeout);
+      });
+    })();
+  </script>
+</body>
+</html>

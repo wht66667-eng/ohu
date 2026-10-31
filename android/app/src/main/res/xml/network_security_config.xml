@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  明文 HTTP 最小放行（参考酱海带 0.4.x 踩坑：全局 usesCleartextTraffic=true 过宽）。
+
+  默认：禁止明文。
+  仅对本机调试、Capacitor localhost 放行；生产 API 一律走 HTTPS（CloudBase / tcloudbase）。
+  若未来 WebView 必须打开校内 http 门户，把域名加进 domain-config，切勿再开全局 cleartext。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

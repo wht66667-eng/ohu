@@ -1,0 +1,464 @@
+/* 单词玩法（限时速对 / 无尽闯关）：题目卡 + 倒计时 + 作答键，token 全适配浅/深色 */
+
+.page {
+  min-height: 100%;
+  background: var(--page-mid);
+  color: var(--text);
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.main {
+  padding: 0 16px;
+}
+
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* —— 规则 / 元信息 —— */
+.metaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 12px;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+/* —— 顶部 HUD：进度 / 倒计时 / 分数 —— */
+.hud {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hudPill {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hudStage {
+  flex: 1.7 1 0;
+}
+
+.hudScore {
+  background: var(--green-soft);
+  border-color: transparent;
+  color: var(--green-text);
+}
+
+.hudFox {
+  color: var(--price);
+  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
+  background: color-mix(in srgb, var(--orange) 12%, transparent);
+}
+
+.hudDanger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: var(--danger-soft);
+}
+
+/* —— 题目卡 —— */
+.quizCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px 18px 18px;
+  margin-bottom: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.word {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.phonetic {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.quizMeta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+/* —— 倒计时条 —— */
+.timerTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin: 6px 0 2px;
+}
+
+.timerFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--mint-2));
+  transition: width 0.3s linear, background 0.2s ease;
+}
+
+.timerLow {
+  background: var(--danger);
+}
+
+.speakBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.speakBtn:active {
+  border-color: var(--green);
+  color: var(--green-text);
+}
+
+/* —— 作答键（四键） —— */
+.answerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.answerBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: left;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.answerBtn:active {
+  transform: scale(0.98);
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.answerKey {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* —— 开局卡 / 结算卡 —— */
+.startCard,
+.resultCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 30px 20px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardEmoji,
+.resultEmoji {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mint);
+  font-size: 30px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.startTitle,
+.resultTitle {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.startText,
+.resultText {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-3);
+}
+
+.resultText strong {
+  color: var(--green-text);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultScore {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultScore small {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.resultActions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryBtn:active {
+  background: var(--green-hot);
+}
+
+.ghostBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* —— 分区 —— */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 20px 0 10px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.sectionHint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.boardPrivacyNote {
+  margin: -3px 0 10px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.legacyBoardNotice {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--green-soft);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.legacyBoardNotice p,
+.legacyBoardNotice small {
+  margin: 0;
+}
+
+.legacyBoardNotice small,
+.legacyBoardError {
+  color: var(--danger);
+}
+
+.legacyBoardButton {
+  min-height: 42px;
+  border: 1px solid var(--green);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--green-text);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.legacyBoardButton:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.legacyBoardError {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+/* —— 排行榜 —— */
+.boardList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.boardRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.rankBadge {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankTop {
+  background: var(--fox);
+  color: var(--on-primary);
+}
+
+.boardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.boardName {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boardSub {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}

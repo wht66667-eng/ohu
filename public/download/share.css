@@ -1,0 +1,44 @@
+/* Extends the existing promotional page palette and rounded controls. */
+.top-glow{max-width:100vw;right:0}
+main{overflow-x:clip}
+@media(max-width:700px){.hero-art .orb{width:min(410px,100%);height:auto;aspect-ratio:1}.hero-art .mascot{right:0}.hero-art .phone{left:46%}}
+a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+button:active,.nav-cta:active{transform:scale(.97)}
+.share-dialog{padding:20px;overflow:auto;overscroll-behavior:contain}
+.share-dialog .share-box{position:relative;width:min(730px,100%);margin:auto;background:var(--paper);padding:32px;border-radius:30px;box-shadow:var(--shadow);display:grid;grid-template-columns:minmax(0,286px) minmax(0,1fr);gap:30px;align-items:center;text-align:left}
+.share-preview{min-width:0;border-radius:18px;background:var(--mint);min-height:220px;aspect-ratio:2/3;overflow:hidden;box-shadow:0 10px 28px #174d391c;display:grid;place-items:center}
+.share-preview img{display:block;width:100%;height:auto;aspect-ratio:2/3;object-fit:contain}
+.share-preview img[hidden]{display:none}
+.share-preview[aria-busy="true"]:after{content:'阿狐正在准备分享卡…';font-size:13px;padding:22px;color:var(--muted);text-align:center}
+.share-controls{min-width:0}
+.share-controls .eyebrow{font-size:10px;letter-spacing:1.8px}
+.share-controls h2{font-size:27px;line-height:1.4;letter-spacing:-.7px;margin:15px 0 10px;color:var(--dark)}
+.share-controls p{font-size:13px;line-height:1.8;color:var(--muted);margin:0 0 16px}
+.share-theme-label{display:block;font-size:12px;font-weight:700;margin:20px 0 10px}
+.share-themes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.share-themes button{border:1px solid var(--line);border-radius:99px;background:var(--cream);color:var(--muted);padding:8px 10px;font-size:11px;font-weight:700;min-height:36px}
+.share-themes button[aria-pressed="true"]{background:var(--mint);border-color:var(--green);color:var(--dark)}
+.share-actions{display:grid;gap:9px}
+.share-actions button{border:1px solid var(--green);border-radius:14px;padding:12px 14px;background:var(--green);color:#fff;font-size:13px;min-height:45px;font-weight:800;transition:transform .18s,background-color .18s}
+.share-actions button.secondary{background:var(--paper);color:var(--green);border-color:var(--line)}
+.share-actions button:disabled{cursor:wait;opacity:.55}
+.share-controls .share-status{min-height:39px;margin:13px 0 10px;font-size:11px;line-height:1.7;color:#496552}
+.share-public-link{display:inline-block;font-size:11px;text-decoration:underline;text-underline-offset:3px;color:var(--green);padding:4px 0}
+.share-controls .share-preview-note{font-size:10px;line-height:1.65;background:var(--mint);padding:9px 11px;border-radius:9px;margin:10px 0 0}
+.share-dialog .modal-x{z-index:1;width:36px;height:36px;display:grid;place-items:center;top:10px;right:10px;padding:0}
+.modal{max-height:100dvh;overflow:auto;overscroll-behavior:contain}
+.modal-box{margin:auto}
+.share-fab{bottom:max(20px,env(safe-area-inset-bottom));min-height:44px}
+@media(max-width:600px){
+  .share-dialog{padding:12px}
+  .share-dialog .share-box{grid-template-columns:1fr;gap:19px;padding:28px 20px 22px;border-radius:24px;max-width:380px}
+  .share-preview{width:min(100%,230px);margin:0 auto}
+  .share-controls h2{font-size:23px;margin:10px 0 8px}
+  .share-controls .eyebrow,.share-controls>p:first-of-type{display:none}
+  .share-theme-label{margin-top:5px}
+  .share-themes{margin-bottom:13px}
+  .share-actions{grid-template-columns:1fr 1fr}
+  .share-actions button:first-child{grid-column:1/-1}
+  .share-controls .share-status{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){button:active,.nav-cta:active{transform:none}}
