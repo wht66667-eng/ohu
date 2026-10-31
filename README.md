@@ -4,6 +4,15 @@
 
 当前源码版本：**1.2.145**。本仓库保存客户端与服务端代码、构建脚本和产品文档。部分能力依赖 CloudBase、校园教务服务或外部网关，源码存在不代表对应生产服务已经部署。
 
+## 官网与下载
+
+- 官网／下载入口：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/>
+- 学生端 Android：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/student.html>
+- 管理端 Android：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/admin.html>
+- iPhone 安装说明：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/ios-guide.html>
+
+目前核验可用的域名是 CloudBase 默认 HTTPS 域名。绑定自有品牌域名还需要域名所有者提供域名并完成 DNS／平台验证；在此之前不把未验证域名写成官网地址。Android 下载指向经过核验的 1.2.145 APK。iPhone 下载只有取得同版本、身份与 SHA-256 均通过核验的 IPA 后才会启用；当前页面会显示不可用状态，不提供旧版本包。
+
 ## 技术栈
 
 - React、TypeScript、Vite

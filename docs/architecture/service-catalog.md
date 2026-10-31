@@ -14,7 +14,7 @@
 
 | 服务 | 用途 | 工作区依据 | 本地可确认的部署目标／路由 | 状态与健康检查 | 负责人 |
 |---|---|---|---|---|---|
-| 学生端／管理端 Web | App 页面与管理工作台 | `src/App.tsx`、`src/AdminApp.tsx`、`package.json` | CloudBase 静态托管 `https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com` | 2026-10-31 发布 1.2.145；首页、服务页、管理入口及下载页返回 HTTP 200。此结果只覆盖静态页面与 OTA 文件，不证明生产数据库／云函数状态 | 未登记 |
+| 学生端／管理端 Web | App 页面与管理工作台 | `src/App.tsx`、`src/AdminApp.tsx`、`package.json` | CloudBase 静态托管 `https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com`；规范下载入口 `/download/` | 2026-10-31 再次发布 1.2.145；官网、学生／管理下载页、iOS 教程、APK、更新清单与 user/admin OTA manifest 返回 HTTP 200，线上身份均为 1.2.145／145；此结果只覆盖静态页面、包文件与 OTA，不证明生产数据库／云函数状态 | 未登记 |
 | CloudBase Auth | 哦狐账号会话 | `src/lib/cb.ts`、`src/lib/auth.tsx` | 环境 ID 写在 `src/lib/cb.ts`；本地未找到独立 Auth 部署清单 | 用户登录与生产配置未核实 | 未登记 |
 | CloudBase PostgreSQL | 业务关系数据、RLS、RPC | `src/lib/cb.ts`、`docs/sql/`、`docs/release/`、`tools/deploy-db.mjs` | `jou-d4gq7a3cqf51e6caa`，上海区域；云端结构未读取 | 当前工作区的迁移登记与文件不完整；生产 schema、RLS、RPC 和迁移版本未核实。`docs/release/` 当前仅有 `meet-invitations.sql` | 未登记 |
 | CloudBase pgstore | 图片、头像等对象存储 | `src/lib/cb.ts`；存储桶 `images` 的策略背景见其中注释 | 由同一 CloudBase 环境 SDK 提供 | 桶策略、容量、生产可用性未核实 | 未登记 |
@@ -39,8 +39,9 @@
 - 源码身份：`package.json`、`src/lib/app-version.ts` 和 `android/app/build.gradle` 标记 1.2.145／145。
 - 本地用户 APK：50,268,870 字节，SHA-256 `41ccb0ad53e90a6bb8958c7ee5dd4a08b1180c19c96528bf961b83d7ac6c9f11`；管理 APK：45,875,029 字节，SHA-256 `72b684b4db093f853d71480e149cf9c73341f461e3780c8d184e8294c1d71915`。两件线上文件均 HTTP 200 全量下载后重新计算，与发布清单匹配。
 - 远端 `/update.json` 为 1.2.145／145；下载页、`/admin`、学生／管理 OTA manifest、1.2.145 OTA bundles 均已发布。OTA manifest 均为版本／webBuild 1.2.145／145，最低原生构建 144；下载 URL 分别为 `downloads/SunshineCampus-User-1.2.145.apk` 与 `downloads/SunshineCampus-Admin-1.2.145.apk`。
-- iOS 清单 `/download/ios-latest.json` 返回 `unavailable`，`/download/source-identity.json` 为 1.2.145／145 且 `iosDownloadAvailable:false`。旧 1.2.140 IPA 未随网站上传，当前没有同版本通过身份、大小和 SHA-256 校验的 IPA。
+- iOS 清单 `/download/ios-latest.json` 返回 `unavailable`，`/download/source-identity.json` 为 1.2.145／145 且 `iosDownloadAvailable:false`。旧 1.2.140 IPA 未随网站上传，当前没有同版本通过身份、大小和 SHA-256 校验的 IPA。GitHub CLI 当前账号对目标仓库仍为 `pull:true, push:false`，不能触发仓库内 iOS workflow。
 - `npm run release:prepare -- --reuse-apk` 与 `npm run release:publish` 已执行；官网与 APK／OTA 已发布，不代表生产数据库或 AI 云函数已部署。当前 Windows 缺 Xcode；指定 GitHub 仓库状态另见下节。
+- 规范官网／下载地址为 `https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/`；CloudBase 默认 HTTPS 域名可用，但尚未绑定用户自有品牌域名。绑定需要已注册域名及 DNS 控制权，不将外部自签工具域名当作哦狐官网。
 
 ## 数据库迁移登记逐项清点（2026-10-30）
 

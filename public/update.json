@@ -1,30 +1,34 @@
 {
-  "latestVersion": "1.2.116",
-  "latestBuild": 116,
-  "title": "阳光校园 1.2.116（好友 / 朋友圈上线）",
+  "latestVersion": "1.2.145",
+  "latestBuild": 145,
+  "title": "哦狐 1.2.145",
   "notes": [
-    "合入 Codex 分支的好友与朋友圈系统：通讯录、添加好友、好友申请、朋友圈动态",
-    "补齐五张数据表与 RLS；修复原实现漏传 uid 导致四个写入函数全部失败的问题",
-    "接受好友申请现在会建立好友关系；取消点赞不再误删他人的赞",
-    "沿用 1.2.115：登录面板默认手机号验证码、键盘弹出适配、首屏骨架屏、双击底栏回顶部",
-    "学生端 / 管理端整包同步 1.2.116；界面热更另见 OTA"
+    "哦狐学生端与管理端 Android 安装包和配套界面更新",
+    "加入碰个空 16 型阿狐人格与测评",
+    "iPhone 下载仅在同版本 IPA 构建并通过完整性校验后开放"
   ],
   "downloadUrl": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/",
   "force": false,
   "assets": {
     "androidArm64": {
-      "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.116.apk"
+      "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.145.apk",
+      "sha256": "41ccb0ad53e90a6bb8958c7ee5dd4a08b1180c19c96528bf961b83d7ac6c9f11",
+      "size": 50268870
     }
   },
   "flavors": {
     "user": {
       "androidArm64": {
-        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.116.apk"
+        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.145.apk",
+        "sha256": "41ccb0ad53e90a6bb8958c7ee5dd4a08b1180c19c96528bf961b83d7ac6c9f11",
+        "size": 50268870
       }
     },
     "admin": {
       "androidArm64": {
-        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-Admin-1.2.116.apk"
+        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-Admin-1.2.145.apk",
+        "sha256": "72b684b4db093f853d71480e149cf9c73341f461e3780c8d184e8294c1d71915",
+        "size": 45875029
       }
     }
   }
