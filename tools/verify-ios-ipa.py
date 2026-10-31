@@ -8,7 +8,7 @@ import hashlib
 import json
 import plistlib
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 def main() -> None:
@@ -31,8 +31,11 @@ def main() -> None:
         plist_path = "Payload/App.app/Info.plist"
         if plist_path not in names:
             raise SystemExit("IPA is missing Payload/App.app/Info.plist")
-        if any(name.endswith(".mobileprovision") or "/_CodeSignature/" in name for name in names):
-            raise SystemExit("Expected an unsigned IPA without a provisioning profile or code signature")
+        rejected_paths = sorted(name for name in names if name.lower().endswith(".mobileprovision") or "_CodeSignature" in PurePosixPath(name).parts)
+        if rejected_paths:
+            sample = "\n".join(f"  {name}" for name in rejected_paths[:8])
+            omitted = f"\n  ... and {len(rejected_paths) - 8} more" if len(rejected_paths) > 8 else ""
+            raise SystemExit(f"Expected an unsigned IPA without a provisioning profile or code signature; rejected {len(rejected_paths)} paths:\n{sample}{omitted}")
         info = plistlib.loads(archive.read(plist_path))
         executable = info.get("CFBundleExecutable")
         if not executable or f"Payload/App.app/{executable}" not in names:

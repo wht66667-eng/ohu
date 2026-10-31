@@ -107,18 +107,49 @@ jobs:
           APP_VERSION: ${{ steps.identity.outputs.version }}
           APP_BUILD: ${{ steps.identity.outputs.build }}
         run: |
+          set -o pipefail
           APP_PATH="$RUNNER_TEMP/ohu-derived/Build/Products/Release-iphoneos/App.app"
+          export APP_PATH
           test -d "$APP_PATH"
-          # Vendored frameworks can retain vendor signatures even when app signing is disabled.
-          # Remove them from this generated build so the distributable can be signed as one bundle.
-          while IFS= read -r -d '' FRAMEWORK_PATH; do
-            if codesign -dv "$FRAMEWORK_PATH" >/dev/null 2>&1; then
-              codesign --remove-signature "$FRAMEWORK_PATH"
-            fi
-          done < <(find "$APP_PATH" -type d -name '*.framework' -print0)
-          if codesign -dv "$APP_PATH" >/dev/null 2>&1; then
-            codesign --remove-signature "$APP_PATH"
-          fi
+          mkdir -p "$GITHUB_WORKSPACE/ios-diagnostics"
+          python3 - <<'PY'
+          import json, os, shutil, subprocess
+          from pathlib import Path
+          runner_temp = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+          expected = runner_temp / 'ohu-derived/Build/Products/Release-iphoneos/App.app'
+          candidate = Path(os.environ['APP_PATH'])
+          app = candidate.resolve(strict=True)
+          if candidate.is_symlink() or app != expected or not app.is_dir():
+              raise SystemExit('Refusing signature cleanup outside the exact generated App.app')
+          def confined(path):
+              resolved = path.resolve(strict=True)
+              if path.is_symlink() or not resolved.is_relative_to(app):
+                  raise SystemExit(f'Refusing signature cleanup through an external/symlink path: {path}')
+              return path
+          report = {'app': str(app), 'unsignedBundles': [], 'removedMetadata': []}
+          output = Path(os.environ['GITHUB_WORKSPACE']) / 'ios-diagnostics/signing-cleanup.json'
+          try:
+              bundles = [p for p in app.rglob('*') if p.is_dir() and p.suffix in {'.framework', '.app', '.appex', '.bundle'}]
+              for bundle in sorted(bundles, key=lambda p: len(p.parts), reverse=True) + [app]:
+                  confined(bundle)
+                  signed = subprocess.run(['codesign', '-dv', str(bundle)], capture_output=True)
+                  if signed.returncode == 0:
+                      subprocess.run(['codesign', '--remove-signature', str(bundle)], check=True)
+                      report['unsignedBundles'].append(str(bundle.relative_to(app)))
+              # Resource bundles can contain stale signing metadata even without a signed executable.
+              for metadata in sorted(app.rglob('_CodeSignature'), key=lambda p: len(p.parts), reverse=True):
+                  confined(metadata)
+                  if metadata.is_dir():
+                      shutil.rmtree(metadata)
+                  else:
+                      metadata.unlink()
+                  report['removedMetadata'].append(str(metadata.relative_to(app)))
+              for profile in app.rglob('*.mobileprovision'):
+                  confined(profile).unlink()
+                  report['removedMetadata'].append(str(profile.relative_to(app)))
+          finally:
+              output.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+          PY
           IPA_NAME="Ohhu-user-${APP_VERSION}-${APP_BUILD}-unsigned.ipa"
           PACKAGE_ROOT="$RUNNER_TEMP/ohu-ipa"
           mkdir -p "$PACKAGE_ROOT/Payload" "$GITHUB_WORKSPACE/ios-release"
@@ -128,7 +159,7 @@ jobs:
             --ipa "ios-release/$IPA_NAME" \
             --manifest ios-release/ios-latest.json \
             --version "$APP_VERSION" \
-            --build "$APP_BUILD"
+            --build "$APP_BUILD" 2>&1 | tee "$GITHUB_WORKSPACE/ios-diagnostics/verification.txt"
 
       - name: Upload unsigned IPA and verified manifest
         uses: actions/upload-artifact@v4
@@ -137,3 +168,14 @@ jobs:
           path: ios-release/
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload failed-build diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohhu-ios-diagnostics-${{ github.run_id }}
+          path: |
+            ios-diagnostics/
+            ios-release/*.ipa
+          if-no-files-found: warn
+          retention-days: 7
