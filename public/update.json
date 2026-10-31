@@ -1,34 +1,32 @@
 {
-  "latestVersion": "1.2.145",
-  "latestBuild": 145,
-  "title": "哦狐 1.2.145",
+  "latestVersion": "1.2.146",
+  "latestBuild": 146,
+  "title": "哦狐 1.2.146",
   "notes": [
-    "哦狐学生端与管理端 Android 安装包和配套界面更新",
-    "加入碰个空 16 型阿狐人格与测评",
-    "iPhone 下载仅在同版本 IPA 构建并通过完整性校验后开放"
+    "新增插件商城与逐项启停，完善账号隔离、个人介绍和广场滚动；修复原生提醒并提供同版APK/IPA，官网新增苹果免签名桌面版教程"
   ],
-  "downloadUrl": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/",
   "force": false,
+  "downloadUrl": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/",
   "assets": {
     "androidArm64": {
-      "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.145.apk",
-      "sha256": "41ccb0ad53e90a6bb8958c7ee5dd4a08b1180c19c96528bf961b83d7ac6c9f11",
-      "size": 50268870
+      "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.146.apk",
+      "sha256": "405b3643a87e3bb1157f4d09d1c42a308f59bb93f4972af03769b84ab80e8c0a",
+      "size": 50290774
     }
   },
   "flavors": {
     "user": {
       "androidArm64": {
-        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.145.apk",
-        "sha256": "41ccb0ad53e90a6bb8958c7ee5dd4a08b1180c19c96528bf961b83d7ac6c9f11",
-        "size": 50268870
+        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-User-1.2.146.apk",
+        "sha256": "405b3643a87e3bb1157f4d09d1c42a308f59bb93f4972af03769b84ab80e8c0a",
+        "size": 50290774
       }
     },
     "admin": {
       "androidArm64": {
-        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-Admin-1.2.145.apk",
-        "sha256": "72b684b4db093f853d71480e149cf9c73341f461e3780c8d184e8294c1d71915",
-        "size": 45875029
+        "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/SunshineCampus-Admin-1.2.146.apk",
+        "sha256": "a35fcff4065d28235cad21f155fc641d51b9eff3cdbf66db5b2c3fa2dd1eb32a",
+        "size": 45876550
       }
     }
   }

@@ -1,0 +1,22 @@
+{
+  "id": "/",
+  "name": "哦狐",
+  "short_name": "哦狐",
+  "description": "哦狐校园助手：课表、待办、学习工具与校园生活。",
+  "lang": "zh-CN",
+  "start_url": "/?source=homescreen",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#faf7ef",
+  "theme_color": "#16735b",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/download/student-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

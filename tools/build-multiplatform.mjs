@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /** H5 uses /assets; App bundles use relative paths. --no-sync prepares Web-only OTA assets. */
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pruneUnusedDraco } from './prune-draco-assets.mjs'
 import { stageVerifiedIosDownload } from './ios-download-release.mjs'
+import { studentWebAppMetadata } from './pwa-web.mjs'
 import {
   PROJECT_ROOT, assertOutputPath, clearOutput, isMain, parseOptions, readReleaseIdentity, selectShells,
 } from './release-common.mjs'
@@ -77,6 +78,10 @@ export function main({ root = PROJECT_ROOT, argv = process.argv.slice(2), env = 
       VITE_CAPGO_APP_ID: env.VITE_CAPGO_APP_ID || 'com.sunshinecampus.app',
     })
     pruneUnusedDraco(destination)
+    if (output === 'dist' && plan.shell === 'user') {
+      const index = join(destination, 'index.html')
+      writeFileSync(index, studentWebAppMetadata(readFileSync(index, 'utf8')))
+    }
     trimShellPublicAssets(root, destination, plan.shell)
     removeBundledIpaArtifacts(root, destination)
     const iosArtifact = output === 'dist' && plan.shell === 'user'

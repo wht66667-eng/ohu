@@ -48,7 +48,7 @@ if (mode === 'after') {
     if (JSON.stringify(ota) !== JSON.stringify(prepared)) throw Error(`OTA manifest mismatch: ${shell}`)
     await verifyBytes(`${shell} OTA`, ota.url, ota.checksum, ota.size)
   }
-  for (const [path, marker] of [['/', 'id="root"'], ['/admin', 'id="root"'], ['/plugins', 'id="root"'], ['/download/', '哦狐插件'], ['/download/student.html', `安装包 ${identity.version}`], ['/download/admin.html', '官方管理端'], ['/download/ios-guide.html', 'iPhone 自签安装说明']]) {
+  for (const [path, marker] of [['/', 'id="root"'], ['/admin', 'id="root"'], ['/plugins', 'id="root"'], ['/download/', '哦狐插件'], ['/download/student.html', `安装包 ${identity.version}`], ['/download/admin.html', '官方管理端'], ['/download/ios-guide.html', 'iPhone 自签安装说明'], ['/download/pwa-guide.html', '添加到主屏幕']]) {
     const html = await (await response(path)).text()
     if (!html.includes(marker)) throw Error(`Expected page content missing: ${path}`)
     report.pages.push(path)
@@ -62,6 +62,10 @@ if (mode === 'after') {
   } else if (process.argv.includes('--require-ios')) throw Error('Current IPA is unavailable')
   const onlineIndex = await (await response('/')).text()
   if (onlineIndex !== readFileSync('.release-out/web-upload/index.html', 'utf8')) throw Error('Website entry differs from prepared release')
+  if (!onlineIndex.includes('rel="manifest" href="/manifest.webmanifest"')) throw Error('Student web app metadata is missing')
+  const webApp = await (await response('/manifest.webmanifest')).json()
+  if (webApp.display !== 'standalone' || webApp.start_url !== '/?source=homescreen') throw Error('Web app launch configuration mismatch')
+  for (const icon of webApp.icons) await response(icon.src)
 }
 writeFileSync(`.release-out/verification-${identity.webBuild}-${mode}.json`, JSON.stringify(report, null, 2) + '\n')
 console.log(`Release ${identity.version} ${mode} verification passed`)
