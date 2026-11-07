@@ -11,9 +11,11 @@ import {
   runSchoolSync,
   runTiceSync,
   closeCampusWebView,
+  verifyCampusIdentity,
   type SchoolSyncResult,
   type SourceStatus,
 } from '../../lib/one-click'
+import type { GateCredentials } from '../../lib/background-sync'
 import { ensureLocalIdentity, loadLocalIdentity } from '../../lib/local-identity'
 import { refreshAllReminders } from '../../lib/notify-setup'
 import {
@@ -47,7 +49,7 @@ function statusText(status: SourceStatus): string {
   return status.message || '失败'
 }
 
-export function OneClickPage({ gate }: { gate?: { onPass: () => void } } = {}) {
+export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCredentials) => void } } = {}) {
   const [creds, setCreds] = useState<OneClickCredentials>(() => readOneClickCredentials())
   const [initials, setInitials] = useState('')
   const [busy, setBusy] = useState<Busy>(null)
@@ -226,6 +228,20 @@ export function OneClickPage({ gate }: { gate?: { onPass: () => void } } = {}) {
     setNotice(`公选选课：${result.count ?? 0} 门`)
   })
 
+  const gateTask = () => run('school', async () => {
+    if (!ensureInputs()) return
+    await verifyCampusIdentity(creds.stuid.trim(), creds.vpnPassword, creds.casPassword, (next, message) => setStage(`${STAGE_TEXT[next] ?? next} · ${message}`))
+    setStage('认证通过，正在进入…')
+    gate?.onPass({
+      studentId: creds.stuid.trim(),
+      vpnPassword: creds.vpnPassword,
+      casPassword: creds.casPassword,
+      ticePassword: creds.ticePassword,
+      puAccount,
+      puPassword,
+    })
+  })
+
   const allTask = () => run('school', async () => {
     if (!ensureInputs()) return
     const summary: string[] = []
@@ -269,7 +285,6 @@ export function OneClickPage({ gate }: { gate?: { onPass: () => void } } = {}) {
 
     setStage('')
     setNotice(summary.join(' · '))
-    gate?.onPass()
   })
 
 
@@ -343,7 +358,7 @@ export function OneClickPage({ gate }: { gate?: { onPass: () => void } } = {}) {
           在本机加密记住密码（默认关闭；关闭时每次同步都要重新输入）
         </label>
         <div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void allTask()}>
+          <button type="button" className={styles.primary} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void (gate ? gateTask() : allTask())}>
             {busy === 'school' ? '正在更新…' : gate ? '认证并进入（同步全部数据）' : '更新数据'}
           </button>
           <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void schoolTask()}>

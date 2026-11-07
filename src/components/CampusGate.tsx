@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { CAMPUS_BRIDGE_AVAILABLE } from '../lib/campus-bridge'
 import { loadLocalIdentity } from '../lib/local-identity'
+import { startBackgroundSync, type GateCredentials } from '../lib/background-sync'
 import { OneClickPage } from '../pages/study/OneClickPage'
 
 const GATE_KEY = 'ohu.campus-gate.v1'
@@ -40,10 +41,11 @@ export function CampusGate({ children }: { children: ReactNode }) {
       <button type="button" onClick={() => setShowHelp(true)} style={{ display: 'block', width: '100%', padding: '10px 16px', border: 0, background: '#fff8e6', color: '#7a4b12', fontSize: 12, textAlign: 'left' }}>
         密码规则：校园网 2023 级后 8 位 / 2024 级起后 8 位 + @Jou；统一认证 Jou@ + 后 8 位。点此查看完整说明 ›
       </button>
-      <OneClickPage gate={{ onPass: () => {
+      <OneClickPage gate={{ onPass: (credentials: GateCredentials) => {
         const now = loadLocalIdentity()
         if (now) markCampusVerified(now.studentId)
         setReady(true)
+        void startBackgroundSync(credentials)
       } }} />
     </div>
 
