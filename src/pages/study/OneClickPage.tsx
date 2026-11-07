@@ -47,7 +47,7 @@ function statusText(status: SourceStatus): string {
   return status.message || '失败'
 }
 
-export function OneClickPage() {
+export function OneClickPage({ gate }: { gate?: { onPass: () => void } } = {}) {
   const [creds, setCreds] = useState<OneClickCredentials>(() => readOneClickCredentials())
   const [initials, setInitials] = useState('')
   const [busy, setBusy] = useState<Busy>(null)
@@ -269,6 +269,7 @@ export function OneClickPage() {
 
     setStage('')
     setNotice(summary.join(' · '))
+    gate?.onPass()
   })
 
 
@@ -283,7 +284,7 @@ export function OneClickPage() {
   const savedIdentity = loadLocalIdentity()
 
   return <div className={styles.page}>
-    <PageHeader title="一键获取" />
+    <PageHeader title={gate ? '首次认证' : '一键获取'} />
     <div className={styles.content}>
       <section className={styles.hero}>
         <span className={styles.eyebrow}>设备内登录 · 不经过云端</span>
@@ -323,8 +324,8 @@ export function OneClickPage() {
 
       <section className={styles.card}>
         <div className={styles.cardHead}><div><span className={styles.kicker}>第 1 步</span><h3>学号与密码</h3></div></div>
-        <label className={styles.field}>学号<input value={creds.stuid} inputMode="numeric" autoComplete="username" onChange={(event) => update('stuid', event.target.value)} placeholder="2023120448" /></label>
-        <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>10 位数字，例如 2023120448</small>
+        <label className={styles.field}>学号<input value={creds.stuid} inputMode="numeric" autoComplete="username" onChange={(event) => update('stuid', event.target.value)} placeholder="20231111" /></label>
+        <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>例如 20231111</small>
         <label className={styles.field}>VPN / 校园网密码<input type="password" value={creds.vpnPassword} autoComplete="current-password" onChange={(event) => update('vpnPassword', event.target.value)} placeholder="8–20 位，区分大小写" /></label>
         <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>2023 级默认身份证后 8 位；2024 级起为身份证后 8 位 + @Jou</small>
         <label className={styles.field}>统一认证密码<input type="password" value={creds.casPassword} autoComplete="current-password" onChange={(event) => update('casPassword', event.target.value)} placeholder="8–20 位，含字母/数字/符号" /></label>
@@ -332,7 +333,7 @@ export function OneClickPage() {
         <label className={styles.field}>体测密码（选填）
           <input type="password" value={creds.ticePassword} autoComplete="off" onChange={(event) => update('ticePassword', event.target.value)} placeholder="不填则跳过体测" />
         </label>
-        <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>初始为姓名首字母大写 + _ + 学号，例如 WHT_2023120448</small>
+        <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>初始为姓名首字母大写 + _ + 学号，例如 AAA_20231111</small>
         <div className={styles.inlineRow}>
           <input value={initials} onChange={(event) => setInitials(event.target.value)} placeholder="如 AAA" aria-label="姓名首字母" />
           <button type="button" className={styles.mini} onClick={fillTiceByInitials}>填入 首字母_学号</button>
@@ -343,7 +344,7 @@ export function OneClickPage() {
         </label>
         <div className={styles.actions}>
           <button type="button" className={styles.primary} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void allTask()}>
-            {busy === 'school' ? '正在同步全部…' : '一键登录并同步全部'}
+            {busy === 'school' ? '正在更新…' : gate ? '认证并进入（同步全部数据）' : '更新数据'}
           </button>
           <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void schoolTask()}>
             只获取课表 · 成绩 · 考试
@@ -426,7 +427,7 @@ export function OneClickPage() {
           </div>
           <div>
             <dt>体测密码</dt>
-            <dd>首次可尝试「姓名首字母大写_学号」，例如 AAA_2023111111；若改过密码，请用新密码。</dd>
+            <dd>首次可尝试「姓名首字母大写_学号」，例如 AAA_20231111；若改过密码，请用新密码。</dd>
           </div>
         </dl>
         <p className={styles.muted}>以上为学校初始密码规则；若曾修改，请使用修改后的密码。忘记密码可在对应系统自助找回或咨询学校网络中心。</p>

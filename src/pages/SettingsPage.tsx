@@ -320,6 +320,7 @@ function SettingsForAccount() {
           {studentRemind ? <SettingsLink icon="bell" title="通知与提醒" detail="提醒时点、弹窗样式与系统权限" onClick={() => openSection('reminders')} /> : null}
           <SettingsLink icon="shield" title="账号与安全" detail={signed ? '学号身份与退出' : '用学号开始'} onClick={() => openSection('account')} />
           {!work ? <SettingsLink icon="box" title="数据与缓存" detail="查看本机存储估算，不会自动清理" onClick={() => openSection('data')} /> : null}
+          {!work ? <SettingsLink icon="update" title="更新数据" detail="重新登录校园系统，更新课表、成绩、考试" onClick={() => nav('/study/oneclick')} /> : null}
           <SettingsLink icon="update" title="哦狐科技" detail={`插件共创 · 管理员审核 · v${APP_VERSION}`} onClick={() => openSection('about')} />
           {!work ? <SettingsLink icon="link" title="网页快捷入口" detail="管理自己添加的校园网页" onClick={() => openSection('links')} /> : null}
           {!work ? <SettingsLink icon="link" title="安装与分享" detail="二维码、分享图与安装说明" onClick={() => openSection('install')} /> : null}

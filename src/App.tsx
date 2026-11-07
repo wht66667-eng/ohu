@@ -3,6 +3,7 @@ import { BrowserRouter, HashRouter, Link, Navigate, Route, Routes, useLocation }
 import { AuthProvider } from './lib/auth'
 import { getAppShell, shellHomePath } from './lib/app-shell'
 import { IS_NATIVE } from './lib/platform'
+import { CampusGate } from './components/CampusGate'
 import { PhoneShell } from './components/PhoneShell'
 import { BootGate } from './components/BootGate'
 import { SimpleHomePage } from './pages/SimpleHomePage'
@@ -141,7 +142,7 @@ function ApplicationShell({ children }: { children: ReactNode }) {
     return <Navigate to="/admin/content" replace />
   }
   if (!IS_NATIVE && !explicitStudent && isAdminWorkspacePath(location.pathname)) return <AdminWorkspace><AdminNotificationRuntime />{children}</AdminWorkspace>
-  return <PhoneShell>{children}</PhoneShell>
+  return <CampusGate><PhoneShell>{children}</PhoneShell></CampusGate>
 }
 
 /**
