@@ -166,8 +166,13 @@ async function loginVpn(studentId: string, vpnPassword: string, report: StageRep
   await CampusBridge.open()
   try {
     const cookie = (await CampusBridge.cookies({ url: `${GATEWAY}/` })).cookie
-    /* 已有 WebVPN 票据时不要重新走 /login：会换新票据并让已拿到的正方会话失效。 */
-    if (cookie.includes('wengine_vpn_ticket')) return
+    /* 已有 WebVPN 票据时先探测一次：旧票据会整站弹回 /login，不能直接复用。 */
+    if (cookie.includes('wengine_vpn_ticket')) {
+      await CampusBridge.load({ url: zfUrl('/') })
+      await waitReady(8_000)
+      const probe = await CampusBridge.currentUrl()
+      if (!probe.url.includes('/login')) return
+    }
   } catch {
     /* 读不到 cookie 时按未登录处理 */
   }
