@@ -36,6 +36,8 @@ import uuid
 from collections import deque
 
 from flask import Flask, Response, jsonify, request, send_from_directory
+from werkzeug.exceptions import BadRequest, RequestEntityTooLarge
+from request_security import MAX_BODY_BYTES, client_ip, read_object, credential, fetch_targets, ocr_attempts
 
 from jou_client import (  # noqa: F401  （异常类型按契约在此重导出，便于排查）
     CaptchaError,
@@ -57,10 +59,55 @@ from captcha_ocr import ocr_status
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("jou-schedule-api")
 
-app = Flask(__name__)
-VERSION = "2.3.2-grades-all-terms"
+# 本服务只暴露明确注册的接口，不启用 Flask 默认的 /static 文件路由。
+app = Flask(__name__, static_folder=None)
+VERSION = "2.4.1-security150"
+app.config["MAX_CONTENT_LENGTH"] = MAX_BODY_BYTES
 MOCK = os.environ.get("MOCK", "").strip() == "1"
 
+
+@app.route("/api/ai", methods=["POST"])
+def ai_proxy():
+    """Agnes AI proxy on CloudRun; the cloud function egress cannot reach apihub."""
+    import os
+    import requests as _requests
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict) or not isinstance(body.get("input"), str):
+        return _err_simple("INVALID_INPUT", 400, "请求格式错误")
+    text = body["input"].strip()
+    if not text or len(text) > 10000:
+        return _err_simple("INVALID_INPUT", 400, "输入为空或过长")
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return _err_simple("UNAUTHENTICATED", 401, "请先登录后使用 AI 功能")
+    limited, retry = _win_ip_query.hit(_client_ip())
+    if limited:
+        return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
+    key = os.environ.get("AGNES_API_KEY", "").strip() or "sk-NH9uC8UCm7vLyXIvakCYxJrNgnWTxq56QrxB8CkRYK7nEtsT"
+    try:
+        upstream = _requests.post(
+            "https://apihub.agnes-ai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": "agnes-2.5-flash",
+                "messages": [
+                    {"role": "system", "content": "你是哦狐校园助手，用简洁中文回答，不编造校园事实。"},
+                    {"role": "user", "content": text},
+                ],
+                "temperature": 0.7,
+                "max_tokens": 1024,
+            },
+            timeout=50,
+        )
+        if upstream.status_code != 200:
+            return _err_simple("MODEL_UNAVAILABLE", 503, "AI 暂时不可用，请稍后再试")
+        data = upstream.json()
+        answer = ((data.get("choices") or [{}])[0].get("message") or {}).get("content")
+        if not isinstance(answer, str) or not answer.strip():
+            return _err_simple("EMPTY_RESPONSE", 503, "AI 没有返回内容，请重试")
+        return _ok({"answer": answer.strip()[:20000]})
+    except Exception:
+        return _err_simple("SERVICE_UNAVAILABLE", 503, "AI 服务暂时无法连接，请稍后重试")
 
 # ============================================================
 # 可调参数（全部支持环境变量覆盖，便于线上不动代码调整）
@@ -73,6 +120,8 @@ GLOBAL_QUERY_PER_MIN = int(os.environ.get("GLOBAL_QUERY_PER_MIN", "120"))  # 全
 MAX_SESSIONS_PER_IP = int(os.environ.get("MAX_SESSIONS_PER_IP", "40"))     # 同 IP 未消费会话
 MAX_UPSTREAM_CONCURRENCY = int(os.environ.get("MAX_UPSTREAM_CONCURRENCY", "4"))
 UPSTREAM_ACQUIRE_TIMEOUT = float(os.environ.get("UPSTREAM_ACQUIRE_TIMEOUT", "10"))
+TRUSTED_PROXY_HOPS = max(0, min(5, int(os.environ.get("TRUSTED_PROXY_HOPS", "0"))))
+TRUSTED_PROXY_CIDRS = os.environ.get("TRUSTED_PROXY_CIDRS", "")
 
 
 # ============================================================
@@ -85,13 +134,8 @@ def _rid() -> str:
 
 
 def _client_ip() -> str:
-    """取真实来源 IP：网关回源时会带 X-Forwarded-For，取第一段"""
-    fwd = request.headers.get("X-Forwarded-For", "")
-    if fwd:
-        first = fwd.split(",")[0].strip()
-        if first:
-            return first[:64]
-    return (request.headers.get("X-Real-IP") or request.remote_addr or "unknown")[:64]
+    return client_ip(request.remote_addr, request.headers.get("X-Forwarded-For", ""),
+                     TRUSTED_PROXY_HOPS, TRUSTED_PROXY_CIDRS)
 
 
 def _mask_id(student_id: str) -> str:
@@ -227,11 +271,18 @@ def _preflight():
     """非网关直连场景（本机调试）下的 OPTIONS 预检兜底，不进入业务逻辑"""
     if request.method == "OPTIONS":
         return ("", 204)
+    if request.path.startswith("/api/") and request.content_length is not None and request.content_length > MAX_BODY_BYTES:
+        raise RequestEntityTooLarge()
 
 
 @app.after_request
 def add_security_headers(resp: Response):
     resp.headers["X-Content-Type-Options"] = "nosniff"
+    if request.path.startswith("/api/"):
+        resp.headers["Cache-Control"] = "no-store, private, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Referrer-Policy"] = "no-referrer"
+        resp.headers["X-Frame-Options"] = "DENY"
     return resp
 
 
@@ -254,6 +305,26 @@ def _err_simple(code: str, http: int, message: str, retry_after: int | None = No
     if retry_after:
         resp.headers["Retry-After"] = str(int(retry_after))
     return resp, http
+
+
+@app.errorhandler(BadRequest)
+def _invalid_request(_error):
+    # Do not echo parser errors, credential values or raw request bodies.
+    return _err_simple("1000", 400, "请求格式不正确，请检查填写内容")
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def _oversized_request(_error):
+    return _err_simple("1000", 413, "请求内容过长")
+
+
+def _query_limit(rid: str, ip: str, username: str):
+    for window, key in ((_win_global_query, "global"), (_win_ip_query, ip), (_win_username, username.lower())):
+        limited, retry = window.hit(key)
+        if limited:
+            logger.warning("rid=%s query 被限流 id=%s ip=%s", rid, _mask_id(username), _mask_ip(ip))
+            return _err_simple("1004", 429, "查询较频繁，请稍后再试", retry)
+    return None
 
 
 # ============================================================
@@ -303,7 +374,7 @@ def timetable_captcha():
     except ScheduleError as e:
         return _err(e, rid)
     except Exception:
-        logger.exception("rid=%s 验证码接口未预期异常", rid)
+        logger.warning("rid=%s 验证码接口未预期异常", rid)
         return _err_simple("1006", 500, "服务暂时不可用，请稍后重试")
     finally:
         _leave_upstream()
@@ -313,22 +384,14 @@ def timetable_captcha():
 def timetable_query():
     """学号 + 密码 + 验证码 登录教务系统并抓取课表（可选同时抓成绩/考试）"""
     rid, ip = _rid(), _client_ip()
-    body = request.get_json(silent=True) or {}
-    username = str(body.get("username", "")).strip()
-    password = str(body.get("password", ""))
-    captcha = str(body.get("captcha", "")).strip()
-    sid = str(body.get("sid", "")).strip()
+    body = read_object(request)
+    username = credential(body, "username", 80, strip=True)
+    password = credential(body, "password")
+    captcha = credential(body, "captcha", 64, strip=True)
+    sid = credential(body, "sid", 128, strip=True)
     tag = _mask_id(username)
     # fetch: ["schedule"] | ["grades","exams"] | ["schedule","grades","exams"]
-    raw_fetch = body.get("fetch")
-    if isinstance(raw_fetch, str):
-        fetch = [x.strip() for x in raw_fetch.split(",") if x.strip()]
-    elif isinstance(raw_fetch, list):
-        fetch = [str(x).strip() for x in raw_fetch if str(x).strip()]
-    else:
-        fetch = ["schedule"]
-    allowed = {"schedule", "grades", "exams"}
-    fetch = [x for x in fetch if x in allowed] or ["schedule"]
+    fetch = fetch_targets(body, ["schedule"])
 
     if not username or not password:
         return _err_simple("1000", 400, "请填写学号与密码")
@@ -336,20 +399,9 @@ def timetable_query():
         return _err_simple("1001", 400, "请填写验证码")
 
     # 限流顺序：全局 → IP → 学号（任一超限即拒绝，并告诉前端还要等多久）
-    checks = (
-        (_win_global_query, "global", "当前使用人数较多，请稍后重试"),
-        (_win_ip_query, ip, "请求过于频繁，请稍后再试"),
-    )
-    for win, key, msg in checks:
-        limited, retry = win.hit(key)
-        if limited:
-            logger.warning("rid=%s query 被限流(%s) id=%s ip=%s", rid, win.limit, tag, _mask_ip(ip))
-            return _err_simple("1004", 429, msg, retry)
-
-    limited, retry = _win_username.hit(username.lower())
-    if limited:
-        logger.warning("rid=%s query 被学号限流 id=%s ip=%s", rid, tag, _mask_ip(ip))
-        return _err_simple("1004", 429, "该学号请求过于频繁，教务侧正在冷却，请稍后再试", retry)
+    rejected = _query_limit(rid, ip, username)
+    if rejected is not None:
+        return rejected
 
     if MOCK:
         time.sleep(0.4)  # 模拟真实耗时
@@ -381,7 +433,7 @@ def timetable_query():
         logger.info("rid=%s 学业查询结束 id=%s code=%s 耗时=%.2fs", rid, tag, e.code, time.time() - t0)
         return _err(e, rid, tag)
     except Exception:
-        logger.exception("rid=%s 学业查询未预期异常 id=%s", rid, tag)
+        logger.warning("rid=%s 学业查询未预期异常 id=%s", rid, tag)
         return _err_simple("1006", 500, "服务暂时不可用，请稍后重试")
     finally:
         # 会话无论成功失败都已消费（pop_session 取走即销毁）
@@ -397,37 +449,19 @@ def timetable_auto():
     成功返回与 /query 相同结构；OCR 未装或多次失败时返回 1010/1001，前端应回退手输。
     """
     rid, ip = _rid(), _client_ip()
-    body = request.get_json(silent=True) or {}
-    username = str(body.get("username", "")).strip()
-    password = str(body.get("password", ""))
+    body = read_object(request)
+    username = credential(body, "username", 80, strip=True)
+    password = credential(body, "password")
     tag = _mask_id(username)
-    raw_fetch = body.get("fetch")
-    if isinstance(raw_fetch, str):
-        fetch = [x.strip() for x in raw_fetch.split(",") if x.strip()]
-    elif isinstance(raw_fetch, list):
-        fetch = [str(x).strip() for x in raw_fetch if str(x).strip()]
-    else:
-        fetch = ["schedule", "grades", "exams"]
-    allowed = {"schedule", "grades", "exams"}
-    fetch = [x for x in fetch if x in allowed] or ["schedule", "grades", "exams"]
-    max_tries = int(body.get("max_tries") or 5)
-    max_tries = max(1, min(8, max_tries))
+    fetch = fetch_targets(body, ["schedule", "grades", "exams"])
+    max_tries = ocr_attempts(body)
 
     if not username or not password:
         return _err_simple("1000", 400, "请填写学号与密码")
 
-    checks = (
-        (_win_global_query, "global", "当前使用人数较多，请稍后重试"),
-        (_win_ip_query, ip, "请求过于频繁，请稍后再试"),
-    )
-    for win, key, msg in checks:
-        limited, retry = win.hit(key)
-        if limited:
-            return _err_simple("1004", 429, msg, retry)
-
-    limited, retry = _win_username.hit(username.lower())
-    if limited:
-        return _err_simple("1004", 429, "该学号请求过于频繁，请稍后再试", retry)
+    rejected = _query_limit(rid, ip, username)
+    if rejected is not None:
+        return rejected
 
     if MOCK:
         time.sleep(0.5)
@@ -460,7 +494,7 @@ def timetable_auto():
         logger.info("rid=%s auto 结束 id=%s code=%s 耗时=%.2fs", rid, tag, e.code, time.time() - t0)
         return _err(e, rid, tag)
     except Exception:
-        logger.exception("rid=%s auto 未预期异常 id=%s", rid, tag)
+        logger.warning("rid=%s auto 未预期异常 id=%s", rid, tag)
         return _err_simple("1006", 500, "服务暂时不可用，请稍后重试")
     finally:
         password = ""  # noqa: F841
@@ -473,11 +507,14 @@ def timetable_auto():
 
 @app.route("/api/schedule", methods=["POST"])
 def api_schedule():
-    body = request.get_json(silent=True) or {}
-    student_id = str(body.get("student_id", "")).strip()
-    password = str(body.get("password", ""))
+    body = read_object(request)
+    student_id = credential(body, "student_id", 80, strip=True)
+    password = credential(body, "password")
     if not student_id or not password:
         return _err_simple("1000", 400, "请提供 student_id 和 password")
+    rejected = _query_limit(_rid(), _client_ip(), student_id)
+    if rejected is not None:
+        return rejected
     if MOCK:
         return _ok({"student_id": student_id, "rows": MockSchedule.rows()})
     # 有 OCR 时走自动；否则提示用新接口
@@ -497,6 +534,118 @@ def api_schedule():
         501,
         "请使用 /api/timetable/auto（需 OCR）或 /api/timetable/captcha + /query",
     )
+
+
+@app.route("/api/integrations/capabilities", methods=["GET"])
+def integration_capabilities():
+    from importlib.util import find_spec
+    from physical_read import configured
+    enabled = os.environ.get("CHAOXING_READ_ENABLED", "") == "1" and find_spec("Crypto") is not None
+    return _ok({"chaoxing": {"enabled": enabled, "readOnly": True},
+                "physical": {"enabled": configured(), "source": "jou-tice", "httpUpstream": True}})
+
+
+def _integration_json():
+    """Bound credential request bodies without relying on a Flask-version setter."""
+    import json
+    payload = request.stream.read(8193)
+    if len(payload) > 8192: return None
+    try:
+        return json.loads(payload)
+    except (ValueError, UnicodeError):
+        return None
+
+
+@app.route("/api/physical/captcha", methods=["POST"])
+def physical_captcha():
+    from physical_read import configured, prepare, PhysicalReadError
+    if not configured():
+        return _err_simple("INTEGRATION_DISABLED", 503, "体测同步尚未在服务器启用")
+    limited, retry = _win_ip_query.hit(_client_ip())
+    if limited: return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
+    if not _enter_upstream(_rid(), _client_ip(), "physical-captcha"):
+        return _err_simple("1004", 429, "体测查询人数较多", 5)
+    try:
+        return _ok(prepare())
+    except PhysicalReadError as error:
+        return _err_simple("PHYSICAL_SOURCE_UNSUPPORTED", 422, str(error))
+    except Exception:
+        return _err_simple("PHYSICAL_UNREACHABLE", 502, "学校体测系统暂不可达，可能需要校园网；原记录已保留")
+    finally:
+        _leave_upstream()
+
+
+@app.route("/api/physical/query", methods=["POST"])
+def physical_query():
+    from physical_read import configured, query, PhysicalReadError
+    if not configured():
+        return _err_simple("INTEGRATION_DISABLED", 503, "体测同步尚未在服务器启用")
+    if request.content_length is not None and request.content_length > 8192:
+        return _err_simple("INVALID_INPUT", 400, "请求内容过长")
+    body = _integration_json()
+    if not isinstance(body, dict) or body.get("consent") is not True or body.get("httpConsent") is not True:
+        return _err_simple("CONSENT_REQUIRED", 400, "请确认本次查询及学校旧系统的 HTTP 连接方式")
+    values = [body.get(k, "") for k in ("sid", "username", "password", "captcha")]
+    if any(not isinstance(v, str) or len(v) > 256 for v in values) or not all(values[:3]):
+        return _err_simple("INVALID_INPUT", 400, "请填写体测账号与密码，并重新准备验证码")
+    sid, username, password, captcha = values
+    for window, key in ((_win_global_query, "global"), (_win_ip_query, _client_ip()), (_win_username, "physical:" + username)):
+        limited, retry = window.hit(key)
+        if limited: return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
+    if not _enter_upstream(_rid(), _client_ip(), "physical-query"):
+        return _err_simple("1004", 429, "体测查询人数较多", 5)
+    try:
+        return _ok(query(sid, username, password, captcha))
+    except PhysicalReadError as error:
+        return _err_simple("PHYSICAL_READ_FAILED", 422, str(error))
+    except Exception:
+        return _err_simple("PHYSICAL_UNREACHABLE", 502, "学校体测系统暂不可达或表单已改变，原记录已保留")
+    finally:
+        values.clear()
+        body.clear()
+        password = ""
+        _leave_upstream()
+
+
+@app.route("/api/learning/chaoxing/query", methods=["POST"])
+def learning_chaoxing_query():
+    from chaoxing_read import ChaoxingReadError, query_chaoxing
+    from importlib.util import find_spec
+    if os.environ.get("CHAOXING_READ_ENABLED", "") != "1" or find_spec("Crypto") is None:
+        return _err_simple("INTEGRATION_DISABLED", 503, "学习通只读同步尚未在服务器启用")
+    if request.content_length is not None and request.content_length > 8192:
+        return _err_simple("INVALID_INPUT", 400, "请求内容过长")
+    body = _integration_json()
+    if not isinstance(body, dict) or body.get("consent") is not True:
+        return _err_simple("CONSENT_REQUIRED", 400, "请先确认本次只读同步授权")
+    username, password, course = body.get("username"), body.get("password"), body.get("courseKey", "")
+    import re
+    course_keys = body.get("courseKeys", [])
+    if (not isinstance(course_keys, list) or len(course_keys) > 30
+            or any(not isinstance(key, str) or not re.fullmatch(r"\d+:\d+:\d+", key) for key in course_keys)):
+        return _err_simple("INVALID_INPUT", 400, "课程列表格式不正确")
+    if (not isinstance(username, str) or not 1 <= len(username.strip()) <= 80
+            or not isinstance(password, str) or not 1 <= len(password) <= 256
+            or not isinstance(course, str) or course and not re.fullmatch(r"\d+:\d+:\d+", course)):
+        return _err_simple("INVALID_INPUT", 400, "请填写正确的学习通账号与密码")
+    rid, ip = _rid(), _client_ip()
+    for window, key in ((_win_global_query, "global"), (_win_ip_query, ip), (_win_username, "chaoxing:" + username.strip())):
+        limited, retry = window.hit(key)
+        if limited:
+            return _err_simple("1004", 429, "同步较频繁，请稍后再试", retry)
+    if not _enter_upstream(rid, ip, "chaoxing"):
+        return _err_simple("1004", 429, "同步人数较多，请稍后再试", 5)
+    try:
+        return _ok(query_chaoxing(username.strip(), password, course, course_keys))
+    except ChaoxingReadError as error:
+        return _err_simple("CHAOXING_READ_FAILED", 422, str(error))
+    except Exception:
+        # Do not log upstream exceptions: URLs may contain signed session parameters.
+        return _err_simple("CHAOXING_UNAVAILABLE", 502, "学习通暂时无法读取，已有记录已保留")
+    finally:
+        password = ""
+        body.clear()
+        _leave_upstream()
 
 
 @app.route("/api/health", methods=["GET"])
@@ -519,22 +668,30 @@ def api_health():
 # 独立运行：托管自带查询页面（容器内无该目录时给友好提示）
 # ============================================================
 
+# 查询演示页仅供本地人工联调；生产默认关闭通配文件路由。
+_ENABLE_QUERY_DEMO = os.environ.get("ENABLE_QUERY_DEMO", "0") == "1"
 _STATIC = pathlib.Path(__file__).resolve().parent.parent / "web"
 
 
 @app.route("/")
 def index_page():
-    if not (_STATIC / "index.html").is_file():
+    """返回服务身份；只有显式启用演示模式时才返回本地查询页面。"""
+    if not _ENABLE_QUERY_DEMO or not (_STATIC / "index.html").is_file():
         return jsonify({"ok": True, "service": "jou-api", "version": VERSION,
                         "hint": "使用 /api/timetable/captcha 与 /api/timetable/query"})
     return send_from_directory(_STATIC, "index.html")
 
 
-@app.route("/<path:filename>")
 def static_files(filename: str):
-    if not _STATIC.is_dir():
+    """演示静态资源默认拒绝，框架同时约束文件路径不能越出演示目录。"""
+    if not _ENABLE_QUERY_DEMO or not _STATIC.is_dir():
         return jsonify({"ok": False, "code": "1008", "message": "not found"}), 404
     return send_from_directory(_STATIC, filename)
+
+
+# 演示文件路由只在本机联调显式开启时注册，生产路由表不留通配入口。
+if _ENABLE_QUERY_DEMO:
+    app.add_url_rule("/<path:filename>", "static_files", static_files)
 
 
 # ============================================================

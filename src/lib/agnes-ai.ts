@@ -1,7 +1,7 @@
 import { cbAuth } from './cb'
 import { API_BASE } from './gateway'
 
-export type AgnesFeature = 'chat' | 'study-plan' | 'material-summary' | 'material-points' | 'material-quiz' | 'assignment-breakdown' | 'exam-plan' | 'vocab-explain' | 'schedule-change' | 'schedule-image'
+export type AgnesFeature = 'chat' | 'study-plan' | 'material-summary' | 'material-points' | 'material-quiz' | 'assignment-breakdown' | 'exam-plan' | 'vocab-explain' | 'schedule-change' | 'schedule-image' | 'playful-reading'
 export class AgnesAiError extends Error {
   code: string
   constructor(message: string, code: string) { super(message); this.name = 'AgnesAiError'; this.code = code }
@@ -31,7 +31,7 @@ export async function requestAgnes(feature: AgnesFeature, input: string, signal?
   try {
     const token = await accessToken()
     if (signal?.aborted) throw new AgnesAiError('本次 AI 请求已取消。', 'ABORTED')
-    const response = await fetch(`${API_BASE}/api/agnes`, {
+    const response = await fetch(`${API_BASE}/api/ai`, {
       method: 'POST', signal: controller.signal,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ feature, input: text, ...(imageDataUrl ? { imageDataUrl } : {}) }),
