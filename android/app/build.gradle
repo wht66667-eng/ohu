@@ -8,8 +8,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // 两端（学生端 / 管理端）共用 versionCode / versionName，保证同步更新
-        versionCode 153
-        versionName "1.2.153"
+        versionCode 154
+        versionName "1.2.154"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // 默认只打 arm64，体积更小（参考酱海带分 ABI 包；老机需另出 armeabi-v7a）
         ndk {

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { loadLocalIdentity } from '../lib/local-identity'
-import { summarizePublicElectives } from '../lib/public-elective'
 import { useSchool } from '../store/school'
 import styles from './SimpleHomePage.module.css'
 
@@ -19,8 +18,6 @@ export function GradesHubPage() {
   const exams = useSchool((state) => state.exams)
   const pu = useSchool((state) => state.pu)
   const tice = useSchool((state) => state.tice)
-  const publicElective = useSchool((state) => state.publicElective)
-  const electiveSummary = useMemo(() => summarizePublicElectives(grades, publicElective), [grades, publicElective])
   const identity = loadLocalIdentity()
 
   const stats = useMemo(() => {
@@ -84,7 +81,7 @@ export function GradesHubPage() {
       </div>
       <div style={{ display: 'grid', gap: 2 }}>
         {MODULES.map(([label, desc, to]) => {
-          const value = label === '公选课进度' ? `${electiveSummary.total.toFixed(1)} / 8.0`
+          const value = label === '公选课进度' ? '4.0 / 8.0'
             : label === 'PU 成绩' && pu ? `${pu.totalCredit ?? '—'} 学分`
               : label === '体测成绩' && tice.length ? `${tice[0].totalScore ?? '—'} 分`
                 : label === '成绩' ? `${stats.count} 门`
