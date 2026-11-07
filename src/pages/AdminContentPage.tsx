@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { contentManagementSelection, studentManagementReturn } from '../lib/student-management'
 import { PageHeader } from '../components/PageHeader'
 import { ConfirmSheet } from '../components/ConfirmSheet'
 import { useAuth } from '../lib/auth'
@@ -109,12 +110,15 @@ export function AdminContentPage() {
   const nav = useNavigate()
   const isAdmin = auth.isSigned && !!(auth.profile?.isAdmin || auth.profile?.isSuperAdmin)
 
-  const [tab, setTab] = useState<Tab>('goods')
+  const [params] = useSearchParams()
+  const selection = contentManagementSelection(params)
+  const returnTo = studentManagementReturn(params.get('from'))
+  const [tab, setTab] = useState<Tab>(selection.tab)
   const [goodsSrc, setGoodsSrc] = useState<GoodsSrc>('all')
-  const [cmtSrc, setCmtSrc] = useState<CmtSrc>('all')
+  const [cmtSrc, setCmtSrc] = useState<CmtSrc>(selection.feedback ? 'feedbacks' : 'all')
   const [postSrc, setPostSrc] = useState<PostSrc>('all')
   const [status, setStatus] = useState<StatusFilter>('all')
-  const [kw, setKw] = useState('')
+  const [kw, setKw] = useState(selection.keyword)
   const [busy, setBusy] = useState('')
   const [pending, setPending] = useState<Pending | null>(null)
   const [replyFor, setReplyFor] = useState<ModComment | null>(null)
@@ -393,6 +397,12 @@ export function AdminContentPage() {
     reloadAll()
   }
 
+  // 从学生页切换治理目标或浏览器前进／后退时，同步对应标签与申请筛选。
+  useEffect(() => {
+    const next = contentManagementSelection(params)
+    setTab(next.tab); setCmtSrc(next.feedback ? 'feedbacks' : 'all'); setKw(next.keyword)
+  }, [params])
+
   if (!isAdmin) {
     return (
       <div className={work.page}>
@@ -415,6 +425,8 @@ export function AdminContentPage() {
       <PageHeader title="内容管理" right={<span className={`${work.pill} ${work.pillOk}`}>管理员</span>} />
 
       <div className={work.wrap}>
+        {returnTo ? <Link to={returnTo} className={work.btn}>‹ 返回刚才的页面</Link> : null}
+        {selection.feedback ? <p>这里处理学生提交的申请与反馈；插件接入回复不代表插件已经安装或发布。</p> : null}
         <div className={s.statRow}>
           <div>
             <b>{stats.goods == null ? '—' : `${stats.goodsAtLeast ? '≥' : ''}${stats.goods}`}</b>

@@ -77,6 +77,7 @@ import {
   type PlazaTag,
 } from '../../lib/plaza'
 import { fetchPlazaGate, type PlazaGate } from '../../lib/sanctions'
+import { cloudIdentityUid } from '../../lib/cloud-identity'
 import styles from './PlazaPage.module.css'
 
 type TabKey = 'lobby' | 'feed' | 'hot'
@@ -145,7 +146,9 @@ export function PlazaPage() {
   const nav = useNavigate()
   const toast = useToast()
   const auth = useAuth()
-  const uid = auth.isSigned ? auth.user?.uid || '' : ''
+  const uid = auth.isSigned ? (cloudIdentityUid() || auth.user?.uid || '') : ''
+  /* 写库必须用 CloudBase uid，本机 local:xxx 会被 RLS 拒绝。 */
+  const writeUid = uid
   const sessionScope = useSyncExternalStore(subscribeImSession, () => uid ? `${uid}:${captureImSession(uid)?.revision ?? 'pending'}` : '', () => '')
   const [sp, setSp] = useSearchParams()
   const tab = tabFromSearch(sp)
@@ -765,7 +768,7 @@ export function PlazaPage() {
       return
     }
     /* sendPlazaMessage 内部已做敏感词与门禁（禁言 / 限制进大厅）校验 */
-    const r = await sendPlazaMessage(body, uid, displayName, avatarUrl)
+    const r = await sendPlazaMessage(body, writeUid, displayName, avatarUrl)
     if (!current(ticket)) return
     if (r.error) {
       toast.err(r.error)
@@ -807,7 +810,7 @@ export function PlazaPage() {
     setSending(true)
     try {
     if (!(await auth.ensureSignedIn('发大厅图片需要先登录')) || !current(ticket)) return
-    const r = await sendPlazaImage(url, uid, displayName, avatarUrl)
+    const r = await sendPlazaImage(url, writeUid, displayName, avatarUrl)
     if (!current(ticket)) return
     if (r.error) {
       toast.err(r.error)
@@ -902,7 +905,7 @@ export function PlazaPage() {
       toast(gate.reason || '你已被禁言')
       return
     }
-    const r = await createPlazaPost(body || '（图片动态）', composeTag, uid, displayName, avatarUrl, composeImages)
+    const r = await createPlazaPost(body || '（图片动态）', composeTag, writeUid, displayName, avatarUrl, composeImages)
     if (!active()) return
     if (r.error) {
       toast.err(r.error)
@@ -914,13 +917,13 @@ export function PlazaPage() {
     if (mirrorRequested) {
       const preview = `【${composeTag}】${body}`.slice(0, 200)
       let mirrored: { error: string | null }
-      try { mirrored = await sendPlazaMessage(preview, uid, displayName, avatarUrl) }
+      try { mirrored = await sendPlazaMessage(preview, writeUid, displayName, avatarUrl) }
       catch { mirrored = { error: '同步失败' } }
       if (!active()) return
       if (mirrored.error) mirrorFailed = true
       if (composeImages[0]) {
         let img: { error: string | null }
-        try { img = await sendPlazaImage(composeImages[0], uid, displayName, avatarUrl) }
+        try { img = await sendPlazaImage(composeImages[0], writeUid, displayName, avatarUrl) }
         catch { img = { error: '同步失败' } }
         if (!active()) return
         if (img.error) mirrorFailed = true

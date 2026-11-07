@@ -6,4 +6,5 @@
     <string name="custom_url_scheme">com.sunshinecampus.app</string>
     <string name="widget_today_schedule_description">查看今天最多三节课程和教室</string>
     <string name="widget_next_class_description">查看正在上的课或下一节课程</string>
+    <string name="widget_fox_companion_description">哦狐桌面陪伴：时段问候、课程状态与连续陪伴天数</string>
 </resources>

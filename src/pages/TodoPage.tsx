@@ -709,6 +709,7 @@ function TodoAccountPage() {
             )}
             <b>登录后使用待办</b>
             <p>把作业、工作任务放进来，到期前会提醒你</p>
+            <button type="button" className={s.addBtn} onClick={() => auth.openLogin('登录后使用待办、作业导入和到期提醒')}>用学号登录</button>
           </div>
         ) : (
           <>

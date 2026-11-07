@@ -145,7 +145,12 @@ export function getOtaCompatibilityError(remote: OtaManifest, state: OtaRuntimeS
   const native = state?.native || knownNativeAppVersion()
   if (remote.shell && remote.shell !== shell) return '更新包与当前应用端不匹配，请联系管理员'
   if (remote.channel && remote.channel !== 'production') return '更新包不属于当前正式更新渠道'
-  if (native && native.appId !== SHELL_APP_ID[shell]) return '安装包与当前应用端不匹配，请重新打开 App'
+  if (native) {
+    const expected = SHELL_APP_ID[shell]
+    /* 并行安装的调试包会带 `.devtest` 之类的后缀，仍视为同一个应用端。 */
+    const sameApp = native.appId === expected || native.appId.startsWith(`${expected}.`)
+    if (!sameApp) return '安装包与当前应用端不匹配，请重新打开 App'
+  }
   if (remote.minNativeBuild !== undefined) {
     if (!validBuild(remote.minNativeBuild)) return '更新清单的安装包兼容版本无效'
     if (!native) return '无法读取安装包版本，暂时不能确认此界面更新兼容'

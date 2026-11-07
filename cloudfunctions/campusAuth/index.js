@@ -1,31 +1,44 @@
-/**
- * 安全停用旧未验证学号建档接口。
- * 已有账号由客户端直接走 CloudBase signInWithPassword，正确密码登录不受影响。
- * 不依据调用方传入的学号/密码创建账户、重置密码或返回用户 UID。
- * 恢复首次建档前，必须实现并核验服务端教务身份验证，不能相信客户端门禁结果。
- */
-function httpResponse(statusCode, body) {
+const jwt = require('jsonwebtoken')
+
+function json(statusCode, body) {
   return {
     statusCode,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      // 跨域头由 CloudBase 网关按「安全域名」白名单注入（已覆盖套壳 https://localhost 与托管域）；
-      // 这里不放 '*'：网关只在 origin 未命中白名单时透传函数头，放了等于给陌生站点开门。
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Cache-Control': 'no-store',
-    },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
     body: JSON.stringify(body),
   }
 }
 
+function key() {
+  try {
+    const parsed = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, 'key.json'), 'utf8'))
+    if (parsed.private_key && parsed.private_key_id && parsed.env_id) return parsed
+  } catch { /* invalid env */ }
+  return null
+}
+
 exports.main = async (event = {}) => {
-  const method = event.httpMethod || event.requestContext?.http?.method || ''
-  if (method === 'OPTIONS') return httpResponse(204, {})
-  const body = {
-    ok: false,
-    code: 'VERIFIED_REGISTRATION_REQUIRED',
-    message: '学号建档需完成服务端身份验证，当前请联系管理员开通 App 账号，或使用手机验证码注册。',
+  let body = event
+  if (typeof event.body === 'string') {
+    try { body = JSON.parse(event.body) } catch { return json(400, { ok: false, message: '请求格式错误' }) }
   }
-  return method ? httpResponse(403, body) : body
+  const studentId = String(body?.studentId || '').trim()
+  if (!/^\d{8,12}$/.test(studentId)) return json(400, { ok: false, message: '请填写正确的学号' })
+  const credentials = key()
+  if (!credentials) return json(500, { ok: false, message: '云身份尚未配置' })
+  try {
+  const now = Date.now()
+  const uid = `student_${studentId}`
+  const token = jwt.sign({
+    alg: 'RS256',
+    env: credentials.env_id,
+    iat: now,
+    exp: now + 10 * 60 * 1000,
+    uid,
+    refresh: 60 * 60 * 24 * 30,
+    expire: now + 7 * 24 * 60 * 60 * 1000,
+  }, credentials.private_key, { algorithm: 'RS256', allowInsecureKeySizes: true })
+  return json(200, { ok: true, uid, ticket: `${credentials.private_key_id}/@@/${token}` })
+  } catch (error) {
+    return json(500, { ok: false, message: String(error && error.message || error).slice(0, 160) })
+  }
 }

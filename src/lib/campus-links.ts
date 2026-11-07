@@ -121,6 +121,15 @@ export const CAMPUS_LINKS: CampusLink[] = [
     group: 'campus',
   },
   {
+    id: 'lib-seat',
+    title: '图书馆选座',
+    desc: '我去图书馆 · 微信选座说明',
+    href: 'https://lib.jou.edu.cn/dzfw/zwyysm.htm',
+    tag: '图书',
+    cred: 'none',
+    group: 'campus',
+  },
+  {
     id: 'job',
     title: '就业信息网',
     desc: '招聘会 · 实习 · 就业指导',
@@ -237,7 +246,7 @@ export async function openCampusLink(
   const item = typeof link === 'string' ? getCampusLink(link) : link
   if (!item) return { ok: false, message: '未知入口', saved: false, copied: false }
   if (!session.uid && (item.cred !== 'none' || accOverride)) {
-    return { ok: false, message: '请先用手机号登录哦狐，再使用学校账号。', saved: false, copied: false }
+    return { ok: false, message: '请先用学号登录哦狐，再使用学校账号。', saved: false, copied: false }
   }
 
   const base = loadCampusAccount()

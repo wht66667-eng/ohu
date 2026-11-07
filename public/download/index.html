@@ -1,114 +1,259 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f9f7ef"><meta name="description" content="哦狐 OHU，一只有点魔性、认真陪你过校园生活的小狐狸。课表、地图、找搭子、校园服务，一个 App 轻松搞定。">
-  <link rel="canonical" href="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/">
-  <title>哦狐 OHU｜你的校园生活搭子</title>
-  <meta property="og:type" content="website"><meta property="og:url" content="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/"><meta property="og:title" content="哦狐 OHU｜你的校园生活搭子"><meta property="og:description" content="课表、地图、找搭子、校园服务——免费 · 无广告 · 学生做给学生用。网页里还能先玩迷你版哦狐。"><meta property="og:image" content="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/assets/share-thumb.png"><meta property="og:image:width" content="512"><meta property="og:image:height" content="512">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fff8eb">
+  <meta name="description" content="哦狐 OHU 是校园生活助手，把课表、待办、校园服务和同学活动放在一起。">
+  <link rel="canonical" href="https://jouxyfwglzx.cn/download/">
   <link rel="icon" type="image/png" href="assets/fox-hello.png">
-  <style>
-  :root{--dark:#124c39;--green:#176b4d;--mint:#e9f3e6;--sage:#d3e6bd;--cream:#faf8f1;--paper:#fffefa;--ink:#163c31;--muted:#697971;--orange:#ff8b48;--line:#e4e9df;--shadow:0 22px 80px rgba(27,76,50,.10)}
-  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft Yahei',sans-serif;background:var(--cream)}button,a{-webkit-tap-highlight-color:transparent}a{text-decoration:none;color:inherit}button{font:inherit;cursor:pointer}::selection{background:#caefbc}
-  .wrap{width:min(1200px,calc(100% - 64px));margin:0 auto}.top-glow{position:absolute;z-index:-1;width:680px;height:680px;right:-160px;top:-210px;background:radial-gradient(circle,#e5f2cf 0%,#f3f6e8 50%,transparent 72%);pointer-events:none}
-  header{position:relative;z-index:20;padding:20px 0}.nav{height:62px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:25px;letter-spacing:-1px}.brand img{width:49px;height:49px;object-fit:contain;border-radius:14px;background:#e6f1db;padding:2px}.brand small{font-size:12px;color:#5a7c69;display:block;letter-spacing:2px;font-weight:800;margin-top:-1px}.nav-links{display:flex;gap:36px;font-size:14px;font-weight:700;color:#506b5d}.nav-links a:hover{color:#ed884a}.nav-cta{background:#174e3b;color:white;border:1px solid #174e3b;padding:13px 24px;border-radius:100px;font-size:14px;font-weight:800;box-shadow:0 7px 20px #134b3422;transition:.2s}.nav-cta:hover{transform:translateY(-2px)}
-  .hero{min-height:716px;position:relative;display:grid;grid-template-columns: 1fr 1fr;align-items:center;padding:70px 0 56px;gap:38px}.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:900;color:#2d8061;letter-spacing:3px}.eyebrow:before{content:"";width:22px;height:2px;background:#f89450}.hero h1{font-size:clamp(52px,5.25vw,80px);line-height:1.2;letter-spacing:-3.8px;color:#124731;margin:26px 0 20px;font-weight:950}.hero h1 .highlight{color:#ed8344;position:relative}.hero h1 .highlight:after{content:"";position:absolute;bottom:-6px;left:3%;width:96%;height:9px;background:#ffc28f;border-radius:50%;transform:rotate(-2deg);opacity:.8;z-index:-1}.hero-desc{font-size:18px;line-height:2;color:#63756a;max-width:480px;margin-bottom:30px}.hero-desc strong{color:#284f3c}.tags{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:34px}.tag{border-radius:100px;background:#eaf1e4;color:#4b785d;font-size:12px;font-weight:800;padding:8px 14px}.tag:nth-child(2){background:#fff0db;color:#c2783b}.tag:nth-child(3){background:#e7f3ed}.downloads{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.download-btn{display:flex;gap:14px;align-items:center;min-width:186px;padding:13px 20px;border-radius:17px;border:1px solid #17563f;background:#16563f;color:#fff;box-shadow:0 10px 22px #15583d21;text-align:left;transition:transform .25s,box-shadow .25s}.download-btn:hover{transform:translateY(-3px);box-shadow:0 15px 27px #15583d33}.download-btn.apple{background:#fff;border:1px solid #d2ded4;color:#174735;box-shadow:none}.download-btn .symbol{font-size:27px;line-height:1;font-weight:700;flex:none}.download-btn small{display:block;font-size:10px;letter-spacing:.5px;font-weight:500;opacity:.8;margin-bottom:2px}.download-btn b{font-size:16px;white-space:nowrap}.fineprint{font-size:12px;color:#8a958c;margin-top:18px;display:flex;gap:7px;align-items:center}.fineprint .dot{width:6px;height:6px;border-radius:50%;background:#fa934e}
-  .hero-art{height:600px;position:relative;display:flex;align-items:center;justify-content:center}.orb{position:absolute;width:510px;height:510px;border-radius:50%;background:linear-gradient(145deg,#e1efcb,#eff8e4);left:50%;top:50%;transform:translate(-50%,-51%)}.orb:after{content:"";position:absolute;inset:33px;border:2px dashed #c8dfa9;border-radius:50%;opacity:.85}.phone{z-index:2;position:absolute;width:278px;height:555px;left:39%;top:48%;transform:translate(-50%,-50%) rotate(-9deg);border:9px solid #174434;border-radius:42px;box-shadow:22px 28px 70px #144d3533, inset 0 0 0 1px #a4b5a3;background:#fffefa;overflow:hidden}.phone:before{content:"";z-index:4;position:absolute;top:8px;left:50%;transform:translateX(-50%);width:88px;height:22px;background:#174434;border-radius:0 0 16px 16px}.phone img{width:100%;height:100%;object-fit:cover;object-position:top}.mascot{position:absolute;z-index:4;width:250px;right:-12px;bottom:32px;filter:drop-shadow(0 25px 17px #4e7b4f33);transform:rotate(9deg);animation:bob 4s ease-in-out infinite}.bubble{z-index:3;position:absolute;padding:12px 17px;border-radius:17px;background:#fffefa;box-shadow:0 12px 32px #2e76452a;border:1px solid #e2ecdd;font-weight:900;color:#235a40;font-size:13px}.bubble.top{right:-7px;top:85px;transform:rotate(8deg)}.bubble.bottom{left:-25px;bottom:84px;transform:rotate(7deg)}.sparkle{position:absolute;color:#fc9854;font-size:41px;font-weight:900}.sparkle.s1{right:55px;top:42px}.sparkle.s2{left:26px;bottom:150px;font-size:28px}.leaf{position:absolute;color:#6fab75;font-size:54px;opacity:.7;transform:rotate(-13deg)}.leaf.l1{right:2px;top:220px}.leaf.l2{left:0;top:138px}.scroll-note{position:absolute;bottom:33px;left:0;color:#9aa89b;font-size:12px;letter-spacing:1px;display:flex;align-items:center;gap:12px}.scroll-note:after{content:"";width:42px;height:1px;background:#adbda9}
-  .section{padding:90px 0}.section-head{text-align:center;margin-bottom:43px}.section-head .kicker{color:#ed8b4b;letter-spacing:3px;font-size:12px;font-weight:900}.section-head h2{font-size:clamp(30px,3.6vw,44px);letter-spacing:-1.5px;margin:14px 0;color:#164d3a}.section-head p{color:#78877a;font-size:15px;line-height:1.8;margin:0}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.feature{background:var(--paper);padding:30px 24px 29px;border:1px solid #e8e9dd;border-radius:25px;min-height:221px;box-shadow:0 8px 28px #32634008;transition:transform .2s}.feature:hover{transform:translateY(-5px)}.feature .ico{display:grid;place-items:center;font-size:29px;width:58px;height:58px;border-radius:18px;background:#e6f2e2;margin-bottom:24px}.feature:nth-child(2) .ico{background:#fff1df}.feature:nth-child(3) .ico{background:#e9f1f8}.feature:nth-child(4) .ico{background:#fff0e9}.feature h3{font-size:19px;margin:0 0 10px}.feature p{font-size:13px;line-height:1.8;color:#819084;margin:0}
-  .showcase{background:#edf3e9;border-top:1px solid #e5ece1;border-bottom:1px solid #e5ece1}.showcase-inner{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:70px}.showcase-art{position:relative;display:flex;align-items:center;justify-content:center;min-height:550px}.shot{width:255px;height:480px;overflow:hidden;background:#fff;border-radius:32px;border:8px solid #1c513c;box-shadow:0 24px 50px #1e55342b}.shot img{width:100%;height:100%;object-fit:cover;object-position:top}.shot.secondary{width:210px;height:395px;position:absolute;right:8px;bottom:47px;border-color:#d7edcb;transform:rotate(10deg);z-index:0;opacity:.95}.shot.primary{transform:rotate(-8deg);position:relative;z-index:1;margin-left:-110px}.showcase-copy h2{font-size:43px;line-height:1.3;letter-spacing:-1px;margin:20px 0;color:#174735}.showcase-copy p{line-height:2;color:#6f8274;font-size:16px}.check{display:flex;gap:11px;align-items:center;font-weight:800;margin:20px 0;color:#2b6d4e}.check:before{content:'✓';display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#cce6c8;color:#246744;font-size:14px}
-  .banner{position:relative;background:#16583d;border-radius:34px;padding:54px 60px;display:flex;justify-content:space-between;align-items:center;gap:30px;overflow:hidden;color:white;box-shadow:var(--shadow)}.banner:before{content:"";position:absolute;width:430px;height:430px;right:140px;top:-230px;border:2px solid #ffffff18;border-radius:50%}.banner:after{content:"";position:absolute;width:330px;height:330px;right:10px;bottom:-235px;background:#ffffff10;border-radius:50%}.banner h2{font-size:37px;line-height:1.28;margin:0 0 10px;position:relative;z-index:1}.banner p{margin:0;color:#cfe8d6;line-height:1.8;position:relative;z-index:1}.banner-buttons{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:2}.banner .download-btn{background:#fff;color:#16553b;border-color:#fff}.banner .download-btn.apple{background:transparent;color:white;border-color:#8eb7a4}
-  footer{padding:45px 0 35px;display:flex;align-items:center;justify-content:space-between;color:#819084;font-size:12px;gap:20px;line-height:1.7}footer strong{color:#174735;font-size:20px}.divider{height:1px;background:#e2e8dd}.modal{position:fixed;inset:0;background:#10281db0;z-index:100;display:none;align-items:center;justify-content:center;padding:22px}.modal.open{display:flex}.modal-box{width:min(425px,100%);padding:30px;border-radius:26px;background:#fffefa;box-shadow:0 30px 120px #0004;text-align:center;position:relative}.modal-box img{width:100px;height:100px;object-fit:contain}.modal-box h3{font-size:25px;color:#154d36;margin:10px 0}.modal-box p{line-height:1.85;color:#677c6d;font-size:14px}.modal-x{position:absolute;right:15px;top:12px;background:#e8f0e5;border:0;border-radius:99px;width:34px;height:34px;font-size:21px;color:#436a50}.modal-ok{background:#17563f;border:0;color:white;font-weight:800;padding:12px 38px;border-radius:99px;margin-top:8px}.appear{animation:fade .75s both}@keyframes bob{0%,100%{transform:translateY(0) rotate(9deg)}50%{transform:translateY(-16px) rotate(7deg)}}@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  @media(max-width:950px){.hero{gap:5px}.hero-art{transform:scale(.86)}.features{grid-template-columns:repeat(2,1fr)}.banner{padding:38px}.showcase-inner{gap:32px}.hero h1{font-size:53px}}@media(max-width:700px){.wrap{width:min(100% - 34px,550px)}header{padding:12px 0}.nav{height:52px}.brand{font-size:21px}.brand img{width:42px;height:42px}.nav-links{display:none}.nav-cta{padding:10px 17px;font-size:12px}.hero{display:flex;flex-direction:column;min-height:auto;padding:56px 0 35px;gap:0;align-items:stretch}.hero h1{font-size:clamp(47px,13.4vw,68px);letter-spacing:-2.5px;margin:19px 0 16px}.hero-desc{font-size:15px;line-height:1.9;margin-bottom:21px}.tags{margin-bottom:26px}.hero-art{width:100%;height:445px;transform:scale(.9);transform-origin:center top;margin:16px 0 -40px}.orb{width:410px;height:410px}.phone{width:215px;height:435px;left:41%;border-width:7px;border-radius:32px}.mascot{width:190px;right:-35px;bottom:18px}.bubble.top{right:-13px;top:24px;font-size:11px}.bubble.bottom{left:-14px;bottom:45px;font-size:11px}.scroll-note{display:none}.downloads{gap:9px}.download-btn{min-width:0;flex:1;padding:13px 12px;gap:9px;border-radius:15px}.download-btn .symbol{font-size:22px}.download-btn b{font-size:14px}.download-btn small{font-size:9px}.section{padding:64px 0}.section-head{margin-bottom:29px}.section-head h2{font-size:32px}.features{grid-template-columns:repeat(2,1fr);gap:10px}.feature{padding:20px 15px;min-height:190px;border-radius:19px}.feature .ico{width:49px;height:49px;font-size:25px;margin-bottom:17px}.feature h3{font-size:16px}.feature p{font-size:12px}.showcase-inner{display:flex;flex-direction:column-reverse;gap:10px}.showcase-art{min-height:460px;width:100%}.shot.primary{margin-left:-70px}.shot.secondary{right:0}.showcase-copy h2{font-size:33px}.showcase-copy p{font-size:14px}.banner{padding:34px 22px;border-radius:25px;flex-direction:column;align-items:stretch}.banner h2{font-size:29px}.banner-buttons{width:100%}footer{flex-direction:column;align-items:flex-start}.fineprint{font-size:11px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
-  .download-btn.apple{position:relative}.download-btn.apple:after{content:"规划中";position:absolute;top:-9px;right:12px;background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:1px;box-shadow:0 4px 10px rgba(242,123,59,.35)}.wx-bar{display:none;position:relative;z-index:60;background:#16583d;color:#e3f1e7;font-size:12.5px;line-height:1.5;padding:9px 14px;text-align:center}.wx-bar.show{display:flex;align-items:center;justify-content:center;gap:10px}.wx-bar b{color:#ffc28f}.wx-bar button{background:none;border:0;color:#9fc4ad;font-size:17px;line-height:1;cursor:pointer;padding:2px}
-  .share-fab{position:fixed;right:18px;bottom:20px;z-index:80;border:0;background:#16583d;color:#fff;border-radius:999px;padding:12px 18px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px #15563d59}
-  .try-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}.try-copy h2{font-size:clamp(30px,3.4vw,42px);letter-spacing:-1.5px;margin:14px 0;color:#164d3a}.try-copy p{color:#6f8274;font-size:15.5px;line-height:1.95;margin:0 0 18px}
-  .try-phone{width:302px;max-width:100%;height:584px;margin:0 auto;background:#fffefa;border:8px solid #1c513c;border-radius:38px;box-shadow:0 24px 50px #1e55342b;overflow:hidden;display:flex;flex-direction:column}.try-tabs{display:flex;background:#faf8f1;border-bottom:1px solid #e4e9df}.try-tabs button{flex:1;border:0;background:none;font:inherit;font-size:12.5px;font-weight:800;color:#697971;padding:13px 4px;cursor:pointer;border-bottom:2px solid transparent}.try-tabs button.on{color:#176b4d;border-bottom-color:#f89450}.try-panel{flex:1;overflow:auto;padding:15px 14px;display:none}.try-panel.on{display:block}
-  .vibe-row{display:flex;gap:8px;margin-bottom:13px}.vibe-row button{flex:1;border:1.5px solid #e4e9df;background:#faf8f1;border-radius:14px;padding:9px 4px;font:inherit;font-size:12.5px;font-weight:800;color:#4b5f54;cursor:pointer}.vibe-row button.on{background:#fff0db;border-color:#ed9a48;color:#c2783b}.buddy{border:1px solid #e8e9dd;border-radius:16px;padding:11px 13px;margin-bottom:9px;background:#fffefa}.buddy b{font-size:13.5px;color:#174735}.buddy .vt{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;background:#eaf1e4;color:#4b785d}.buddy p{margin:4px 0 0;font-size:12px;line-height:1.6;color:#819084}.try-note{font-size:11px;color:#9aa89b;text-align:center;margin:8px 0 0}
-  .flip{height:186px;margin-bottom:12px;cursor:pointer;perspective:900px}.flip-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}.flip.on .flip-in{transform:rotateY(180deg)}.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;display:grid;place-items:center;text-align:center;padding:14px}.face.f{background:#eaf1e4;color:#174735}.face.b{background:#fff0db;color:#c2783b;transform:rotateY(180deg)}.face b{font-size:26px;letter-spacing:.5px}.face small{display:block;font-size:12px;opacity:.75;margin-top:8px}.face .w{font-size:20px;font-weight:900}.face .tip{position:absolute;bottom:12px;left:0;right:0;font-size:10.5px;opacity:.6}.word-next{width:100%;border:1.5px solid #17563f;background:none;border-radius:99px;padding:10px;font:inherit;font-weight:800;color:#17563f;cursor:pointer}
-  .tt{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.tt i{font-style:normal;height:54px;border-radius:9px;display:grid;place-items:center;font-size:10px;font-weight:800;text-align:center;line-height:1.3;padding:2px}.tt i.h{background:#e6f1db;color:#4b785d;height:26px}
-  .gallery{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}.gallery figure{margin:0;text-align:center}.gshot{display:block;width:170px;height:338px;border:7px solid #1c513c;border-radius:26px;overflow:hidden;background:#fff;box-shadow:0 18px 40px #1e55341f}.gshot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}.gallery figcaption{margin-top:10px;font-size:12.5px;font-weight:800;color:#4b785d}
-  @media(max-width:950px){.try-grid{grid-template-columns:1fr;gap:26px}}@media(max-width:700px){.gallery{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px}.gshot{flex:none;width:150px;height:300px;border-width:6px}}
-  </style>
-  <style>#downloadModal .modal-box{max-height:calc(100dvh - 44px);overflow-y:auto;overscroll-behavior:contain}#downloadModal .install-choice{padding:16px 0 0;text-align:left;border-top:1px solid var(--line);margin-top:18px}#downloadModal .install-choice.recommended{background:var(--mint);border:1px solid var(--line);border-radius:18px;padding:16px}#downloadModal h4{font-size:16px;margin:0 0 8px;color:var(--dark)}#downloadModal .install-choice p{font-size:12px;line-height:1.65;margin:8px 0 13px}#downloadModal .install-steps{display:grid;gap:10px}#downloadModal .download-btn{width:100%;min-width:0}#downloadModal a:focus-visible,#downloadModal button:focus-visible{outline:3px solid var(--orange);outline-offset:3px}@media(max-width:400px){#downloadModal .modal-box{padding:28px 20px 20px}#downloadModal .download-btn{padding-inline:12px;gap:10px}}</style>
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jouxyfwglzx.cn/download/">
+  <meta property="og:title" content="哦狐 OHU｜校园生活，和阿狐一起更简单">
+  <meta property="og:description" content="课表、待办、校园服务和同学活动，放进一个校园生活工作台。">
+  <meta property="og:image" content="https://jouxyfwglzx.cn/download/assets/share-thumb.png">
+  <title>哦狐 OHU｜校园生活，和阿狐一起更简单</title>
+  <link rel="stylesheet" href="product-site.css?v=20261101e">
   <link rel="stylesheet" href="share.css">
 </head>
 <body>
-  <!-- OG 信息和首图供分享平台提取预览，实际微信分享样式以客户端为准。 -->
-  <img src="assets/share-thumb.png" alt="" aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;">
-  <div class="wx-bar" id="wxBar" role="status"><span>微信内无法直接下载：点右上角「···」，选择 <b>在浏览器打开</b> 再回来下载</span><button type="button" id="wxClose" aria-label="关闭提示">×</button></div>
-  <div class="top-glow"></div>
-  <header><nav class="wrap nav" aria-label="主导航"><a href="#home" class="brand"><img src="assets/fox-hello.png" alt="阿狐"><span>哦狐 <small>OHU · CAMPUS</small></span></a><div class="nav-links"><a href="#features">特色功能</a><a href="#try">先玩一玩</a><a href="#preview">界面预览</a><a href="#download">获取哦狐</a></div><a class="nav-cta" href="#download">立即体验 ↗</a></nav></header>
-  <main>
-    <section class="wrap hero" id="home"><div class="hero-copy appear"><div class="eyebrow">HELLO, THIS IS OHU</div><h1>校园生活，<br>和 <span class="highlight">哦狐</span> 一起<br>更有趣<span style="color:#ed8344">！</span></h1><p class="hero-desc">你的专属校园搭子：课表、地图、找搭子、校园服务，一个 App 全搞定。<strong>免费 · 无广告 · 学生做给学生用。</strong></p><div class="tags"><span class="tag">🌱 轻松校园生活</span><span class="tag">🦊 阿狐陪伴</span><span class="tag">✨ 简洁又好用</span></div><div class="downloads"><button class="download-btn" data-platform="android"><span class="symbol" aria-hidden="true">◈</span><span><small>GET IT FOR</small><b>Android 下载</b></span></button><button class="download-btn apple" type="button" data-platform="ios"><span class="symbol" aria-hidden="true">●</span><span><small>iPhone 安装</small><b>选择安装方式</b></span></button></div><p><a href="/download/pwa-guide.html">iPhone 可免签名添加到桌面 · 查看安装方法 ›</a></p><div class="fineprint"><span class="dot"></span>独立校园项目 · Android 安装包 · iPhone 桌面网页版与自签安装</div></div>
-      <div class="hero-art appear"><div class="orb"></div><span class="sparkle s1">✳</span><span class="sparkle s2">✦</span><span class="leaf l1">❧</span><span class="leaf l2">❧</span><div class="phone"><img src="assets/app-home.png" alt="哦狐 App 首页示例"></div><img class="mascot" src="assets/fox-happy.png" alt="开心的阿狐吉祥物"><span class="bubble top">今天也要开心呀 ✨</span><span class="bubble bottom">课表 · 地图 · 找搭子</span></div><div class="scroll-note">SCROLL TO EXPLORE</div></section>
-    <section class="section" id="features"><div class="wrap"><div class="section-head"><span class="kicker">MADE FOR CAMPUS LIFE</span><h2>你的日常，阿狐都懂</h2><p>把常用功能放在一起，让每一天都轻松一点。</p></div><div class="features"><div class="feature"><div class="ico">📆</div><h3>课表与日程</h3><p>课程安排清晰呈现，学习生活更有条理。</p></div><div class="feature"><div class="ico">🗺️</div><h3>校园探索</h3><p>从校园地图出发，发现身边的美好角落。</p></div><div class="feature"><div class="ico">🍀</div><h3>便捷服务</h3><p>校园地图、班车时刻与常用校园网页集中管理，少一点来回查找。</p></div><div class="feature"><div class="ico">🤝</div><h3>碰个空 · 找搭子</h3><p>分享有空时间与活动意向，邀请同学一起组队；E / I 与人格偏好可自愿选择。</p></div><div class="feature"><div class="ico" aria-hidden="true">☑</div><h3>通知整理与待办</h3><p>粘贴老师通知，在本机提取截止日期和作业链接；逐项确认后保存到待办。</p></div><div class="feature"><div class="ico" aria-hidden="true">✦</div><h3>哦狐插件</h3><p>记忆卡、五题快测与趣味灵感卡，按需开启或关闭。非官方内容清楚标明创作者与来源。</p></div></div></div></section>
-    <section class="section" id="try"><div class="wrap try-grid"><div class="try-copy"><div class="eyebrow">TRY IT, NO DOWNLOAD</div><h2>网页里就能先玩一玩</h2><p>下面是真的能点的小迷你版哦狐：选个 E / I 风格看看会碰到什么搭子，翻两张单词卡试试手感，再看一眼迷你课表。</p><div class="check">碰个空 · E 人 / I 人即刻匹配演示</div><div class="check">单词卡 · 点一下翻面看释义</div><div class="check">迷你课表 · 感受一周安排</div><button class="download-btn" data-platform="android" style="margin-top:28px"><span class="symbol" aria-hidden="true">◈</span><span><small>GET IT FOR</small><b>Android 下载</b></span></button></div><div class="try-phone" role="region" aria-label="哦狐功能迷你体验"><div class="try-tabs"><button type="button" class="on" data-try="meet">碰个空</button><button type="button" data-try="words">单词卡</button><button type="button" data-try="tt">迷你课表</button></div><div class="try-panel on" data-panel="meet"><div class="vibe-row" id="vibeRow"><button type="button" data-v="E" class="on">我是 E 人</button><button type="button" data-v="I">我是 I 人</button><button type="button" data-v="any">都可以</button></div><div id="buddyList"></div><p class="try-note">演示数据 · 真实匹配请下载 App</p></div><div class="try-panel" data-panel="words"><div class="flip" id="flipCard" role="button" tabindex="0" aria-label="单词卡，点击翻面"><div class="flip-in"><div class="face f" id="faceFront"></div><div class="face b" id="faceBack"></div></div></div><button class="word-next" type="button" id="wordNext">换一张 →</button><p class="try-note">词例来自 App 内四级词书</p></div><div class="try-panel" data-panel="tt"><div class="tt" id="ttGrid"></div><p class="try-note">示意课表 · 下载后绑定教务即自动同步</p></div></div></div></section>
-    <section class="section showcase" id="preview"><div class="wrap"><div class="section-head"><span class="kicker">REAL SCREENSHOTS</span><h2>功能截图，一眼看懂</h2><p>截图来自哦狐已有功能界面；布局以当前安装版本为准。</p></div><div class="gallery"><figure><span class="gshot"><img src="assets/app-home.png" alt="首页截图：今日安排与常用功能"></span><figcaption>首页 · 今日安排</figcaption></figure><figure><span class="gshot"><img src="assets/app-meet.png" alt="碰个空截图：找同校搭子"></span><figcaption>碰个空 · 找搭子</figcaption></figure><figure><span class="gshot"><img src="assets/app-services.png" alt="服务广场截图：常用服务一键直达"></span><figcaption>服务 · 快捷直达</figcaption></figure><figure><span class="gshot"><img src="assets/app-words.png" alt="单词记忆截图：遗忘曲线安排"></span><figcaption>单词 · 遗忘曲线</figcaption></figure><figure><span class="gshot"><img src="assets/app-profile.png" alt="个人中心截图"></span><figcaption>我的 · 个人中心</figcaption></figure></div></div></section>
-    <section class="section" id="download"><div class="wrap"><div class="banner"><div><h2>准备好和阿狐<br>开始校园新生活了吗？</h2><p>下载哦狐 OHU，把校园里的小美好装进口袋。</p></div><div class="banner-buttons"><button class="download-btn" data-platform="android"><span class="symbol" aria-hidden="true">◈</span><span><small>GET IT FOR</small><b>Android 下载</b></span></button><button class="download-btn apple" type="button" data-platform="ios"><span class="symbol" aria-hidden="true">●</span><span><small>iPhone 安装</small><b>选择安装方式</b></span></button></div></div></div></section>
-  </main>
-  <div class="wrap divider"></div><footer class="wrap"><div><strong>哦狐 OHU 🦊</strong><div>你的校园，不止一种精彩。</div></div><div>独立开发的校园生活项目，非江苏海洋大学官方应用。<br>© 2026 OHU · 免费使用，下载渠道以本站为准。</div></footer>
-  <button class="share-fab" id="shareFab" type="button">分享 ↗</button>
-  <div class="modal" id="downloadModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" tabindex="-1"><div class="modal-box"><button class="modal-x" type="button" aria-label="关闭" id="closeModal" data-close-modal>×</button><h3 id="modalTitle">iPhone 使用哦狐</h3><p id="modalDesc">可选择免签名桌面网页版，或下载 IPA 自签安装。</p><section class="install-choice recommended"><h4>方式一 · 免签名添加到桌面</h4><p>用 Safari 打开学生端，添加到主屏幕后，就能从桌面图标进入哦狐。</p><a class="download-btn" href="/download/pwa-guide.html"><span class="symbol" aria-hidden="true">↗</span><span><small>推荐 · 无需 IPA 或签名</small><b>查看桌面版安装方法</b></span></a></section><section class="install-choice"><h4>方式二 · IPA 自签安装</h4><div class="install-steps"><a class="download-btn apple" href="https://youquzhushou.cn/" target="_blank" rel="noopener noreferrer"><span class="symbol" aria-hidden="true">1</span><span><small>第一步</small><b>打开自签工具</b></span></a><a class="download-btn apple is-unavailable" data-ios-package aria-disabled="true"><span class="symbol" aria-hidden="true">2</span><span><small data-ios-version>第二步 · 正在核对版本</small><b data-ios-label>安装包暂不可用</b></span></a></div><p data-ios-status role="status" aria-live="polite">正在核对 iPhone 安装包…</p><p>IPA 未签名，需自行签名后安装。<br><a href="/download/ios-guide.html">查看自签安装教程 ›</a></p></section></div></div>
-  <div class="modal share-dialog" id="shareModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shareTitle" aria-describedby="shareIntro" tabindex="-1">
-    <div class="share-box">
-      <button class="modal-x" type="button" aria-label="关闭分享卡" id="shareClose" data-close-modal>×</button>
-      <div class="share-preview" id="sharePosterFrame" aria-busy="false"><img id="sharePoster" alt="哦狐校园搭子分享卡，含可用微信扫描的公开宣传页二维码" width="720" height="1080" hidden></div>
-      <div class="share-controls">
-        <span class="eyebrow">GOOD THINGS, TOGETHER</span><h2 id="shareTitle">把哦狐，带给同学。</h2>
-        <p id="shareIntro">保存阿狐分享卡，发到群里或朋友圈。微信扫一扫，就能认识哦狐。</p>
-        <span class="share-theme-label" id="shareThemeLabel">选一张喜欢的配色</span>
-        <div class="share-themes" role="group" aria-labelledby="shareThemeLabel"><button type="button" data-share-theme="0" aria-pressed="true">森林绿</button><button type="button" data-share-theme="1" aria-pressed="false">橘子汽水</button><button type="button" data-share-theme="2" aria-pressed="false">晴空蓝</button></div>
-        <div class="share-actions"><button type="button" id="savePoster" disabled>保存到相册</button><button type="button" class="secondary" id="sendPoster" disabled>分享图片</button><button type="button" class="secondary" id="copyLink">复制链接</button></div>
-        <p class="share-status" id="posterStatus" role="status" aria-live="polite"></p>
-        <a class="share-public-link" id="sharePublicLink" href="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/index.html" target="_blank" rel="noopener noreferrer">打开公开宣传页 ↗</a>
-        <p class="share-preview-note" id="sharePreviewNote" hidden>当前为本地预览。二维码打开已发布的宣传页，本次修改需发布后才会在线显示。</p>
+  <div class="wechat-bar" id="wxBar" role="region" aria-label="在外部浏览器中打开哦狐" aria-live="polite"><span class="in-app-browser-copy"><b id="inAppBrowserTitle">在微信／QQ中打开哦狐</b><span id="inAppBrowserHelp">点右上角「···」，选择“在浏览器打开”。内置浏览器不允许网页强制切换。</span></span><button type="button" class="in-app-browser-open" id="wxOpenBrowser">复制链接</button><button type="button" id="wxClose" aria-label="关闭浏览器打开提示">×</button></div>
+  <header class="site-header">
+    <div class="reading-progress" aria-hidden="true"><span id="readingProgress"></span></div>
+    <nav class="nav-shell" aria-label="主导航">
+      <a class="brand" href="#home" aria-label="哦狐首页"><img src="assets/fox-hello.png" alt=""><span>哦狐<small>OHU · CAMPUS LIFE</small></span></a>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span class="sr-only">打开导航</span></button>
+      <div class="nav-links" id="navLinks">
+        <a href="#story">开发初心</a><a href="#ecosystem">产品全景</a><a href="#campus">校园地图</a><a href="/download/community.html">开源社区</a>
       </div>
+      <a class="nav-cta" href="#download">获取哦狐 <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero-world">
+    <section class="hero site-wrap" id="home" aria-labelledby="heroTitle">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>校园生活助手 · 版本 1.2.146</p>
+        <h1 id="heroTitle">让校园生活，<br><em>简单一点。</em></h1>
+        <p class="hero-intro">课表、待办、校园服务和同学活动，放进一个随手打开的校园工作台。今天要做的事，一眼就能理清。</p>
+        <div class="hero-actions">
+          <button class="button button-orange" type="button" data-platform="android">下载安卓 App <span aria-hidden="true">↗</span></button>
+          <button class="button button-paper" type="button" data-platform="ios">iPhone 怎么安装 <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="hero-note"><span>独立校园项目</span><i></i>免费使用<i></i>部分功能需登录与联网</p>
+      </div>
+      <div class="hero-stage reveal" aria-label="哦狐学生端真实界面预览">
+        <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+        <div class="hero-doodle doodle-star">✳</div><div class="hero-doodle doodle-spark">✦</div>
+        <div class="hero-phone"><div class="phone-camera"></div><img src="assets/app-home.png" alt="哦狐学生端首页截图，展示今日安排、待办与常用功能" width="780" height="1680"></div>
+        <img class="hero-fox" src="assets/fox-happy.png" alt="开心的哦狐吉祥物" width="384" height="384">
+        <div class="hero-float float-class"><span class="float-icon">课</span><span><b>今天的安排</b><small>打开就知道下一步</small></span></div>
+        <div class="hero-float float-meet"><span class="float-icon orange-icon">友</span><span><b>找到校园搭子</b><small>一起自习，也一起玩</small></span></div>
+        <p class="art-caption">真实界面 · 学生端首页</p>
+      </div>
+      <a class="hero-scroll" href="#intro" aria-label="向下了解哦狐"><span></span>向下看看</a>
+      <button class="hero-skip" id="skipIntro" type="button" hidden>跳过开场</button>
+    </section>
     </div>
-  </div>
-  <script type="module" src="share.mjs?v=20261029b"></script>
-  <script type="module" src="ios-download.mjs?v=20261031a"></script>
-  <script>
-    // 微信内置浏览器提示：无法直接下载 APK，引导用系统浏览器打开
-    if (/MicroMessenger/i.test(navigator.userAgent)) document.getElementById('wxBar').classList.add('show');
-    document.getElementById('wxClose').addEventListener('click', () => document.getElementById('wxBar').classList.remove('show'));
-    // 迷你体验 1：碰个空 E / I 匹配演示
-    const BUDDIES = {
-      E: [['阿阳', '自习搭子', '图书馆三楼，学累了就聊天充电。'], ['小满', '运动搭子', '晚六点操场夜跑，配速随便跟。'], ['大力', '饭搭子', '二食堂三楼啵啵鱼窗口见。']],
-      I: [['阿静', '自习搭子', '一起安静刷题，不用找话题。'], ['nana', '散步搭子', '饭后绕校园走一圈，可以全程不聊。'], ['油油', '饭搭子', '线上拼单，到店各吃各的。']]
-    };
-    const vibeRow = document.getElementById('vibeRow');
-    const renderBuddies = v => {
-      const list = v === 'any' ? BUDDIES.E.concat(BUDDIES.I) : BUDDIES[v];
-      document.getElementById('buddyList').innerHTML = list.map(b => '<div class="buddy"><b>' + b[0] + '</b><span class="vt">' + b[1] + '</span><p>' + b[2] + '</p></div>').join('');
-    };
-    renderBuddies('E');
-    vibeRow.addEventListener('click', e => {
-      const btn = e.target.closest('button'); if (!btn) return;
-      vibeRow.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-      btn.classList.add('on'); renderBuddies(btn.dataset.v);
-    });
-    // 迷你体验 2：单词翻卡
-    const WORDS = [['adopt', '/əˈdɒpt/', 'v. 采纳；收养'], ['campus', '/ˈkæmpəs/', 'n. 校园'], ['deadline', '/ˈdedlaɪn/', 'n. 截止日期'], ['lecture', '/ˈlektʃə/', 'n. 讲座；课']];
-    let wi = 0; const flip = document.getElementById('flipCard');
-    const renderWord = () => {
-      flip.classList.remove('on'); const w = WORDS[wi];
-      document.getElementById('faceFront').innerHTML = '<div><b>' + w[0] + '</b><small>' + w[1] + '</small></div><span class="tip">点一下看释义</span>';
-      document.getElementById('faceBack').innerHTML = '<div class="w">' + w[0] + '</div><div style="font-size:14px;font-weight:800;margin-top:6px">' + w[2] + '</div><span class="tip">再点翻回去</span>';
-    };
-    renderWord();
-    flip.addEventListener('click', () => flip.classList.toggle('on'));
-    flip.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flip.click(); } });
-    document.getElementById('wordNext').addEventListener('click', () => { wi = (wi + 1) % WORDS.length; renderWord(); });
-    // 迷你体验 3：迷你课表
-    const TT = [['高数', '大英', '', '体训', ''], ['C 语言', '', '数据结构', '', '选修'], ['', '', '高数', '', '大英'], ['体育', '', '', '', '数据结构'], ['', '', '实验', '', '']];
-    const TC = [['#e6f1db', '#4b785d'], ['#fff0db', '#c2783b'], ['#e9f1f8', '#3d6486'], ['#ffe9e0', '#c26a4a']];
-    document.getElementById('ttGrid').innerHTML = '<i class="h">一</i><i class="h">二</i><i class="h">三</i><i class="h">四</i><i class="h">五</i>' +
-      TT.flat().map((c, i) => c ? '<i style="background:' + TC[i % 4][0] + ';color:' + TC[i % 4][1] + '">' + c + '</i>' : '<i style="background:transparent"></i>').join('');
-    // 迷你体验 Tab 切换
-    document.querySelectorAll('.try-tabs button').forEach(t => t.addEventListener('click', () => {
-      document.querySelectorAll('.try-tabs button').forEach(x => x.classList.remove('on'));
-      t.classList.add('on');
-      document.querySelectorAll('.try-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === t.dataset.try));
-    }));
-  </script>
-</body></html>
+
+    <section class="intro-band" id="intro">
+      <div class="site-wrap intro-inner reveal"><p class="eyebrow">一只陪伴校园日常的小狐狸</p><h2>不是多装一个工具。<br><span>是让校园日常少绕一点路。</span></h2><p>哦狐把每天分散在课表、服务入口和同学消息里的小事，收进一个更顺手的地方。</p></div>
+      <div class="routine site-wrap" aria-label="哦狐校园生活流程">
+        <article class="routine-item reveal"><span class="routine-no">01</span><h3>先看今天</h3><p>课程、考试与安排，先把一天的节奏摸清。</p><a href="#features" aria-label="了解课表功能">课表与学业 <b>↗</b></a></article>
+        <article class="routine-item reveal"><span class="routine-no">02</span><h3>记下要做的</h3><p>从老师通知里识别待办候选，检查后再保存。</p><a href="#features" aria-label="了解待办功能">任务与提醒 <b>↗</b></a></article>
+        <article class="routine-item reveal"><span class="routine-no">03</span><h3>找到下一站</h3><p>校园地图和常用服务，按眼下需要打开。</p><a href="#campus" aria-label="了解校园地图">地图与服务 <b>↗</b></a></article>
+        <article class="routine-item reveal"><span class="routine-no">04</span><h3>一起去做</h3><p>约个自习、运动或吃饭的时间，和同学成个局。</p><a href="#features" aria-label="了解碰个空">同学互助 <b>↗</b></a></article>
+      </div>
+    </section>
+
+    <section class="story-section site-wrap section-pad" id="story" aria-labelledby="storyTitle">
+      <div class="section-heading reveal"><p class="eyebrow">哦狐的故事</p><h2 id="storyTitle">那些琐碎的小事，<br><em>值得被认真对待。</em></h2><p>从一张课表开始，到陪伴学习和校园生活。哦狐是一个独立成长的校园项目，也是一份想让日常简单一点的心意。</p><a class="text-link" href="/download/about.html">读完整的故事 <span>↗</span></a></div>
+      <div class="story-grid">
+        <article class="story-card story-origin reveal"><span class="story-index">01 / 一个简单的念头</span><h3>从一张课表开始。</h3><p>早上想确认教室，晚上想找老师发的作业，临近考试又要翻出安排。校园里有很多小事，它们分散在不同的页面和消息里。</p><p>哦狐最初想做的，就是把这些常用的事情收在一起。打开它，先看清今天，再从容地去做下一件事。</p><img src="assets/fox-hello.png" alt="哦狐阿狐形象" width="384" height="384" loading="lazy"></article>
+        <article class="story-card story-principles reveal"><span class="story-index">02 / 我们相信</span><h3>好工具，应该让人安心。</h3><p>校园里的基本需要，不该先被会员和付费墙拦住。哦狐坚持核心校园功能长期免费。</p><ul><li>不在 App 内用广告打断日常。</li><li>不出售用户数据。</li><li>清楚说明功能与数据的边界。</li><li>让建议和反馈有被听见的地方。</li></ul><strong>让工具安静地帮忙。<small>第三方服务仍受其费用与可用性限制。</small></strong></article>
+        <article class="story-card story-growth reveal"><span class="story-index">03 / 一点点长大</span><h3>从一张课表，走向更多日常。</h3><div class="story-timeline"><div><i>起点</i><span>先把课程和时间看清楚</span></div><div><i>学习</i><span>让待办和专注有了位置</span></div><div><i>生活</i><span>把地图、服务和同学连接起来</span></div><div><i>共建</i><span>在分享与反馈中继续改进</span></div></div><p class="story-footnote">这是项目方向的概括；各项功能的实际状态以页面标记和应用内可用情况为准。</p></article>
+        <article class="story-card story-fox reveal"><span class="story-index">04 / 校园伙伴</span><h3>阿狐陪你过普通的一天。</h3><p>赶早课、记待办、认真专注一会儿，也给自己留一点休息。阿狐出现在这些平常时刻，想让每次打开工具，都多一点轻松。</p><a href="#mascot" class="text-link">看看阿狐的校园日常 <span>↗</span></a><img src="assets/fox-happy.png" alt="开心的阿狐" width="384" height="384" loading="lazy"></article>
+        <article class="story-card story-campus reveal"><span class="story-index">05 / 从这里出发</span><h3>先认识熟悉的校园。</h3><p>从江苏海洋大学的苍梧、宋跳和通灌校区出发，慢慢把身边的地点和生活入口整理清楚。地图以公开资料为基础，实际情况请以现场和学校信息为准。</p><a href="#campus" class="text-link">探索三校区地图 <span>↗</span></a><span class="story-campus-mark" aria-hidden="true">连云港<br>· 校园</span></article>
+        <article class="story-card story-together reveal"><span class="story-index">06 / 一起往前走</span><h3>故事还在继续。</h3><p>哦狐还不完美。每一次发现不顺手的地方、每一条认真写下的建议，都能成为下一次改进的起点。欢迎使用、反馈，也欢迎一起建设。</p><a href="#community" class="button button-orange">了解开源与社区 <span>↗</span></a><img src="assets/fox-wow.png" alt="惊喜挥爪的阿狐" width="384" height="384" loading="lazy"></article>
+      </div>
+    </section>
+
+    <section class="feature-section site-wrap section-pad" id="features" aria-labelledby="featureTitle">
+      <div class="section-heading reveal"><p class="eyebrow">一个校园，多种日常</p><h2 id="featureTitle">一屏里的校园日常，<br><em>不止一张课表。</em></h2><p>选一个你关心的场景，看看哦狐怎么把它放进校园生活里。</p></div>
+      <div class="feature-showcase reveal">
+        <div class="feature-rail" role="tablist" aria-label="产品功能预览">
+          <button class="feature-tab is-active" id="feature-tab-schedule" role="tab" aria-selected="true" aria-controls="featurePanel" data-feature="schedule"><span>01</span><b>课表与学业</b><small>课程、成绩、考试与学习工具</small><i>↗</i></button>
+          <button class="feature-tab" id="feature-tab-services" role="tab" aria-selected="false" aria-controls="featurePanel" data-feature="services"><span>02</span><b>校园服务</b><small>常用服务集中收纳，随用随找</small><i>↗</i></button>
+          <button class="feature-tab" id="feature-tab-tasks" role="tab" aria-selected="false" aria-controls="featurePanel" data-feature="tasks"><span>03</span><b>待办与专注</b><small>把通知变成下一步，把时间留给自己</small><i>↗</i></button>
+          <button class="feature-tab" id="feature-tab-meet" role="tab" aria-selected="false" aria-controls="featurePanel" data-feature="meet"><span>04</span><b>碰个空</b><small>看共同空闲，和同学约个活动</small><i>↗</i></button>
+          <button class="feature-tab" id="feature-tab-community" role="tab" aria-selected="false" aria-controls="featurePanel" data-feature="community"><span>05</span><b>校园广场</b><small>分享校园里的日常与新鲜事</small><i>↗</i></button>
+          <button class="feature-tab" id="feature-tab-campus" role="tab" aria-selected="false" aria-controls="featurePanel" data-feature="campus"><span>06</span><b>校园地图</b><small>从公开地图认识熟悉的校区</small><i>↗</i></button>
+        </div>
+        <div class="feature-panel" id="featurePanel" role="tabpanel" aria-labelledby="feature-tab-schedule" tabindex="0">
+          <div class="feature-panel-copy"><span class="feature-kicker" id="featureKicker">LEARN · PLAN · REVIEW</span><h3 id="featureHeading">今天怎么安排，<br>打开就能看。</h3><p id="featureDescription">课表、成绩、考试、待办和专注工具在学习中心各有入口。粘贴课程通知后，可以检查识别出的候选，再决定是否加入待办。</p><a class="text-link" href="/study">了解学习功能 <span>↗</span></a></div>
+          <div class="showcase-device" id="showcaseDevice"><div class="showcase-speaker"></div><img id="featureScreenshot" src="assets/app-home.png" alt="哦狐首页真实截图，展示今日课程安排入口；不是完整课表页面" width="780" height="1680"><div class="simulator-map" id="simulatorMap" hidden aria-label="校园公开地图预览"><svg viewBox="0 0 800 520" role="img" aria-labelledby="simulatorMapTitle"><title id="simulatorMapTitle">江苏海洋大学苍梧校区公开地图预览</title><g id="simulatorMapWorld"></g></svg><span>公开地图示意 · OpenStreetMap</span></div><div class="showcase-label" id="featureCaption">首页真实截图 · 今日课程入口</div></div>
+          <div class="simulator-controls" role="group" aria-label="切换产品页面预览"><button type="button" class="is-active" data-sim-screen="home" aria-pressed="true">首页</button><button type="button" data-sim-screen="schedule" aria-pressed="false">课表</button><button type="button" data-sim-screen="services" aria-pressed="false">服务</button><button type="button" data-sim-screen="map" aria-pressed="false">地图</button><button type="button" data-sim-screen="meet" aria-pressed="false">碰个空</button><button type="button" data-sim-screen="profile" aria-pressed="false">我的</button></div>
+          <div class="showcase-decoration"><img src="assets/fox-hello.png" alt="" width="384" height="384"><span>校<br>园<br>日<br>常</span></div>
+          <button class="screen-arrow screen-prev" type="button" id="featurePrev" aria-label="上一个功能">←</button><button class="screen-arrow screen-next" type="button" id="featureNext" aria-label="下一个功能">→</button>
+        </div>
+      </div>
+      <p class="fine-print">页面展示已实现的产品入口；教务、校园卡、图书馆等能力会受学校接口与授权情况影响。哦狐不提供线上支付、充值或资金处理功能。</p>
+    </section>
+
+    <section class="meet-story" id="meet-demo" aria-labelledby="meetDemoTitle">
+      <div class="site-wrap meet-story-layout">
+        <div class="meet-story-intro"><p class="eyebrow">一起出发</p><h2 id="meetDemoTitle">有空的时候，<br><em>碰个面。</em></h2><p>自习、运动，或者约一局台球。先选个想做的事，看看一场校园邀约是怎样开始的。</p><span class="meet-demo-badge">互动演示 · 不会发布活动</span></div>
+        <div class="meet-demo-card">
+          <div class="meet-demo-head"><span>01 / 创建一场邀约</span><span>碰个空</span></div>
+          <form id="meetDemoForm" class="meet-demo-form">
+            <label>想做什么<select name="activity"><option>一起自习</option><option>打台球</option><option>打羽毛球</option><option>一起吃饭</option><option>打麻将</option><option>其他活动</option></select></label>
+            <label>什么时候<select name="time"><option>今天下午</option><option>今天晚上</option><option>明天下午</option><option>周末</option></select></label>
+            <label>希望几个人<select name="people"><option value="2">2 人</option><option value="3">3 人</option><option value="4">4 人</option><option value="6">6 人</option></select></label>
+            <label>期待的搭子<select name="personality"><option>随缘就好</option><option>E 人</option><option>I 人</option><option>都可以</option></select></label>
+            <button type="submit">生成邀约预览 <span aria-hidden="true">↗</span></button>
+          </form>
+          <div class="meet-demo-result" id="meetDemoResult" aria-live="polite"><span>02 / 邀约预览</span><h3>你的校园搭子计划</h3><p>选好活动和时间，生成一张邀约预览。</p><small>这里使用演示选项，真实匹配与成员确认需进入哦狐。</small></div>
+          <a class="meet-demo-enter" href="/meet?view=student">进入碰个空 <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <details class="live-experience site-wrap" id="liveExperience">
+        <summary><span><b>在这里体验学生端</b><small>打开真实页面，操作前请确认当前登录账号</small></span><i aria-hidden="true">＋</i></summary>
+        <div class="live-experience-content"><div class="live-experience-copy"><p>打开的是哦狐的实际学生端页面。登录、活动与数据均由学生端处理，部分功能需要账号和网络。</p><a href="/meet?view=student" target="_blank" rel="noopener noreferrer">在新页面打开碰个空 ↗</a></div><div class="live-experience-phone"><iframe id="liveExperienceFrame" title="哦狐学生端碰个空真实页面" data-src="/meet?view=student" loading="lazy"></iframe></div></div>
+      </details>
+    </section>
+
+    <section class="ecosystem-section site-wrap section-pad" id="ecosystem" aria-labelledby="ecosystemTitle">
+      <div class="section-heading reveal"><p class="eyebrow">哦狐功能全景</p><h2 id="ecosystemTitle">不只是一张课表。<br><em>也是一套校园生活工具。</em></h2><p>下面按当前产品页面、接口依赖与开发状态整理。页面存在不代表每个服务都已接通；标记会比宣传话术更重要。</p></div>
+      <div class="status-legend reveal" aria-label="功能状态说明"><span><i class="status-live"></i>已开放</span><span><i class="status-demo"></i>可体验</span><span><i class="status-dev"></i>开发中</span><span><i class="status-plan"></i>规划中</span><span><i class="status-auth"></i>需授权</span><span><i class="status-off"></i>暂不可用</span></div>
+      <div class="ecosystem-grid">
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">01</span><span class="feature-status status-demo">可体验</span><h3>校园工作台</h3><p>今日安排、待办入口与常用校园功能。展示实际首页界面，个性卡片以应用现有能力为准。</p><a href="#features">看首页预览 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">02</span><span class="feature-status status-auth">需授权</span><h3>课程与课表</h3><p>课表浏览与课程管理；教务同步需要学校系统、账号授权和网络环境支持。</p><a href="/schedule">课表入口 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">03</span><span class="feature-status status-auth">需授权</span><h3>学业中心</h3><p>成绩、考试和学业查询入口。数据同步能力依赖学校服务及用户授权。</p><a href="/study">学业中心 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">04</span><span class="feature-status status-demo">可体验</span><h3>学习助手</h3><p>专注、计划与学习工具页面可体验；AI 服务需以线上配置和运行状态为准。</p><a href="/study">查看学习功能 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">05</span><span class="feature-status status-auth">需授权</span><h3>校园服务</h3><p>集中展示校园生活入口。图书馆、校园卡等服务取决于官方接口或网页授权。</p><a href="/services">校园服务目录 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">06</span><span class="feature-status status-demo">可体验</span><h3>校园地图</h3><p>官网可交互预览公开地图数据；覆盖程度和地点准确性有限，不是官方导航。</p><a href="#campus">探索地图 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">07</span><span class="feature-status status-demo">可体验</span><h3>校园社区</h3><p>校园广场、个人资料与交流入口；社区内容和互动仍受账号及网络状态影响。</p><a href="/plaza">校园广场 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">08</span><span class="feature-status status-demo">可体验</span><h3>碰个空 · 校园组队</h3><p>查看活动与空闲匹配体验。组队结果由成员确认，人格标签只作为自愿偏好。</p><a href="/meet?view=student">碰个空 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">09</span><span class="feature-status status-plan">规划中</span><h3>校园评价</h3><p>课程、教师与校园生活经验的评价体系仍需完善规则、审核和真实数据来源。</p></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">10</span><span class="feature-status status-dev">开发中</span><h3>AI 与智能通知</h3><p>源码已有 AI 相关入口；线上密钥、服务部署和逐项运行核验未完成前，不作为稳定服务宣传。</p></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">11</span><span class="feature-status status-demo">可体验</span><h3>个性化与阿狐陪伴</h3><p>主题、页面和吉祥物展示以当前应用实际可用项为准；更多表情仍属于后续设计方向。</p><a href="#mascot">认识阿狐 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">12</span><span class="feature-status status-dev">开发中</span><h3>账号与安全</h3><p>账号、授权、数据同步等能力按应用当前实现逐步核验；不把源码存在当作线上服务可用。</p></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">13</span><span class="feature-status status-demo">可体验</span><h3>管理端</h3><p>独立管理端包含管理界面；实际操作需要对应账号权限和已部署的服务支持。</p><a href="/download/admin.html">管理端下载说明 ↗</a></article>
+        <article class="ecosystem-card reveal"><span class="ecosystem-no">14</span><span class="feature-status status-live">已开放</span><h3>开源与开放生态</h3><p>哦狐源码公开并采用 MIT License；插件审核、开放 API 与开发者协作仍按实际进度开放。</p><a href="#community">查看开源社区 ↗</a></article>
+      </div>
+      <section class="catalog-detail reveal" aria-labelledby="catalogDetailTitle">
+        <div class="catalog-detail-heading"><div><p class="eyebrow">看看具体功能</p><h3 id="catalogDetailTitle">把每项功能说清楚</h3><p>按当前学生端代码中的服务入口整理；涉及校方、第三方平台或未完成线上配置的地方会单独说明。</p></div><span class="catalog-count">27 个服务入口<br><small>另含账号、设置与管理工具</small></span></div>
+        <div class="catalog-groups">
+          <details class="catalog-group" open><summary><span>课表与学业</span><small>学习安排、成绩与提醒</small></summary><ul>
+            <li><b>课表</b>：周／日课程查看、教务同步入口、课程时间与教室；可导入分享码。学校教务登录和实际同步受学校系统、账号授权与网络环境影响。</li>
+            <li><b>AI 一句话改课表</b>：粘贴通知或描述变更，检查候选、编辑并确认后应用到本机校历；AI 服务部署与可用性需以当前环境为准。</li>
+            <li><b>成绩与考试</b>：查看已同步的成绩、参考加权均分和考试安排；具体数据取决于学校数据来源及用户授权。</li>
+            <li><b>综测</b>：记录学院规则、加分材料与个人自查；学院细则需要用户核对，不能替代学校认定。</li>
+            <li><b>课程通知转待办</b>：粘贴通知后识别待办候选，预览修改后再确认；可识别信息不保证完全准确。</li>
+            <li><b>专注与计划</b>：番茄计时、休息、专注记录、学习目标与学习计划。</li>
+          </ul></details>
+          <details class="catalog-group"><summary><span>学习工具</span><small>英语、题库与 AI 辅助</small></summary><ul>
+            <li><b>英语学习</b>：词库、背词、复习卡、学习计划与练习入口；个人进度按账号隔离的本机学习仓库保存。</li>
+            <li><b>题库与练习</b>：本机题库、考证词库、练习和答题记录；题库覆盖与答案质量以实际内容为准。</li>
+            <li><b>AI 学习助手</b>：问答、资料摘要、考点提炼、自测题、作业拆解、考前规划与词汇讲解等源码入口；服务端配置及线上调用尚需逐项核验。</li>
+            <li><b>学习通</b>：打开超星官方平台。哦狐不读取学习通账号，也不承诺自动同步课程、作业或刷课。</li>
+            <li><b>查分与考证指引</b>：提供四六级、普通话等官方查询入口，不代替官方成绩系统。</li>
+          </ul></details>
+          <details class="catalog-group" open><summary><span>快递与校园生活</span><small>快速取件、校园服务与运动</small></summary><ul>
+            <li><b>快速拿快递：取件身份码快捷入口</b>：菜鸟身份码、淘宝身份码、拼多多身份码；安卓哦狐尝试直达对应平台 App，无法直达时按入口提供网页回退。身份码由平台显示。</li>
+            <li><b>待取包裹与订单入口</b>：淘宝待取快递、拼多多待取快递、抖音订单、京东订单。抖音入口仅支持安卓 App 跳转；订单入口不保证已筛选为待取件。</li>
+            <li><b>按单号查物流</b>：粘贴运单号后识别承运商，再跳转相应官方平台查询；哦狐不抓取物流账号或包裹数据。</li>
+            <li><b>快递代取互助</b>：可在跑腿任务中发布或浏览“代取快递”需求，并从任务详情打开查物流入口；是否成单由同学沟通确认。</li>
+            <li><b>使用边界</b>：使用哦狐快递工具需登录哦狐；平台页面可能要求另行登录或安装对应 App。哦狐不会读取、保存、生成或刷新身份码、取件码和平台订单。</li>
+            <li><b>附近美食与地图</b>：浏览已录入地点、地图标注与打卡；地点完整度和准确性有限，不是官方导航。</li>
+            <li><b>校园班车</b>：查看已有站点、时刻和本机发车提醒；以学校最新通知为准。</li>
+            <li><b>校园卡、图书馆座位、体测成绩</b>：提供官方 App、网页或学校通知指引；没有学校授权接口时不在哦狐内读取余额、预约座位或自动同步体测成绩。</li>
+            <li><b>运动健康</b>：步数、个人目标、周记录与阳光跑小队；体测查询仍走学校官方渠道。</li>
+          </ul></details>
+          <details class="catalog-group"><summary><span>同学互助与社区</span><small>找搭子、发动态、互相帮忙</small></summary><ul>
+            <li><b>碰个空</b>：选择时间、活动和搭子偏好，查看同校活动／共同空闲并邀请同学；匹配建议不代表对方已确认。</li>
+            <li><b>人格测试与匹配偏好</b>：人格标签用于自愿表达和软性筛选，不作心理诊断，也不保证匹配结果。</li>
+            <li><b>校园广场</b>：校园动态、公共聊天、热门榜、搜索、点赞、评论与内容举报；展示和互动受登录、网络及社区规则影响。</li>
+            <li><b>朋友圈与好友</b>：个人资料、好友申请、私聊与图文动态；照片可裁剪、添加表情贴纸或把图片做成贴纸并拖动调整，支持九宫格排版和可关闭的白图补位。</li>
+            <li><b>校园信息站</b>：公告、活动、失物招领、结伴出行等分类信息。</li>
+            <li><b>跑腿与生活互助</b>：发布需求、浏览任务并联系同学；哦狐不代收款、不托管资金。</li>
+            <li><b>二手交易</b>：发布和浏览闲置物品信息；交易由用户自行核实和完成。</li>
+          </ul></details>
+          <details class="catalog-group"><summary><span>插件、账号与管理</span><small>可选工具和个人设置</small></summary><ul>
+            <li><b>哦狐插件商城</b>：浏览随应用构建的插件模块，可逐项启用或停用；插件不执行远程下载代码。第三方创意标注来源与非官方属性。</li>
+            <li><b>个人中心</b>：头像、昵称、个人介绍与名言、收藏、待办、朋友圈和社交入口；部分资料对好友可见。</li>
+            <li><b>消息与提醒</b>：站内消息、课程／考试／待办提醒与通知设置；后台送达能力受设备权限、系统策略和网络影响。</li>
+            <li><b>外观与无障碍</b>：经典版与简洁版、深浅色模式、常用服务管理及界面互动设置。</li>
+            <li><b>管理端</b>：在具备管理员权限时管理成员、内容、公告、举报、消息和应用更新；每项操作仍依赖已部署服务与对应权限。</li>
+          </ul></details>
+        </div>
+        <p class="catalog-disclaimer">快递快捷入口只是打开第三方官方页面或 App。平台链接、登录状态、身份码显示及订单内容由对应平台控制，可能因版本、地区、账号和平台调整而变化；不要把取件码或登录凭据发给他人。</p>
+      </section>
+      <p class="ecosystem-footnote">状态说明针对官网所介绍的产品板块，不代表其中列出的每个子功能都已上线。涉及学校账号、第三方系统或生产服务的能力，会在接入并核验后更新状态。</p>
+    </section>
+
+    <section class="campus-section" id="campus" aria-labelledby="campusTitle">
+      <div class="site-wrap campus-layout">
+        <div class="campus-copy reveal"><p class="eyebrow">把校园细节画出来</p><h2 id="campusTitle">先从熟悉的校园，<br><em>找到自己的方向。</em></h2><p>参考高德地图清楚的搜索与地点筛选层级，重新整理地图操作；地图数据仍使用哦狐本地保存的江苏海洋大学苍梧、宋跳和通灌校区公开地图几何。</p>
+          <div class="campus-switch" role="tablist" aria-label="选择校区"><button type="button" class="is-active" role="tab" aria-selected="true" data-campus="cangwu">苍梧</button><button type="button" role="tab" aria-selected="false" data-campus="songtiao">宋跳</button><button type="button" role="tab" aria-selected="false" data-campus="tongguan">通灌</button></div>
+          <p class="map-status" id="mapStatus" role="status" aria-live="polite">正在载入公开地图几何…</p>
+          <p class="map-attribution" id="mapAttribution">地图底图：高德地图 · 校区示意数据：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a> · ODbL 1.0</p>
+        </div>
+        <div class="map-card reveal"><div class="map-card-top"><div><span class="map-pin">⌖</span><b id="mapCampusName">江苏海洋大学 · 苍梧校区</b></div><div class="map-controls"><button type="button" id="mapZoomOut" aria-label="缩小地图">−</button><button type="button" id="mapZoomIn" aria-label="放大地图">＋</button><button type="button" id="mapReset" aria-label="重置地图视图">复位</button></div></div>
+          <div class="map-viewport" id="mapViewport" aria-label="可拖动和缩放的校园地图">
+            <label class="map-search"><span aria-hidden="true">⌕</span><input id="mapSearch" type="search" placeholder="搜索教学楼、食堂或地点" autocomplete="off" aria-label="搜索校园地点"><button id="mapSearchClear" type="button" aria-label="清空搜索">×</button></label>
+            <div id="amapCanvas" class="amap-canvas" hidden role="application" aria-label="高德地图校园底图"></div>
+            <svg id="campusMap" viewBox="0 0 800 520" role="img" aria-labelledby="mapSvgTitle mapSvgDesc"><title id="mapSvgTitle">江苏海洋大学苍梧校区公开地图</title><desc id="mapSvgDesc">根据公开 OpenStreetMap 几何绘制的地图示意，拖动查看，滚轮缩放。</desc><g id="mapWorld"></g></svg>
+            <div class="map-compass" aria-hidden="true">N<span>↑</span></div><div class="map-location-tag" id="mapLocationTag">公开地图示意</div>
+            <div class="map-category-bar" role="group" aria-label="筛选地图地点"><button class="is-active" type="button" data-map-filter="all" aria-pressed="true">全部</button><button type="button" data-map-filter="building" aria-pressed="false">楼宇</button><button type="button" data-map-filter="food" aria-pressed="false">餐饮</button><button type="button" data-map-filter="sports" aria-pressed="false">运动</button></div>
+            <div class="map-place-toast" id="mapPlaceToast" role="status" aria-live="polite" hidden></div>
+          </div>
+          <div class="map-legend"><span><i class="legend-building"></i>建筑轮廓</span><span><i class="legend-road"></i>道路</span><span><i class="legend-boundary"></i>校区边界</span><span class="map-note">名称、出入口与道路状态可能不完整，现场信息为准。</span></div>
+          <div class="map-reference-row"><span id="mapProviderLabel">高德地图底图 · 地点来自高德搜索</span><a id="mapAmapReference" href="https://ditu.amap.com/place/B0FFKO0RCB" target="_blank" rel="noopener noreferrer">在高德地图查看苍梧校区 ↗</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mascot-section site-wrap section-pad" id="mascot" aria-labelledby="mascotTitle">
+      <div class="mascot-inner reveal"><div class="mascot-copy"><p class="eyebrow">认识校园伙伴</p><h2 id="mascotTitle">每天的校园生活，<br><em>阿狐都在。</em></h2><p>赶早课、写作业，或终于能歇一会儿。阿狐用不同的小表情，陪你过校园里的普通一天。</p><div class="mood-picker" role="group" aria-label="切换阿狐状态"><button class="is-active" type="button" data-mood="happy" aria-pressed="true">开心</button><button type="button" data-mood="hello" aria-pressed="false">打招呼</button><button type="button" data-mood="miss" aria-pressed="false">想念</button><button type="button" data-mood="wow" aria-pressed="false">惊喜</button></div><p class="mood-caption" id="moodCaption" aria-live="polite">开心一点，今天也有小进步。</p></div><div class="mascot-art"><div class="mascot-sun"></div><div class="mascot-ground"></div><img id="moodFox" src="assets/fox-happy.png" alt="开心的阿狐" width="384" height="384"><span class="mascot-scribble">OHU!</span><span class="mascot-label">你的校园生活搭子</span></div></div>
+    </section>
+
+    <section class="download-section" id="download" aria-labelledby="downloadTitle"><div class="site-wrap download-layout"><div class="download-copy reveal"><p class="eyebrow">准备好就出发</p><h2 id="downloadTitle">把哦狐装进口袋，<br><em>从今天开始。</em></h2><p>Android 下载学生端安装包。iPhone 可以先添加网页 App 到主屏幕，也可查看其他安装方式。</p><div class="download-meta" id="releaseMeta" aria-live="polite"><span class="release-dot"></span>正在读取最新版本…</div><div class="download-buttons"><button class="button button-orange" type="button" data-platform="android">下载安卓 App <span>↗</span></button><button class="button button-outline" type="button" data-platform="ios">iPhone 安装方式 <span>→</span></button></div><p class="download-help"><a href="/download/student.html">安卓安装说明</a><span>·</span><a href="/download/pwa-guide.html">iPhone PWA 教程</a><span>·</span><a href="/download/ios-guide.html">其他 iPhone 安装方式</a></p><p class="download-status" id="downloadStatus" role="status" aria-live="polite"></p></div><div class="download-art reveal"><div class="download-circle"></div><img src="assets/fox-happy.png" alt="举爪欢迎你的阿狐" width="384" height="384"><div class="download-sticker">和哦狐一起<br><b>开启校园新日常</b></div></div></div></section>
+
+    <section class="updates-section site-wrap section-pad" id="updates" aria-labelledby="updatesTitle"><div class="section-heading reveal"><p class="eyebrow">每次小更新，慢慢成长</p><h2 id="updatesTitle">哦狐在慢慢长大。</h2><p>版本与更新说明来自哦狐当前发布清单，不展示没有确认的发布日期。</p></div><div class="update-timeline reveal" id="updateTimeline"><article class="update-entry current"><span class="timeline-dot"></span><div class="update-version"><b id="updateVersion">哦狐 1.2.146</b><span id="updateBuild">BUILD 146</span><i>当前版本</i></div><p id="updateNotes">新增插件商城与逐项启停，完善账号隔离、个人介绍和广场滚动；修复原生提醒并提供同版 APK/IPA，官网新增苹果免签名桌面版教程。</p></article><div class="update-footnote">记录整理自版本日志、热更新清单、发布验收文件与当前 GitHub 可读取提交。<a class="full-history-link" href="/download/iterations.html">查看完整迭代时间线 <span aria-hidden="true">→</span></a></div></div></section>
+
+    <section class="community-section" id="community" aria-labelledby="communityTitle">
+      <div class="site-wrap community-layout">
+        <div class="community-copy reveal"><p class="eyebrow">开源共建</p><h2 id="communityTitle">这只狐狸，<br><em>可以由大家一起养大。</em></h2><p>哦狐希望不只是一个可以使用的软件，也是一份可以阅读、学习和共同完善的校园项目。代码可以被研究，问题可以被讨论，建议可以进入下一轮改进。</p><div class="community-actions"><a class="button button-orange" href="https://github.com/wht66667-eng/ohu" target="_blank" rel="noopener noreferrer">打开 GitHub 仓库 ↗</a><a class="button button-outline" href="https://github.com/wht66667-eng/ohu/issues" target="_blank" rel="noopener noreferrer">反馈问题与建议</a><a class="button button-outline" href="/download/community.html">浏览开源社区页面 →</a></div><p class="license-note">仓库当前公开，代码许可证为 MIT。许可证不自动覆盖狐狸形象、品牌、图片、字体、地图数据或第三方依赖；请查看各自授权。</p></div>
+        <div class="community-board reveal"><div class="community-board-head"><span>OHU · COMMUNITY NOTES</span><b>参与方式</b></div><a href="https://github.com/wht66667-eng/ohu/issues" target="_blank" rel="noopener noreferrer"><i>01</i><span><b>提出问题与功能建议</b><small>在 GitHub Issues 里描述使用情境</small></span><strong>↗</strong></a><a href="https://github.com/wht66667-eng/ohu/tree/main/docs" target="_blank" rel="noopener noreferrer"><i>02</i><span><b>阅读项目文档</b><small>查看架构、开发说明与迭代记录</small></span><strong>↗</strong></a><a href="https://github.com/wht66667-eng/ohu/pulls" target="_blank" rel="noopener noreferrer"><i>03</i><span><b>参与代码协作</b><small>查看 Pull Request 与仓库协作说明</small></span><strong>↗</strong></a><div class="community-coming"><span>正在建设</span><p>正式贡献指南、开发者招募流程、接口文档和贡献者名录尚未完整开放。名单只会在获得本人同意并核实贡献后展示。</p></div><div class="community-fox"><img src="assets/fox-hello.png" alt="挥爪欢迎参与哦狐共建的阿狐" width="384" height="384" loading="lazy"><span>让校园生活简单一点<br><b>OHU · 开源共建 · 自由探索</b></span></div></div>
+      </div>
+    </section>
+
+    <section class="faq-section" id="faq" aria-labelledby="faqTitle"><div class="site-wrap faq-layout"><div class="faq-heading reveal"><p class="eyebrow">使用前了解</p><h2 id="faqTitle">第一次用哦狐？<br><em>你可能想知道这些。</em></h2><p>关于安装、数据和校园服务，先把重要信息说清楚。</p><img src="assets/fox-miss.png" alt="侧耳倾听的阿狐" width="384" height="384" loading="lazy"></div><div class="faq-list reveal">
+      <details><summary>哦狐是什么？</summary><p>哦狐是面向校园日常的独立项目，提供课表与学业入口、待办、学习工具、校园服务和同学互助等功能。</p></details>
+      <details><summary>哦狐是学校官方应用吗？</summary><p>不是。哦狐是独立校园项目，与江苏海洋大学及其他高校无隶属关系，也不代表学校或教务部门。校名和校区信息仅用于说明功能适用场景。</p></details>
+      <details><summary>支持哪些平台？</summary><p>安卓手机可下载学生端 APK。iPhone 用户可以使用 Safari 添加网页 App 到主屏幕；其他安装方式请先查看 iOS 版本兼容说明。</p></details>
+      <details><summary>教务、校园卡和图书馆功能都能直接使用吗？</summary><p>具体能力取决于学校系统接口、网络环境和授权。部分入口会跳转至学校官方服务；哦狐不承诺所有学校均可同步，也不提供校园卡充值或资金处理。</p></details>
+      <details><summary>我的课程和个人信息会怎样处理？</summary><p>使用需登录的功能时，数据按应用内说明处理并可能随账号同步。提交课程通知进行识别前可以先检查内容；确认创建待办时只保存你确认的字段。请勿粘贴不必要的敏感信息。</p></details>
+      <details><summary>下载安装遇到问题怎么办？</summary><p>安卓请查看安装说明；iPhone 请根据系统版本选择 PWA、自签或 TrollStore 指南。安装包与下载方式以本站当前发布清单为准。</p></details>
+      <details><summary>如何更新或反馈？</summary><p>安卓安装包版本会在下载页显示，App 内也可查看更新入口。问题可通过应用内反馈渠道提交；开源代码可在 GitHub 仓库查看。</p></details>
+    </div></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="site-wrap footer-main"><div class="footer-brand"><a class="brand" href="#home"><img src="assets/fox-hello.png" alt=""><span>哦狐<small>OHU · CAMPUS LIFE</small></span></a><p>和哦狐一起，让校园生活更简单、更有趣。</p><p class="footer-disclaimer">独立校园项目，非任何高校官方应用。</p></div><div class="footer-column"><b>探索哦狐</b><a href="#story">开发初心</a><a href="#ecosystem">产品全景</a><a href="#campus">校园地图</a><a href="/download/iterations.html">完整迭代记录</a><a href="#faq">常见问题</a></div><div class="footer-column"><b>获取与了解</b><a href="#download">下载哦狐</a><a href="/download/student.html">安卓安装说明</a><a href="/download/pwa-guide.html">iPhone PWA 教程</a><a href="/download/community.html">开源社区</a><a href="/download/about.html">关于哦狐</a><a href="/download/transparency.html">运营透明度</a><a href="/download/partners.html">合作伙伴</a><a href="/download/support.html">自愿支持</a><a href="https://github.com/wht66667-eng/ohu" target="_blank" rel="noopener noreferrer">GitHub 开源仓库 ↗</a></div></div><div class="site-wrap footer-bottom"><span>© 2026 OHU · 校园生活助手</span><span>课程与校园信息请以学校官方发布为准。</span></div></footer>
+
+  <button class="share-fab" id="shareFab" type="button">分享给同学 <span>↗</span></button>
+
+  <dialog class="screenshot-lightbox" id="screenshotLightbox" aria-label="产品截图预览"><button type="button" id="lightboxClose" aria-label="关闭截图预览">×</button><img id="lightboxImage" alt="哦狐产品页面截图"></dialog>
+
+  <div class="modal" id="downloadModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" tabindex="-1"><div class="modal-box"><button class="modal-x" type="button" aria-label="关闭" id="closeModal" data-close-modal>×</button><div class="eyebrow">IPHONE INSTALL</div><h3 id="modalTitle">iPhone 上怎么使用哦狐？</h3><p id="modalDesc">选择适合你设备的安装方式。想简单开始，建议先用桌面网页版。</p><section class="install-choice recommended"><h4>方式一 · 添加网页 App 到桌面</h4><p>不需要 IPA 或签名，用 Safari 将哦狐添加到主屏幕。</p><a class="button" href="/download/pwa-guide.html"><span>查看 PWA 安装教程 ↗</span></a></section><section class="install-choice"><h4>方式二 · TrollStore 或自签安装</h4><p>先查看你的 iOS 版本是否兼容，再按教程下载 IPA 并安装。</p><a class="button light" href="/download/ios-guide.html">打开 iPhone 安装指南 ↗</a><div class="install-steps" style="margin-top:10px"><a class="button light" href="https://youquzhushou.cn/" target="_blank" rel="noopener noreferrer"><span>1 · 打开有趣助手自签工具</span></a><a class="button light is-unavailable" data-ios-package aria-disabled="true"><span><small data-ios-version>2 · 正在核对安装包</small><b data-ios-label>IPA 暂不可用</b></span></a></div><p class="status" data-ios-status role="status" aria-live="polite">正在核对 iPhone 安装包…</p><p class="hint">未签名 IPA 需按所选方式自行安装。TrollStore 仅支持特定 iOS 版本。</p></section></div></div>
+
+  <div class="modal share-dialog" id="shareModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shareTitle" aria-describedby="shareIntro" tabindex="-1"><div class="share-box"><button class="modal-x" type="button" aria-label="关闭分享卡" id="shareClose" data-close-modal>×</button><div class="share-preview" id="sharePosterFrame" aria-busy="false"><img id="sharePoster" alt="哦狐校园生活分享卡，含可用微信扫描的宣传页二维码" width="720" height="1080" hidden></div><div class="share-controls"><span class="eyebrow">GOOD THINGS, TOGETHER</span><h2 id="shareTitle">把哦狐，带给同学。</h2><p id="shareIntro">保存阿狐分享卡，发到群里或朋友圈。微信扫一扫，就能认识哦狐。</p><span class="share-theme-label" id="shareThemeLabel">选一张喜欢的配色</span><div class="share-themes" role="group" aria-labelledby="shareThemeLabel"><button type="button" data-share-theme="0" aria-pressed="true">森林绿</button><button type="button" data-share-theme="1" aria-pressed="false">橘子汽水</button><button type="button" data-share-theme="2" aria-pressed="false">晴空蓝</button></div><div class="share-actions"><button type="button" id="savePoster" disabled>保存分享卡</button><button type="button" id="sendPoster" disabled>分享图片</button><button type="button" id="copyLink">复制链接</button></div><p class="share-status" id="posterStatus" role="status" aria-live="polite"></p><a class="share-public-link" id="sharePublicLink" href="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/index.html" target="_blank" rel="noopener noreferrer">打开公开宣传页 ↗</a><p class="share-preview-note" id="sharePreviewNote" hidden>当前为本地预览；二维码打开已发布的宣传页。</p></div></div></div>
+
+  <script src="amap-config.js?v=20261031a"></script>
+  <script type="module" src="product-site.mjs?v=20261101d"></script>
+  <script type="module" src="share.mjs?v=20261031d"></script>
+  <script type="module" src="ios-download.mjs?v=20261031d"></script>
+</body>
+</html>

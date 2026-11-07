@@ -5,20 +5,22 @@ import { useUiMotion } from '../../lib/motion-pref'
 import styles from './dialog.module.css'
 
 /** A modal stays in the browser's top layer until its exit transition finishes. */
-export function DialogLayer({ title, onClose, children, className = '', full = false, allowClose = true }: {
+export function DialogLayer({ title, onClose, children, className = '', full = false, allowClose = true, beforeClose }: {
   title: string
   onClose: () => void
   children: ReactNode
   className?: string
   full?: boolean
   allowClose?: boolean
+  /** 有未保存草稿时可拦截退出，先由调用方呈现确认界面。 */
+  beforeClose?: () => boolean
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const closeRef = useRef(onClose)
   closeRef.current = onClose
   const [closing, setClosing] = useState(false)
   const reduce = useUiMotion()
-  const requestClose = useCallback(() => { if (allowClose) setClosing(true) }, [allowClose])
+  const requestClose = useCallback(() => { if (allowClose && (!beforeClose || beforeClose())) setClosing(true) }, [allowClose, beforeClose])
 
   useEffect(() => {
     const element = dialog.current

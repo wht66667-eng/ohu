@@ -49,6 +49,8 @@ export async function initAppSecurity(): Promise<boolean> {
   try {
     const info = await App.getInfo()
     const packageName = info.id || SHELL_APP_ID[getAppShell()] || 'com.sunshinecampus.app'
+    /* 侧载调试包用 debug 证书签名，必然过不了 release 证书校验；只在正式包告警。 */
+    const devBuild = import.meta.env.DEV || /\.(devtest|debug)$/.test(packageName)
 
     const config: TalsecConfig = {
       androidConfig: {
@@ -70,7 +72,7 @@ export async function initAppSecurity(): Promise<boolean> {
     const result = await startFreeRASP(config, {
       privilegedAccess: () => softWarn('检测到设备已 Root，部分功能可能不可用', 'root'),
       hooks: () => hardWarn('检测到异常注入环境（如 Frida），请勿在不安全设备登录', 'hooks'),
-      appIntegrity: () => hardWarn('应用完整性校验失败，请从官方渠道重装', 'integrity'),
+      appIntegrity: () => { if (!devBuild) hardWarn('应用完整性校验失败，请从官方渠道重装', 'integrity') },
       obfuscationIssues: () => console.warn('[rasp] obfuscationIssues'),
       // 侧载与模拟器：告警级别降低，避免挡日常调试 / 校园包分发
       unofficialStore: () => console.info('[rasp] unofficial install (sideload OK for campus APK)'),

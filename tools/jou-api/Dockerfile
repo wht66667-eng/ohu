@@ -20,7 +20,7 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py jou_client.py academic_parse.py captcha_ocr.py ./
+COPY app.py request_security.py jou_client.py academic_parse.py captcha_ocr.py chaoxing_read.py physical_read.py THIRD_PARTY_NOTICES.md ./
 
 # 非 root 运行
 RUN useradd --create-home --shell /usr/sbin/nologin appuser \

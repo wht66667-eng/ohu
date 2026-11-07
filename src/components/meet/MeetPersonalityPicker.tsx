@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { DialogLayer } from '../ui/DialogLayer'
 import { MeetPersonalityPortrait } from './MeetPersonalityPortrait'
-import { MEET_PERSONALITIES, type MeetPersonality, type MeetPersonalityPreference } from '../../lib/meet-personality'
+import { MEET_PERSONALITIES, suggestMeetPersonalities, type MeetPersonality, type MeetPersonalityPreference } from '../../lib/meet-personality'
 import styles from './meet-personality.module.css'
 
 type Axis = 'EI' | 'SN' | 'TF' | 'JP'
@@ -28,8 +28,14 @@ function calculate(answers: Record<number, 'left' | 'right'>): { type: MeetPerso
     let a = 0, b = 0
     QUESTIONS.forEach((question, index) => {
       if (question.axis !== axis || !answers[index]) return
-      if (answers[index] === 'left') question.leftCode === left ? a++ : b++
-      else question.rightCode === right ? b++ : a++
+      // 将左右选择计入对应维度，不使用无返回值的条件表达式。
+      if (answers[index] === 'left') {
+        if (question.leftCode === left) a += 1
+        else b += 1
+      } else {
+        if (question.rightCode === right) b += 1
+        else a += 1
+      }
     })
     if (a === b) ties.push(axis)
     letters.push(a >= b ? left : right)
@@ -92,9 +98,19 @@ export function MeetPersonalityPicker({ label, value, onChange, allowQuiz = fals
   const [quizOpen, setQuizOpen] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
   const selected = MEET_PERSONALITIES.find(item => item.code === value)
+  const suggestions = allowQuiz && value ? suggestMeetPersonalities(value, 4) : []
   return <div className={styles.picker}>
     <div className={styles.pickerSelect}><span>{label}</span><button type="button" className={styles.selectedType} onClick={() => setGalleryOpen(true)}>{selected ? <MeetPersonalityPortrait type={value!} size="small" /> : <span className={styles.typePlaceholder} aria-hidden="true">狐</span>}<span>{selected ? `${selected.code} · ${selected.name}` : allowQuiz ? '暂不填写' : '不限'}</span><span aria-hidden="true">⌄</span></button></div>
     {allowQuiz ? <div className={styles.pickerActions}>{selected ? <small>{selected.note}</small> : <small>可直接选型，也可以做题后再确认</small>}<button type="button" onClick={() => setQuizOpen(true)}>{value ? '重新测一下' : '做趣味小测'}</button></div> : null}
+    {suggestions.length ? <section className={styles.matchPanel} aria-label="狐格相似度参考">
+      <div className={styles.matchHeading}><strong>和你相近的搭子狐格</strong><span>趣味参考</span></div>
+      <div className={styles.matchList}>{suggestions.map(item => <div className={styles.matchItem} key={item.code}>
+        <MeetPersonalityPortrait type={item.code} size="small" />
+        <span className={styles.matchName}><b>{item.code}</b><small>{item.name}</small></span>
+        <b className={styles.matchScore}>{item.similarity}/4</b>
+      </div>)}</div>
+      <p>按四个类型字母相同数量计算；不是科学兼容度或成局概率。时间、活动和双方意愿优先。</p>
+    </section> : null}
     {galleryOpen ? <PersonalityGallery value={value} allowQuiz={allowQuiz} onClose={() => setGalleryOpen(false)} onChange={onChange} onQuiz={() => { setGalleryOpen(false); setQuizOpen(true) }} /> : null}
     {quizOpen ? <PersonalityQuiz onClose={() => setQuizOpen(false)} onApply={onChange} /> : null}
   </div>

@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *.log
 *.md
+!THIRD_PARTY_NOTICES.md
+test_*.py
+*_test.py
+tests/
+pytest.ini
+requirements-test*.txt
 _schedule_debug.html
 
 # 本地虚拟环境与缓存

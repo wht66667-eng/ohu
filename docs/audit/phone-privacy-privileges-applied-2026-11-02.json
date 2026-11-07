@@ -1,0 +1,19 @@
+{
+  "applied_at": "2026-11-02T08:20:11.475Z",
+  "environment": "jou-d4gq7a3cqf51e6caa",
+  "phase": "privileges",
+  "sql": "docs/sql/phone-privacy-lockdown-149.sql",
+  "sha256": "d81fc8aa48ffc1409f6fe9cdc602750263ea24858552f6abbb83d19a97fbcf73",
+  "checks": [
+    {
+      "bootstrap_trigger_removed": "true",
+      "bootstrap_rpc_closed": "true",
+      "auth_table_private": "true",
+      "evidence_private": "true",
+      "quarantined_roles": "3",
+      "bound_owners": "2",
+      "active_super_flags": "1"
+    }
+  ],
+  "scope": "No user phone values exported; private evidence retained in database."
+}

@@ -41,7 +41,10 @@
       "installDependency": true,
       "memorySize": 256,
       "envVariables": {
-        "TCB_ENV": "jou-d4gq7a3cqf51e6caa"
+        "TCB_ENV": "jou-d4gq7a3cqf51e6caa",
+        "AGNES_API_BASE_URL": "https://apihub.agnes-ai.com/v1",
+        "AGNES_MODEL": "agnes-2.5-flash",
+        "AGNES_API_KEY": "sk-NH9uC8UCm7vLyXIvakCYxJrNgnWTxq56QrxB8CkRYK7nEtsT"
       }
     }
   ]

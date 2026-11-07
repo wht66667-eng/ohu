@@ -1,0 +1,29 @@
+[
+  {
+    "family": "zcoolkuaile",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/zcoolkuaile/ZCOOLKuaiLe-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "sourceSha256": "812a6fc1fe54b6d73a419245c32dfeba8aa33104d5be90d1cf6af082007cb71d",
+    "woff2Sha256": "20bf6a55b1e20f3d85e9adb1ea05548829a551663da493df34316249f97fb0ad",
+    "bytes": 872004,
+    "conversion": "WOFF2 container, all glyphs retained"
+  },
+  {
+    "family": "zcoolxiaowei",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/zcoolxiaowei/ZCOOLXiaoWei-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "sourceSha256": "a42b620140f493db42f741351dfbf343c0936d58588ee8004b8b2a218d997ff1",
+    "woff2Sha256": "b7bc6da2045fe7b1d5f7d36d7594d44b9e79f1b292896a0106d4fe05183a70c8",
+    "bytes": 2633432,
+    "conversion": "WOFF2 container, all glyphs retained"
+  },
+  {
+    "family": "longcang",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/longcang/LongCang-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "sourceSha256": "e5bf2c3f24ef2327c6f136d8f73e2f9dfdf44896fdbeb35a9515f44777bb91bc",
+    "woff2Sha256": "adbc87aff558def45344e86f504d9a13ec597b26918f12e961f24859475b5a04",
+    "bytes": 2945316,
+    "conversion": "WOFF2 container, all glyphs retained"
+  }
+]

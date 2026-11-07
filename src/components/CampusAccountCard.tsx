@@ -76,7 +76,7 @@ export function CampusAccountCard({ onApplied, compact, linkScope = 'campus' }: 
 
   function persist() {
     if (!isQbankSessionCurrent(session)) return
-    if (!auth.isSigned) { auth.openLogin('保存学校账号前，请先用手机号登录哦狐'); return }
+    if (!auth.isSigned) { auth.openLogin('保存学校账号前，请先用学号登录哦狐'); return }
     const next = {
       ...acc,
       vpnPassword: acc.vpnPassword || acc.jwPassword,
@@ -94,7 +94,7 @@ export function CampusAccountCard({ onApplied, compact, linkScope = 'campus' }: 
 
   async function go(link: CampusLink) {
     if (!isQbankSessionCurrent(session)) return
-    if (!auth.isSigned) { auth.openLogin('使用学校账号前，请先用手机号登录哦狐'); return }
+    if (!auth.isSigned) { auth.openLogin('使用学校账号前，请先用学号登录哦狐'); return }
     setBusyId(link.id)
     const r = await openCampusLink(link, acc)
     if (!isQbankSessionCurrent(session)) return

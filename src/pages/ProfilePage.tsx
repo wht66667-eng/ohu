@@ -162,14 +162,14 @@ export function ProfilePage() {
         </button>
         <div className={styles.who}>
           <h2>{name}</h2>
-          {signed ? <p><span className={styles.badge}>{roleText}</span>{building ? <span className={styles.building}>{building}</span> : null}</p> : <p>登录后同步资料、发布与消息</p>}
+          {signed ? <p><span className={styles.badge}>{roleText}</span>{building ? <span className={styles.building}>{building}</span> : null}</p> : <p>用学号开始，资料只存在本机</p>}
         </div>
       </div>
-      <motion.button type="button" className={signed ? styles.editButton : styles.loginButton} aria-label={signed ? '编辑个人资料' : '登录或注册'} onClick={signed ? openEdit : openLogin} {...pressFeedback(reduce, .98)}>
-        {signed ? <><ProfileIcon name="edit" /><span>编辑资料</span></> : '登录 / 注册'}
+      <motion.button type="button" className={signed ? styles.editButton : styles.loginButton} aria-label={signed ? '编辑个人资料' : '用学号开始'} onClick={signed ? openEdit : openLogin} {...pressFeedback(reduce, .98)}>
+        {signed ? <><ProfileIcon name="edit" /><span>编辑资料</span></> : '用学号开始'}
       </motion.button>
       </div>
-      {!signed ? <p className={styles.loginHint}>手机验证码或账号密码登录</p> : null}
+      {!signed ? <p className={styles.loginHint}>学号 + 校园网 + 统一认证</p> : null}
       {showFoxArt || signed ? <div className={`${styles.companion} ${auth.user?.profileMotto || auth.user?.profileIntro ? styles.companionProfile : ''}`}>
         {showFoxArt ? <FoxSheetPose className={styles.accountFox} pose="waving" /> : null}
         <div>
@@ -217,7 +217,9 @@ export function ProfilePage() {
     {showWork ? <section className={styles.section} aria-labelledby="profile-work-title">
       <h2 id="profile-work-title">管理工作台</h2>
       <div className={styles.group}>
-        <ProfileRow to="/admin/content" icon="shield" title="内容治理" detail="帖子、举报与成员管理" />
+        <ProfileRow to="/admin/content?view=student&from=%2Fprofile" icon="shield" title="内容治理" detail="在学生端处理内容，不必更换安装包" />
+        <ProfileRow to="/admin/content?view=student&from=%2Fprofile&tab=comments&source=feedbacks" icon="message" title="申请与反馈" detail="学生申请、插件提案与问题反馈" />
+        <ProfileRow to="/admin/reports?view=student&from=%2Fprofile" icon="bell" title="举报处理" detail="核查举报与违规内容" />
       </div>
     </section> : null}
 

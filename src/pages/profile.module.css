@@ -155,3 +155,11 @@
   .page *, .page *::before, .page *::after { transition: none; }
   .stat:hover, .shortcut:hover, .stat:active, .shortcut:active, .recommendCard:hover, .recommendCard:active, .foxRow:active .foxAction svg { transform: none; }
 }
+
+/* 清新绿保持白色内容区，清除经典版的暖色背景和投影。 */
+:global(html[data-ui-variant='companion']) .page :is(.account,.growth,.shortcut,.shortcut:nth-child(2),.shortcut:nth-child(3),.group,.stat) { background:var(--card); border-color:var(--line); border-radius:10px; box-shadow:none; }
+:global(html[data-ui-variant='companion']) .rowIcon,
+:global(html[data-ui-variant='companion']) .row:nth-child(2n) .rowIcon { background:transparent; color:var(--green-text); }
+:global(html[data-ui-variant='companion']) .headingCopy h1 { color:var(--text); font-size:22px; font-weight:650; letter-spacing:0; }
+:global(html[data-ui-variant='companion']) .headingCopy>span { display:none; }
+:global(html[data-ui-variant='companion']) .headerAction { border:0; border-radius:7px; }

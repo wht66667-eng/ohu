@@ -3,12 +3,14 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { goBack } from '../lib/back'
 import { studyBackHistory } from '../lib/study-back-history'
 import { ToastProvider } from '../context/ToastContext'
-import { AuthSheets } from '../lib/auth-ui'
+/* 学生端已移除手机号登录/注册：账号身份来自学号，不再挂载 AuthSheets。 */
 import { initNativeShell } from '../lib/native'
 import { IS_NATIVE } from '../lib/platform'
 import { Toaster } from '../lib/toast'
 import { PublishSheet } from './PublishSheet'
 import { TabBar } from './TabBar'
+import { StudentManagementTools } from './StudentManagementTools'
+import { FoxgirlCompanion } from './fox/FoxgirlCompanion'
 import { usePullRefresh } from './usePullRefresh'
 import { WorkAccessGate, WorkPhoneGate } from './WorkPhoneGate'
 import { RemindHost } from './RemindHost'
@@ -36,6 +38,10 @@ import { confirmOtaAppReady } from '../ota-ready'
 import { installStudentHaptics } from '../lib/student-haptics'
 import { useQbankRevision } from '../lib/useQbankRevision'
 import { refreshScheduleWidgets } from '../lib/schedule-widget'
+import { StudentLoginSheet } from './StudentLoginSheet'
+import { AppSidebar } from './AppSidebar'
+import { PageTransition } from './PageTransition'
+import { refreshSchool } from '../store/school'
 
 const TAB_ROUTES = new Set([
   '/',
@@ -100,10 +106,30 @@ export function PhoneShell({ children }: { children: ReactNode }) {
   const auth = useAuth()
   const qbankRevision = useQbankRevision()
   const [open, setOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const backAt = useRef(0)
   const [focusMute, setFocusMute] = useState(() => isFocusImmersive())
   const [firstRunOk, setFirstRunOk] = useState(() => isFirstRunComplete())
   const shell = getAppShell()
   const work = isWorkShell(shell)
+  useEffect(() => {
+    const onBack = (event: Event) => {
+      if (loc.pathname === '/') return
+      const now = Date.now()
+      if (now - backAt.current > 1800) { backAt.current = now; return }
+      event.preventDefault()
+      backAt.current = 0
+      navigate('/')
+    }
+    window.addEventListener('app-back-nav', onBack)
+    return () => window.removeEventListener('app-back-nav', onBack)
+  }, [loc.pathname, navigate])
+  useEffect(() => {
+    const openMenu = () => setSidebarOpen(true)
+    window.addEventListener('ohu-open-menu', openMenu)
+    return () => window.removeEventListener('ohu-open-menu', openMenu)
+  }, [])
+  useEffect(() => { refreshSchool() }, [auth.phase, qbankRevision])
   useEffect(() => {
     if (work || auth.phase === 'booting') return
     const sync = () => {
@@ -255,8 +281,10 @@ export function PhoneShell({ children }: { children: ReactNode }) {
             >
               <ShellRouteGuard />
               {gateOk && work && !focusMute ? <ShellNotifyHost /> : null}
-              {gateOk ? children : null}
+              {gateOk && !work && !focusMute ? <StudentManagementTools /> : null}
+              {gateOk ? <PageTransition direction={navigationType === 'POP' ? -1 : 1}>{children}</PageTransition> : null}
             </main>
+            {gateOk && !work && !focusMute && withTab && loc.pathname !== '/' ? <FoxgirlCompanion key={loc.pathname} /> : null}
             {gateOk && withTab ? <TabBar onPlus={() => setOpen(true)} /> : null}
             {showPlus && open ? <PublishSheet onClose={() => setOpen(false)} /> : null}
             {!firstRunOk ? <FirstRunHost onDone={() => setFirstRunOk(true)} /> : null}
@@ -275,7 +303,10 @@ export function PhoneShell({ children }: { children: ReactNode }) {
             {IS_NATIVE && !focusMute ? <OtaUpdateHost /> : null}
           </div>
           {!focusMute ? <Toaster /> : null}
-          {!focusMute ? <AuthSheets /> : null}
+          {!focusMute ? <StudentLoginSheet /> : null}
+          {!work && !focusMute ? <>
+<AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          </> : null}
           </FocusTimerProvider>
         </ToastProvider>
       </div>

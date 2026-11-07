@@ -95,7 +95,7 @@ function SignupSquad({ team, onClose, onDone }: { team: MorningTeam; onClose: ()
   const auth = useAuth()
   const toast = useToast()
   const [name, setName] = useState(auth.profile?.username || auth.user?.nickname || '')
-  const [contact, setContact] = useState(auth.user?.phone || '')
+  const [contact, setContact] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const lock = useRef(false)
@@ -108,7 +108,7 @@ function SignupSquad({ team, onClose, onDone }: { team: MorningTeam; onClose: ()
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (lock.current) return
-    if (!name.trim() || !contact.trim() || name.trim().length > 40 || contact.trim().length > 40) { setError('请填写称呼和联系方式，各不超过 40 个字'); return }
+    if (!name.trim() || name.trim().length > 40 || contact.trim().length > 40) { setError('请填写称呼，选填联系方式不超过 40 个字'); return }
     if (morningTeamState(team) !== '可加入') { setError('这支小队当前不可加入，请刷新列表'); return }
     lock.current = true
     setBusy(true)
@@ -130,7 +130,7 @@ function SignupSquad({ team, onClose, onDone }: { team: MorningTeam; onClose: ()
     <form className={styles.form} onSubmit={submit} aria-busy={busy}>
       <fieldset disabled={busy}>
         <FormField label="怎么称呼你" id="morning-name"><input id="morning-name" value={name} required maxLength={40} onChange={(event) => setName(event.target.value)} /></FormField>
-        <FormField label="联系方式" id="morning-contact" hint="填写手机号或微信，方便发起人确认集合安排"><input id="morning-contact" value={contact} required maxLength={40} onChange={(event) => setContact(event.target.value)} /></FormField>
+        <FormField label="联系方式（选填）" id="morning-contact" hint="可留空；不会自动使用登录手机号"><input id="morning-contact" value={contact} maxLength={40} onChange={(event) => setContact(event.target.value)} /></FormField>
       </fieldset>
       {error ? <p role="alert" className={styles.error}>{error}</p> : null}
       <SubmitButton type="submit" state={busy ? 'busy' : 'idle'} label="确认加入" busyText="正在报名…" className={styles.primary} />

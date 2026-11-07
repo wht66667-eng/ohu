@@ -18,7 +18,7 @@ export function existingPlatforms(root = PROJECT_ROOT) {
 export function trimShellPublicAssets(root, output, shell) {
   if (shell !== 'admin') return
   assertOutputPath(root, output)
-  for (const name of ['download', 'launcher-icon-previews', 'theme-packs', 'last-snapshot.json']) {
+  for (const name of ['download', 'launcher-icon-previews', 'theme-packs', 'moment-editor', 'last-snapshot.json']) {
     clearOutput(root, output, join(output, name))
   }
 }

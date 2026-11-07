@@ -5,6 +5,10 @@
   默认：禁止明文。
   仅对本机调试、Capacitor localhost 放行；生产 API 一律走 HTTPS（CloudBase / tcloudbase）。
   若未来 WebView 必须打开校内 http 门户，把域名加进 domain-config，切勿再开全局 cleartext。
+
+  2026-11：设备侧校园取数桥需要经 WebVPN 打开校内 http 门户
+  （webvpn.jou.edu.cn:58888 与 tice.jou.edu.cn:8080），只放行这两个校内域名，
+  不放开全局 cleartext。
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
@@ -12,5 +16,9 @@
         <domain includeSubdomains="false">localhost</domain>
         <domain includeSubdomains="false">127.0.0.1</domain>
         <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">webvpn.jou.edu.cn</domain>
+        <domain includeSubdomains="true">tice.jou.edu.cn</domain>
     </domain-config>
 </network-security-config>

@@ -65,12 +65,12 @@ function shell({ shell = 'admin', phase = 'signed', profile = { isAdmin: false }
     './WorkPhoneGate': { WorkAccessGate, WorkPhoneGate },
     './usePullRefresh': { usePullRefresh: () => ({}) }, './PhoneShell.module.css': css,
     '../context/ToastContext': { ToastProvider: 'toast-provider' }, '../context/FocusTimerContext': { FocusTimerProvider: 'focus-provider', FocusTimerBar: 'focus-bar' },
-    '../lib/auth-ui': { AuthSheets: 'auth-sheets' }, '../lib/toast': { Toaster: 'toaster' },
+    '../lib/auth-ui': { AuthSheets: 'auth-sheets' }, '../lib/fox-v1': {}, '../lib/student-haptics': {}, '../lib/schedule-widget': {}, '../lib/useQbankRevision': { useQbankRevision: () => 0 }, '../lib/toast': { Toaster: 'toaster' },
     '../ota-ready': { confirmOtaAppReady: async () => {} },
     '../lib/back': {}, '../lib/study-back-history': {}, '../lib/native': {}, '../lib/schedule-cache': {}, '../lib/auto-sync': {}, '../lib/campus-account': {}, '../lib/engagement': {},
   }
-  for (const component of ['PublishSheet', 'TabBar', 'RemindHost', 'AwayLoginHost', 'FirstRunHost', 'OtaUpdateHost', 'ShellNotifyHost', 'ShellRouteGuard']) imports[`./${component}`] = { [component]: component }
-  for (const component of ['FoxPresenceHost', 'FoxMoment']) imports[`./fox/${component}`] = { [component]: component }
+  for (const component of ['PublishSheet', 'TabBar', 'RemindHost', 'AwayLoginHost', 'FirstRunHost', 'OtaUpdateHost', 'ShellNotifyHost', 'ShellRouteGuard', 'TodoReminderSyncHost', 'StudentManagementTools', 'StudentLoginSheet']) imports[`./${component}`] = { [component]: component }
+  for (const component of ['FoxPresenceHost', 'FoxMoment', 'FoxgirlCompanion']) imports[`./fox/${component}`] = { [component]: component }
   const api = load('src/components/PhoneShell.tsx', imports), content = jsx('business', { children: 'Synthetic protected business page' })
   const tree = api.PhoneShell({ children: content }), nodes = walk(tree)
   return { hasBusiness: nodes.includes(content), has: type => nodes.some(node => node.type === type), hasAccessGate: nodes.some(node => node.type === WorkAccessGate), hasLoginGate: nodes.some(node => node.type === WorkPhoneGate) }
@@ -97,14 +97,16 @@ test('admin and superadmin accounts retain protected pages, while first-run cons
   }
 })
 
-test('student pages retain guest access, login sheets and reminders without global mascot overlays', () => {
+test('student pages retain guest access and independent reminders; the optional companion stays out of chat', () => {
   for (const pathname of ['/', '/profile', '/services', '/campus-map', '/schedule', '/todo', '/library', '/campus-card', '/chat']) {
     const actual = shell({ shell: 'user', phase: 'guest', profile: null, pathname })
     assert.equal(actual.hasBusiness, true, pathname)
-    assert.equal(actual.has('auth-sheets'), true, pathname)
+    assert.equal(actual.has('StudentLoginSheet'), true, pathname)
     assert.equal(actual.has('RemindHost'), true, pathname)
     assert.equal(actual.hasAccessGate, false, pathname)
-    for (const overlay of ['FoxPresenceHost', 'FoxMoment', 'AwayLoginHost']) assert.equal(actual.has(overlay), false, `${pathname}: ${overlay}`)
+    if (pathname === '/chat') assert.equal(actual.has('FoxgirlCompanion'), false)
+    if (['/', '/profile', '/services'].includes(pathname)) assert.equal(actual.has('FoxgirlCompanion'), true)
+    for (const overlay of ['FoxPresenceHost', 'FoxMoment']) assert.equal(actual.has(overlay), false, `${pathname}: ${overlay}`)
   }
 })
 
@@ -113,7 +115,7 @@ test('codex history continues recording earned expressions without rendering an 
   const localStorage = { getItem: key => store.get(key) ?? null, setItem(key, value) { store.set(key, value); writes.push(value) } }
   const codex = load('src/components/fox/FoxCodex.tsx', {
     react: {}, 'react/jsx-runtime': jsxRuntime,
-    '../../lib/fox-labels': {}, '../../lib/fox-sheet': {}, './FoxSheetPose': {}, '../ui/DialogLayer': {}, './useFoxState': {}, '../../lib/ui-variant': {}, './FoxCodex.module.css': css,
+    '../../lib/fox-v1-assets': {}, '../../lib/fox-labels': {}, '../../lib/fox-sheet': {}, './FoxSheetPose': {}, '../ui/DialogLayer': {}, './useFoxState': {}, '../../lib/ui-variant': {}, './FoxCodex.module.css': css,
   }, { localStorage })
   let snapshot = { iconState: 'streak_3' }
   const hook = load('src/components/fox/useFoxCodexProgress.ts', {

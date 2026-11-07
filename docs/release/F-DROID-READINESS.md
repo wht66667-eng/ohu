@@ -27,7 +27,7 @@
 - 新增自动盘点脚本 `tools/fdroid-license-inventory.mjs` 及报告 [`F-DROID-LICENSE-INVENTORY.md`](./F-DROID-LICENSE-INVENTORY.md)：锁定 396 个 npm 包中有 2 个缺少 `license` 元数据（`@cloudbase/signature-nodejs`、`@cloudbase/wx-cloud-client-sdk`），66 个包根目录未见常见许可证文件名，另有包声明多许可证选项；192 个 `public/` 文件逐项列入素材清单但均待人工核验来源与再分发权。报告仅作自动初筛，不能作为合法授权证明。
 - `public/` 下有 192 个文件；未发现统一的插图、品牌图、地图数据、词库和字体来源／许可证清册。应用当前使用的狐狸形象和校园宣传图需确认著作权及分发授权；不能只依赖代码许可证覆盖素材。
 - 当前 `git tag --list` 与 GitHub Releases 均未发现版本标签／发行记录；提交前需建立与源码及 APK versionCode 对应的不可变上游版本标签。
-- 当前电脑未安装 `glab`，因此无法从 GitLab CLI 登录或代表账号提交 RFP issue／fdroiddata 合并请求。GitHub CLI 登录不等于 GitLab 授权。
+- 已安装 GitLab CLI `glab` 1.126.0，但当前 GitLab 未登录。2026-10-31 曾发起一次设备授权，因未在有效期内完成而超时；GitHub CLI 登录不等于 GitLab 授权。正式提交仍须经 GitLab 账号授权。
 
 ## F-Droid 官方规则参考
 
@@ -48,7 +48,7 @@
 | F-Droid 构建配方 | 未开始 | `fdroiddata` build metadata 与 npm/Gradle 离线依赖来源未准备；需从干净检出在 F-Droid buildserver 完成配方和可复现性验证 |
 | 版本标签与上游源码归档 | 未开始 | 发布不可变 Git tag，源码归档、版本号、versionCode 和产物身份一致 |
 | 商店文案及截图 | **中文商店文案初稿已加入；截图／联系资料待补** | `fastlane/metadata/android/zh-CN/` 已有名称、短介绍、完整介绍和 146 更新日志；仍需补经核验的图标、真实截图、开发者联系资料及其他所需语言 |
-| GitLab 提交身份 | **阻塞：本机未配置 GitLab CLI 登录** | 用户登录 GitLab 后，由已授权账号提交公开 RFP issue 或 fdroiddata MR |
+| GitLab 提交身份 | **阻塞：已安装 CLI，尚无 GitLab 凭据** | 用户完成 GitLab 设备授权后，由已授权账号提交公开 RFP issue 或 fdroiddata MR |
 | F-Droid 审核与发布 | 未开始 | 维护者接受打包、构建与政策审核后合并并发布；时间由 F-Droid 决定 |
 
 ## 许可证选择说明
@@ -63,7 +63,7 @@
 
 ## 提交流程
 
-1. 解决上面的许可证和来源清单阻塞。
+1. 解决上面的许可证和来源清单阻塞；不能在尚未完成时勾选“符合收录标准”。
 2. 完成仅包含学生端、无私密配置的 F-Droid build variant；不改变现有用户 APK 的签名、包名或发布通道。当前已有本地 unsigned 产物，不代表 F-Droid 签名或正式发行。
 3. 在 Linux/ASCII 路径下使用 F-Droid buildserver 做干净构建；解决 npm/Gradle 依赖的离线获取方式，记录工具版本、完整日志、APK SHA-256，并检查生成包的包名／versionCode／权限／依赖。
 4. 已完成中文文案初稿；补齐商店图标、真实截图、联系资料和来源标注后再提交。

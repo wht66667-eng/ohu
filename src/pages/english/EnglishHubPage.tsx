@@ -38,6 +38,7 @@ export function EnglishHubPage() {
 }
 
 function EnglishHubContent() {
+  const [typingOpen,setTypingOpen] = useState(false)
   const wordBanks = useDownloadedWordBanks()
   const auth = useAuth()
   const wordStudy = useWordStudy()
@@ -80,6 +81,12 @@ function EnglishHubContent() {
     <div className={styles.page}>
       <PageHeader title="英语学习" />
       <div className={styles.main}>
+        <section className={styles.todayCard} aria-label="TypeWords 英语打字练习">
+          <h2 className={styles.todayTitle}>TypeWords 打字练英语</h2>
+          <p>跟打单词、听写或逐句练习文章。</p>
+          <button type="button" className="auth-btn" aria-expanded={typingOpen} onClick={()=>setTypingOpen(!typingOpen)}>{typingOpen ? '收起练习' : '开始练习'}</button>
+          {typingOpen && <><iframe title="TypeWords 官方练习工作台" src="https://typewords.cc/" referrerPolicy="no-referrer" style={{width:'100%',height:'70dvh',border:0,marginTop:12}} /><a href="https://typewords.cc/" target="_blank" rel="noopener noreferrer">在独立窗口练习 ↗</a></>}
+        </section>
         <section className={styles.todayCard} aria-labelledby="english-today-title">
           <span className={styles.todayKicker}>今天的学习 · 本机单词计划</span>
           <h2 id="english-today-title" className={styles.todayTitle}>{plan.name}</h2>

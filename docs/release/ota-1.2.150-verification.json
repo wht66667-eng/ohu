@@ -1,0 +1,35 @@
+{
+  "verifiedAt": "2026-11-02T14:04:49.849Z",
+  "student": {
+    "version": "1.2.150",
+    "build": 150,
+    "shell": "user",
+    "minNativeBuild": 146,
+    "url": "https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/ota/user/bundles/1.2.150-150-502391c2a20ccab10649411656fc5506007b41483c2517d2fedb886d88c2938b.zip",
+    "checksum": "502391c2a20ccab10649411656fc5506007b41483c2517d2fedb886d88c2938b",
+    "size": 22308840,
+    "notes": [
+      "AI 学习工具与课表 AI 服务已接通；新增校历月视图，集中查看教学周、课程与个人调课；加强接口限流与数据访问防护。"
+    ],
+    "updatedAt": "2026-11-02T14:03:21.274Z",
+    "channel": "production",
+    "provider": "tcb-cos-cdn"
+  },
+  "legacyMatches": true,
+  "admin": {
+    "version": "1.2.146",
+    "build": 146
+  },
+  "downloadStatus": 200,
+  "downloadBytes": 22308840,
+  "downloadSha256": "502391c2a20ccab10649411656fc5506007b41483c2517d2fedb886d88c2938b",
+  "archiveEntries": 454,
+  "calendarPresent": true,
+  "credentialFiles": 0,
+  "checks": {
+    "releaseRegressionPassed": 68,
+    "calendarAndRateLimitRegressionPassed": 28,
+    "securityFailed": 0
+  },
+  "nativeDeviceVerified": false
+}

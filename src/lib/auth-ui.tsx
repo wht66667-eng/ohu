@@ -2,13 +2,15 @@
  * 登录/注册 与 补资料 UI
  * - AuthSheets：入口（挂在 AuthProvider 内）
  * - LoginSheet：账号（手机号 / 邮箱自适应）+ 密码登录；注册与找回密码走验证码
- * - CredSheet：验证码注册后设置登录账号（头像 + 昵称 + 密码），供下次账号密码登录
- * - ProfileSheet：首次资料补齐（昵称、楼栋）
+ * - CredSheet：用户主动设置／修改密码，与昵称和资料填写分开
+ * - ProfileSheet：昵称与可折叠的选填资料
  * - EditSheet：资料编辑（换头像 / 换名字）
  */
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent, ReactNode } from 'react'
-import { useAuth } from './auth'
+import { cbAuth, cbRdb } from './cb'
+import { registrationIdentity } from './registration-identity'
+import { errText, useAuth } from './auth'
 import { uploadAvatar } from './account'
 import { avatar } from '../data/images'
 import { toast } from './toast'
@@ -18,7 +20,7 @@ import { FoxPosePicker } from '../components/fox/FoxPosePicker'
 import { FoxRequestIndicator } from '../components/fox/FoxRequestIndicator'
 import { foxV1StickerFile, type FoxV1StickerId } from './fox-v1-assets'
 import { isWorkShell } from './app-shell'
-import { COLLEGE_OPTIONS, GRADES } from './college-group'
+import { OptionalProfileFields } from '../components/OptionalProfileFields'
 import {
   ACCOUNT_INVALID_HINT,
   ACCOUNT_LABEL,
@@ -34,7 +36,7 @@ export function AuthSheets() {
     <>
       {auth.loginOpen && <LoginSheet />}
       {auth.credOpen && auth.isSigned && <CredSheet key={auth.user?.uid} />}
-      {auth.profileOpen && <ProfileSheet />}
+      {auth.profileOpen && <ProfileSheet key={auth.user?.uid} />}
       {auth.editOpen && auth.isSigned && <EditSheet key={auth.user?.uid} />}
     </>
   )
@@ -88,6 +90,13 @@ function LoginSheet() {
   const [account, setAccount] = useState(() => readRemembered())
   const [remember, setRemember] = useState(() => !!readRemembered())
   const [password, setPassword] = useState('')
+  const [studentId, setStudentId] = useState('')
+  const registration = useRef<((token: string) => Promise<void>) | null>(null)
+  function invalidateRegistration() {
+    registration.current = null
+    setCode('')
+    setCount(0)
+  }
   const [code, setCode] = useState('')
   const [request, setRequest] = useState<'login' | 'send-code' | 'verify-code' | null>(null)
   const busy = request !== null
@@ -105,6 +114,9 @@ function LoginSheet() {
   /** 切换视图时清掉验证码与倒计时，避免上一场景的中间态串进来 */
   function go(next: LoginView) {
     if (busy) return
+    invalidateRegistration()
+    setStudentId('')
+    setPassword('')
     setView(next)
     setErr('')
     setCode('')
@@ -126,6 +138,21 @@ function LoginSheet() {
     }
     setRequest('send-code')
     try {
+      if (view === 'register') {
+        registration.current = null
+        if (password.length < 6 || password.length > 128) { setErr('请输入 6 至 128 位登录密码'); return }
+        const identity = registrationIdentity(kind, account)
+        const started = await cbAuth().signUp({ ...identity, password })
+        const verify = started.data?.verifyOtp
+        if (started.error || !verify) { setErr(errText(started.error || '注册验证码请求未完成，请重试')); return }
+        registration.current = async token => {
+          const result = await verify({ token })
+          if (result.error) throw new Error('验证码错误或已过期，请重新核对')
+        }
+        setCount(60)
+        toast.ok('注册验证码已发送')
+        return
+      }
       const e = kind === 'phone'
         ? await auth.sendPhoneCode(account)
         : await auth.sendEmailCode(account)
@@ -133,7 +160,7 @@ function LoginSheet() {
       setCount(60)
       toast.warn(kind === 'phone' ? '验证码已发送，请注意查收短信' : '验证码已发送，请注意查收邮件（可能在垃圾箱）')
     } catch (error) {
-      setErr(error instanceof Error ? error.message : '验证码发送失败，请重试')
+      setErr(errText(error))
     } finally { setRequest(null) }
   }
 
@@ -151,6 +178,24 @@ function LoginSheet() {
     }
     setRequest('verify-code')
     try {
+      if (view === 'register') {
+        if (!registration.current) { setErr('请先获取注册验证码'); return }
+        await registration.current(code.trim())
+        registration.current = null
+        const error = await auth.loginWithPassword(account.trim(), password)
+        if (error) { setView('login'); setErr('账号已注册，请使用密码登录'); return }
+        if (studentId.trim()) {
+          try {
+            const session = await cbAuth().getSession()
+            const uid = session.data?.session?.user?.id
+            if (typeof uid !== 'string' || !uid || session.data?.session?.user?.is_anonymous) throw new Error()
+            const saved = await cbRdb().from('profiles').upsert({ uid, student_id: studentId.trim() }, { onConflict: 'uid' })
+            if (saved.error) throw new Error()
+          } catch { toast.warn('账号已注册，学号可在个人资料中补填') }
+        }
+        writeRemembered(remember ? account.trim() : '')
+        return
+      }
       const e = kind === 'phone'
         ? await auth.submitPhoneCode(code)
         : await auth.submitEmailCode(code)
@@ -194,8 +239,8 @@ function LoginSheet() {
       <div className="sheet-card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="sheet-head">
           <div>
-            <b className="sheet-title">{work ? '工作端登录' : '校园互帮 · 登录'}</b>
-            <p className="sheet-sub">{auth.loginReason}</p>
+            <b className="sheet-title">{view === 'register' ? '注册哦狐账号' : view === 'reset' ? '找回密码' : work ? '工作端登录' : '校园互帮 · 登录'}</b>
+            <p className="sheet-sub">{view === 'register' ? '使用手机号和密码注册' : auth.loginReason}</p>
           </div>
           <button type="button" className="sheet-close" onClick={close} disabled={busy} aria-label="关闭">
             ✕
@@ -252,7 +297,7 @@ function LoginSheet() {
                   className="field-input"
                   placeholder={ACCOUNT_PLACEHOLDER}
                   value={account}
-                  onChange={(e) => setAccount(e.target.value.trim())}
+                  onChange={e => { setAccount(e.target.value.trim()); invalidateRegistration() }}
                   autoComplete="username"
                   disabled={busy}
                 />
@@ -261,6 +306,7 @@ function LoginSheet() {
                 </button>
               </div>
             </label>
+            {view === 'register' && <label className="af-field"><span>设置登录密码</span><PasswordInput className="field-input" autoComplete="new-password" placeholder="至少 6 位" value={password} disabled={busy} onChange={e => { setPassword(e.target.value); invalidateRegistration() }} /></label>}
             <label className="af-field">
               <span>验证码</span>
               <input
@@ -273,28 +319,16 @@ function LoginSheet() {
                 disabled={busy}
               />
             </label>
-            <p className="auth-hint">
-              {view === 'reset'
-                ? '验证通过后即可设置新密码。验证码只在注册与找回密码时发送，日常登录不用。'
-                : kind === 'email'
-                  ? '首次使用该邮箱将自动注册，之后可设置头像、昵称和密码，下次直接用账号密码登录。'
-                  : '首次使用该手机号将自动注册，之后可设置头像、昵称和密码，下次直接用账号密码登录。'}
-            </p>
+            {view === 'register' && <details><summary>学号（选填）</summary><label className="af-field"><span>学号</span><input className="field-input" value={studentId} maxLength={32} disabled={busy} onChange={e => setStudentId(e.target.value)} /></label></details>}
+            {view === 'reset' && <p className="auth-hint">验证通过后即可设置新密码。</p>}
             <button className="auth-btn" disabled={busy} type="submit" aria-busy={request === 'verify-code'}>
-              {request === 'verify-code' ? <FoxRequestIndicator label="正在验证…" /> : view === 'reset' ? '验证并重置' : '注册 / 登录'}
+              {request === 'verify-code' ? <FoxRequestIndicator label="正在验证…" /> : view === 'reset' ? '验证并重置' : '完成注册'}
             </button>
           </form>
         )}
 
         <p className="auth-footer">
-          {view === 'login' ? (
-            <>
-              没有账号？
-              <button type="button" className="auth-link" disabled={busy} onClick={() => go('register')}>去注册</button>
-              <span className="auth-dot" aria-hidden="true">|</span>
-              <button type="button" className="auth-link" disabled={busy} onClick={() => go('reset')}>忘记密码</button>
-            </>
-          ) : (
+          {view === 'login' ? '管理端仅限管理员学号 + 密码登录' : (
             <>
               已有账号？
               <button type="button" className="auth-link" disabled={busy} onClick={() => go('login')}>去登录</button>
@@ -309,297 +343,53 @@ function LoginSheet() {
   )
 }
 
-/* ---------------- 注册后：设置登录账号（头像 + 昵称 + 密码） ---------------- */
-
-/** 手机号打码：138****8000 */
-function maskPhone(p: string): string {
-  return /^\d{11}$/.test(p) ? `${p.slice(0, 3)}****${p.slice(7)}` : p
-}
-
+/* ---------------- 主动设置密码：不与昵称或学籍资料绑定 ---------------- */
 function CredSheet() {
   const auth = useAuth()
-  const initialAvatar = auth.user?.avatarUrl || ''
-  const hasPwd = !!auth.user?.hasPassword
-
-  // 预填顺序：已设置的登录用户名 → 展示昵称
-  const [nick, setNick] = useState(auth.user?.loginName || auth.profile?.username || auth.user?.nickname || '')
-  const [building, setBuilding] = useState(auth.profile?.building || '')
-  // 学籍信息：全部选填，填了才能在「大厅」进同学院交流群
-  const [realName, setRealName] = useState(auth.profile?.realName || '')
-  const [studentId, setStudentId] = useState(auth.profile?.studentId || '')
-  const [grade, setGrade] = useState(auth.profile?.grade || '')
-  const [major, setMajor] = useState(auth.profile?.major || '')
-  const [college, setCollege] = useState(auth.profile?.college || '')
   const [pwd, setPwd] = useState('')
   const [code, setCode] = useState('')
-  const [pic, setPic] = useState(initialAvatar)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [count, setCount] = useState(0)
-  const [pending, setPending] = useState<File | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  // 发送按钮倒计时
   useEffect(() => {
     if (count <= 0) return
-    const t = window.setTimeout(() => setCount((c) => c - 1), 1000)
-    return () => window.clearTimeout(t)
+    const timer = window.setTimeout(() => setCount(value => value - 1), 1000)
+    return () => window.clearTimeout(timer)
   }, [count])
-
-  // 选完图先进裁剪：拖动 / 缩放定好构图再上传
-  const choose = (ev: ChangeEvent<HTMLInputElement>) => {
-    const file = ev.target.files?.[0]
-    // 先取出 File 再清空 input，否则同一张图第二次选择不触发 change
-    ev.target.value = ''
-    if (!file || busy) return
-    setErr('')
-    setPending(file)
-  }
-
-  const cropDone = async (file: File) => {
-    setBusy(true)
-    const up = await uploadAvatar(file)
-    setBusy(false)
-    if (up.error) {
-      setErr(up.error)
-      return
-    }
-    setPic(up.url || '')
-    setPending(null)
-  }
-
-  const chooseFox = async (pose: FoxV1StickerId) => {
-    if (busy) return
-    setBusy(true)
-    setErr('')
+  async function sendCode() {
+    if (count || busy) return
+    setErr(''); setBusy(true)
     try {
-      const up = await uploadAvatar(await foxV1StickerFile(pose))
-      if (up.error) setErr(up.error)
-      else setPic(up.url || '')
-    } catch { setErr('这张阿狐头像暂时无法使用，请重试') }
-    finally { setBusy(false) }
+      const error = await auth.sendCredCode()
+      if (error) setErr(error)
+      else setCount(60)
+    } finally { setBusy(false) }
   }
-
-  const sendCode = async () => {
-    if (count > 0 || busy) return
-    setErr('')
-    setBusy(true)
-    const e = await auth.sendCredCode()
-    setBusy(false)
-    if (e) {
-      setErr(e)
-      return
-    }
-    setCount(60)
-    toast.warn('验证码已发送，请注意查收短信')
-  }
-
-  const submit = async (ev: FormEvent) => {
-    ev.preventDefault()
+  async function submit(event: FormEvent) {
+    event.preventDefault()
     if (busy) return
-    setErr('')
-    setBusy(true)
-    const e = await auth.saveCredentials({
-      nickname: nick,
-      password: pwd,
-      code,
-      avatarUrl: pic !== initialAvatar ? pic : undefined,
-      building,
-      realName,
-      studentId,
-      grade,
-      major,
-      college,
-    })
-    setBusy(false)
-    if (e) {
-      setErr(e)
-      return
-    }
-    toast.ok('账号已设置，下次可用昵称或手机号 + 密码登录')
+    setErr(''); setBusy(true)
+    try {
+      const error = await auth.saveCredentials({ password: pwd, code })
+      if (error) setErr(error)
+      else toast.ok('密码已设置，可用手机号和密码登录')
+    } finally { setBusy(false) }
   }
-
-  const later = () => {
-    if (busy) return
-    auth.dismissCred()
-  }
-
-  return (
-    <>
-      <Mask onClick={later}>
-        <div className="sheet-card" onMouseDown={(e) => e.stopPropagation()}>
-          <div className="sheet-head">
-            <div>
-              <b className="sheet-title">{hasPwd ? '修改登录密码' : '设置登录账号'}</b>
-              <p className="sheet-sub">选个头像、取个名字，并设置密码，下次可直接账号密码登录</p>
-            </div>
-            <button type="button" className="sheet-close" onClick={later} aria-label="关闭">
-              ✕
-            </button>
-          </div>
-
-        <form className="auth-form" onSubmit={submit}>
-          <div className="avatar-edit">
-            <button
-              type="button"
-              className="avatar-pick"
-              disabled={busy}
-              onClick={() => fileRef.current?.click()}
-              aria-label="选择头像图片"
-            >
-              <img src={pic || avatar.student} alt="头像预览" />
-              <span className="avatar-pick-tip">选头像</span>
-            </button>
-            <div className="avatar-actions">
-              <span className="avatar-pick-tip-static">点左侧圆圈选择头像</span>
-              <button type="button" disabled={busy} onClick={() => fileRef.current?.click()}>
-                从相册选择
-              </button>
-              {pic ? (
-                <button type="button" disabled={busy} onClick={() => setPic('')}>
-                  使用默认头像
-                </button>
-              ) : null}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={choose} />
-          </div>
-          <FoxPosePicker disabled={busy} onChoose={(pose) => void chooseFox(pose)} />
-
-          <label className="af-field">
-            <span>昵称（同时作为登录账号）</span>
-            <input
-              className="field-input"
-              placeholder="如：3 栋小王（2-20 位中英文、数字、下划线）"
-              maxLength={20}
-              value={nick}
-              onChange={(e) => setNick(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>登录密码</span>
-            <PasswordInput
-              className="field-input"
-              placeholder="至少 6 位，下次登录要用"
-              value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>楼栋（选填）</span>
-            <input
-              className="field-input"
-              placeholder="如：3 栋 / 校外，发布时自动带出"
-              maxLength={20}
-              value={building}
-              onChange={(e) => setBuilding(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>姓名（选填）</span>
-            <input
-              className="field-input"
-              placeholder="真实姓名，便于同学认出你"
-              maxLength={20}
-              value={realName}
-              onChange={(e) => setRealName(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>学号（选填）</span>
-            <input
-              className="field-input"
-              placeholder="教务系统学号，8-20 位数字"
-              maxLength={20}
-              inputMode="numeric"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ''))}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>年级（选填）</span>
-            <select className="field-input" value={grade} onChange={(e) => setGrade(e.target.value)}>
-              <option value="">暂不填写</option>
-              {GRADES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="af-field">
-            <span>专业（选填）</span>
-            <input
-              className="field-input"
-              placeholder="如：机械设计制造及其自动化"
-              maxLength={40}
-              value={major}
-              onChange={(e) => setMajor(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>所属学院（选填）</span>
-            <select className="field-input" value={college} onChange={(e) => setCollege(e.target.value)}>
-              <option value="">暂不填写</option>
-              {COLLEGE_OPTIONS.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="af-field">
-            <span>短信验证码</span>
-            <div className="code-row">
-              <input
-                className="field-input"
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="6 位验证码"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              />
-              <button type="button" className="send-btn" disabled={count > 0 || busy} onClick={sendCode}>
-                {count > 0 ? `${count}s 后重发` : '获取验证码'}
-              </button>
-            </div>
-          </label>
-
-          <p className="auth-hint">
-            为账号安全，设置密码需再验证一次手机号
-            {auth.user?.phone ? `（${maskPhone(auth.user.phone)}）` : ''}；完成后可用「昵称 + 密码」或「手机号 + 密码」登录。
-          </p>
-          <button className="auth-btn" disabled={busy} type="submit">
-            {busy ? '保存中…' : '保存并启用账号密码登录'}
-          </button>
-          <button type="button" className="auth-later" disabled={busy} onClick={later}>
-            稍后再说
-          </button>
-          {err ? <p className="auth-err" role="alert">{err}</p> : null}
-        </form>
-      </div>
-      </Mask>
-      {pending ? (
-        <AvatarCropper
-          file={pending}
-          busy={busy}
-          onCancel={() => setPending(null)}
-          onConfirm={(f) => void cropDone(f)}
-        />
-      ) : null}
-    </>
-  )
+  const close = () => { if (!busy) auth.dismissCred() }
+  const phoneDigits = (auth.user?.phone || '').replace(/\D/g, '').slice(-11)
+  const phone = /^1\d{10}$/.test(phoneDigits) ? `${phoneDigits.slice(0, 3)}****${phoneDigits.slice(-4)}` : '绑定手机号'
+  return <Mask onClick={close}><div className="sheet-card" onMouseDown={event => event.stopPropagation()}>
+    <div className="sheet-head"><div><b className="sheet-title">{auth.user?.hasPassword ? '修改登录密码' : '设置登录密码'}</b><p className="sheet-sub">{auth.user?.hasPassword ? '验证手机号后即可修改登录密码。' : '检查到您的账号没有密码，现在请在这个窗口补上您的密码'}</p></div><button type="button" className="sheet-close" disabled={busy} onClick={close} aria-label="关闭">✕</button></div>
+    <form className="auth-form" onSubmit={submit}>
+      <label className="af-field"><span>新密码</span><PasswordInput className="field-input" placeholder="至少 6 位" autoComplete="new-password" value={pwd} disabled={busy} onChange={event => setPwd(event.target.value)} /></label>
+      <label className="af-field"><span>短信验证码</span><div className="code-row"><input className="field-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="6 位验证码" value={code} disabled={busy} onChange={event => setCode(event.target.value.replace(/\D/g, ''))} /><button className="send-btn" type="button" disabled={busy || count > 0} onClick={() => void sendCode()}>{count ? `${count}s 后重发` : '获取验证码'}</button></div></label>
+      <p className="auth-hint">发送至 {phone}，仅用于验证本次密码设置。</p>
+      {err ? <p className="auth-err" role="alert">{err}</p> : null}
+      <button className="auth-btn" type="submit" disabled={busy}>{busy ? '保存中…' : '保存密码'}</button>
+    </form>
+  </div></Mask>
 }
 
-/* ---------------- 补资料面板 ---------------- */
 function ProfileSheet() {
   const auth = useAuth()
   const [nickname, setNickname] = useState(auth.profile?.username || '')
@@ -641,8 +431,8 @@ function ProfileSheet() {
       <div className="sheet-card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="sheet-head">
           <div>
-            <b className="sheet-title">先认识一下你</b>
-            <p className="sheet-sub">发布信息需要填写昵称，方便同学认出你</p>
+            <b className="sheet-title">编辑资料</b>
+            <p className="sheet-sub">只需一个昵称，其他资料可以以后再填。</p>
           </div>
           <button
             type="button"
@@ -664,76 +454,9 @@ function ProfileSheet() {
               onChange={(e) => setNickname(e.target.value)}
             />
           </label>
-          <label className="af-field">
-            <span>楼栋（选填）</span>
-            <input
-              className="field-input"
-              placeholder="如：3 栋 / 校外，发布时自动带出"
-              maxLength={20}
-              value={building}
-              onChange={(e) => setBuilding(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>姓名（选填）</span>
-            <input
-              className="field-input"
-              placeholder="真实姓名"
-              maxLength={20}
-              value={realName}
-              onChange={(e) => setRealName(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>学号（选填）</span>
-            <input
-              className="field-input"
-              placeholder="教务系统学号，8-20 位数字"
-              maxLength={20}
-              inputMode="numeric"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ''))}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>年级（选填）</span>
-            <select className="field-input" value={grade} onChange={(e) => setGrade(e.target.value)}>
-              <option value="">暂不填写</option>
-              {GRADES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="af-field">
-            <span>专业（选填）</span>
-            <input
-              className="field-input"
-              placeholder="如：机械设计制造及其自动化"
-              maxLength={40}
-              value={major}
-              onChange={(e) => setMajor(e.target.value)}
-            />
-          </label>
-
-          <label className="af-field">
-            <span>所属学院（选填）</span>
-            <select className="field-input" value={college} onChange={(e) => setCollege(e.target.value)}>
-              <option value="">暂不填写</option>
-              {COLLEGE_OPTIONS.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <p className="auth-hint">以上学籍信息均为选填；填写「所属学院」后，即可在大厅进入同学院交流群。</p>
+          <OptionalProfileFields value={{ building, realName, studentId, grade, major, college }} disabled={busy} onChange={next => {
+            setBuilding(next.building); setRealName(next.realName); setStudentId(next.studentId); setGrade(next.grade); setMajor(next.major); setCollege(next.college)
+          }} />
           <button className="auth-btn" disabled={busy} type="submit">
             {busy ? '保存中…' : '保存'}
           </button>
@@ -878,7 +601,7 @@ function EditSheet() {
             </div>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={choose} />
           </div>
-          <FoxPosePicker disabled={busy} onChoose={(pose) => void chooseFox(pose)} />
+          <details className="auth-optional"><summary>更多头像（选填）</summary><FoxPosePicker disabled={busy} onChoose={(pose) => void chooseFox(pose)} /></details>
 
           <label className="af-field">
             <span>昵称</span>
@@ -891,6 +614,7 @@ function EditSheet() {
             />
           </label>
 
+          <details className="auth-optional"><summary>名言与个人介绍（选填）</summary>
           <label className="af-field">
             <span>个人名言 <small>选填 · 最多 40 字</small></span>
             <input
@@ -917,6 +641,7 @@ function EditSheet() {
           </label>
 
           <p className="auth-hint">头像与昵称用于哦狐社交展示。个人名言和介绍不会公开到全站，仅在你主动发送好友申请时展示给申请接收人。</p>
+          </details>
           <button className="auth-btn" type="submit" disabled={busy}>
             {busy ? '保存中…' : '保存'}
           </button>

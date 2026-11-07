@@ -17,7 +17,7 @@
         document.documentElement.dataset.theme = dark ? 'dark' : 'light'
         /* 无狐皮肤提前挂上属性：启动屏 CSS 会隐去狐狸奔跑与陪伴文案，也避免 React 恢复前闪出旧版 */
         var uv = localStorage.getItem('ohfox.ui.variant.v1')
-        if (uv === 'pure') document.documentElement.dataset.uiVariant = uv
+        if (uv === 'pure' || uv === 'companion') document.documentElement.dataset.uiVariant = uv
       } catch (_) {}
     </script>
   </head>

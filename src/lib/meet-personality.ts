@@ -29,6 +29,17 @@ export function isMeetPersonality(value: unknown): value is MeetPersonality {
 export function meetPersonalityName(value: MeetPersonality | null | undefined): string {
   return MEET_PERSONALITIES.find(item => item.code === value)?.name || '暂不填写'
 }
+/** Transparent, playful similarity only; this is not a personality compatibility prediction. */
+export function meetPersonalitySimilarity(a: MeetPersonality, b: MeetPersonality): number {
+  return Array.from(a).reduce((same, letter, index) => same + (letter === b[index] ? 1 : 0), 0)
+}
+export function suggestMeetPersonalities(type: MeetPersonality, limit = 4) {
+  return MEET_PERSONALITIES
+    .filter(item => item.code !== type)
+    .map((item, index) => ({ ...item, similarity: meetPersonalitySimilarity(type, item.code), stableIndex: index }))
+    .sort((a, b) => b.similarity - a.similarity || a.stableIndex - b.stableIndex)
+    .slice(0, Math.max(0, limit))
+}
 export function readMeetPersonalityProfile(owner: string): MeetPersonalityProfile {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY_PREFIX + encodeURIComponent(owner || 'guest')) || 'null') as Record<string, unknown> | null

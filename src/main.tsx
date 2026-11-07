@@ -10,6 +10,10 @@ import { warmCampusDb } from './lib/campus-db'
 import { initAppSecurity } from './lib/app-security'
 import { initLiveUpdate } from './lib/live-update'
 import { initAppShell } from './lib/app-shell'
+import { applyStoredLocalIdentity } from './lib/local-identity'
+
+/* 学号本机身份要在任何数据读取前生效（手机号账号登录后会覆盖）。 */
+applyStoredLocalIdentity()
 
 /* 主题须在首帧前应用，避免闪白/闪黑 */
 applyTheme(getStoredTheme())

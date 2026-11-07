@@ -30,6 +30,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(StudentHapticsPlugin.class);
         registerPlugin(ShareGalleryPlugin.class);
         registerPlugin(HealthPlugin.class);
+        registerPlugin(CampusBridgePlugin.class);
         if ("user".equals(BuildConfig.SC_SHELL)) registerPlugin(ScheduleWidgetPlugin.class);
         super.onCreate(savedInstanceState);
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;

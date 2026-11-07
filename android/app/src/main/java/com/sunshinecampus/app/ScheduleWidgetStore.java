@@ -82,6 +82,8 @@ final class ScheduleWidgetStore {
         if (today != null && today.length > 0) TodayScheduleWidgetProvider.update(context, manager, today);
         int[] next = manager.getAppWidgetIds(new ComponentName(context, NextClassWidgetProvider.class));
         if (next != null && next.length > 0) NextClassWidgetProvider.update(context, manager, next);
+        int[] fox = manager.getAppWidgetIds(new ComponentName(context, FoxCompanionWidgetProvider.class));
+        if (fox != null && fox.length > 0) FoxCompanionWidgetProvider.update(context, manager, fox);
     }
 
     static String safeText(String value, int max) {

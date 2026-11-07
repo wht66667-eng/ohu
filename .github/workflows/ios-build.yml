@@ -78,6 +78,8 @@ jobs:
             npx cap add ios
           fi
           npx cap sync ios
+          plutil -replace NSCameraUsageDescription -string '扫描哦狐好友二维码以发送好友申请' ios/App/App/Info.plist
+          plutil -replace NSPhotoLibraryUsageDescription -string '选择照片用于编辑和发布朋友圈，仅处理你选中的照片' ios/App/App/Info.plist
           test -d ios/App/App.xcworkspace
           sips -s format png -z 1024 1024 public/download/student-icon.png \
             --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png

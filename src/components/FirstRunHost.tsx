@@ -19,26 +19,33 @@ import { DialogLayer } from './ui/DialogLayer'
 import { IS_NATIVE } from '../lib/platform'
 import {
   markNotifyConsentAsked,
-  requestNotifyPermission,
+  refreshAllReminders,
 } from '../lib/notify-setup'
+import { restoreKeepAliveIfWanted } from '../lib/keep-alive'
+import {
+  checkAllPermissions,
+  requestAllPermissions,
+  type PermissionRow,
+  type PermissionStatus,
+} from '../lib/permission-center'
 import styles from './FirstRunHost.module.css'
 
 type Step = 'intro' | 'legal' | 'perms'
 
-async function requestLocationOnce(): Promise<boolean> {
-  if (typeof navigator === 'undefined' || !navigator.geolocation) return false
-  return new Promise((resolve) => {
-    const done = (ok: boolean) => resolve(ok)
-    try {
-      navigator.geolocation.getCurrentPosition(
-        () => done(true),
-        () => done(false),
-        { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
-      )
-    } catch {
-      done(false)
-    }
-  })
+const PERM_STATUS_TEXT: Record<PermissionStatus, string> = {
+  granted: '已允许',
+  denied: '已拒绝',
+  prompt: '待开启',
+  manual: '需在系统页打开',
+  unsupported: '当前设备不支持',
+}
+
+const PERM_STATUS_COLOR: Record<PermissionStatus, string> = {
+  granted: '#1f8f5f',
+  denied: '#c2413a',
+  prompt: 'var(--text-2)',
+  manual: '#b26a00',
+  unsupported: 'var(--text-2)',
 }
 
 /**
@@ -56,6 +63,22 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
   const [open, setOpen] = useState(() => !hasFinishedPerms(shell) || !hasAcceptedLegal(shell))
   const [agreed, setAgreed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [permRows, setPermRows] = useState<PermissionRow[]>([])
+
+  useEffect(() => {
+    if (step !== 'perms') return
+    let cancelled = false
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return
+      void checkAllPermissions().then((rows) => { if (!cancelled) setPermRows(rows) })
+    }
+    refresh()
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [step])
 
   useEffect(() => {
     if (ready) return
@@ -80,13 +103,12 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
     setBusy(true)
     try {
       if (request) {
-        await requestNotifyPermission()
-        if (permLines.some((p) => p.key === 'location')) {
-          await requestLocationOnce()
-        }
-        // 相机一般在选用时由系统弹出；此处只做说明与标记
-        if (!IS_NATIVE && permLines.some((p) => p.key === 'notify')) {
-          /* H5 已在 requestNotifyPermission 处理 */
+        /* 一次列出并依次申请：通知、精确闹钟、电池白名单、悬浮窗、相机、位置。 */
+        const rows = await requestAllPermissions(setPermRows)
+        markNotifyConsentAsked()
+        if (rows.find((row) => row.key === 'notify')?.status === 'granted') {
+          await restoreKeepAliveIfWanted().catch(() => undefined)
+          await refreshAllReminders().catch(() => undefined)
         }
       } else {
         markNotifyConsentAsked()
@@ -115,7 +137,7 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
     <DialogLayer title="首次使用引导" onClose={() => {}} allowClose={false} className={styles.guideSurface}>
       <div className={styles.card}>
         <div className={styles.head}>
-          <span className={styles.eyebrow}>{step === 'intro' ? '校园每一步，阿狐陪你' : meta.audience}</span>
+          <span className={styles.eyebrow}>{step === 'intro' ? (foxfree ? '哦狐 · 校园生活' : '校园每一步，阿狐陪你') : meta.audience}</span>
           <h1>{step === 'intro' ? '欢迎来到哦狐' : meta.title}</h1>
           <p>{step === 'intro' ? `${introIndex + 1} / ${STUDENT_INTRO.length} · 认识你的校园伙伴` : step === 'legal' ? '请先阅读免责声明与简要说明书' : '你可以选择现在授权，也可以稍后设置'}</p>
           {step !== 'intro' ? <div className={styles.steps} aria-hidden>
@@ -127,7 +149,7 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
         <div className={styles.body}>
           {step === 'intro' ? <AnimatePresence mode="wait" initial={false}>
             <motion.section key={introIndex} className={styles.intro} {...fadeUp(reduce)} aria-live="polite">
-              <div className={styles.foxScene}>{foxfree ? null : <img src={foxAssetUrl(slide.pose)} width="128" height="128" alt="阿狐校园伙伴" draggable={false} />}<span className={styles.campusLine} aria-hidden="true" /></div>
+              {!foxfree ? <div className={styles.foxScene}><img src={foxAssetUrl(slide.pose)} width="128" height="128" alt="阿狐校园伙伴" draggable={false} /><span className={styles.campusLine} aria-hidden="true" /></div> : null}
               <h2>{slide.title}</h2>
               <p>{slide.desc}</p>
               <div className={styles.serviceChips}>{slide.services.map((name) => <span key={name}>{name}</span>)}</div>
@@ -163,14 +185,20 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
                 下列权限均可在系统设置中随时关闭。拒绝不影响浏览公开内容，但相关功能将不可用。
               </p>
               <div className={styles.permList}>
-                {permLines.map((p) => (
-                  <div key={p.key} className={styles.perm}>
-                    <div>
-                      <b>{p.title}</b>
-                      <span>{p.desc}</span>
+                {permLines.map((p) => {
+                  const status = permRows.find((row) => row.key === p.key)?.status
+                  return (
+                    <div key={p.key} className={styles.perm}>
+                      <div>
+                        <b>{p.title}</b>
+                        <span>{p.desc}</span>
+                      </div>
+                      <em style={{ color: status ? PERM_STATUS_COLOR[status] : 'var(--text-2)', fontStyle: 'normal', fontSize: 12, whiteSpace: 'nowrap' }}>
+                        {status ? PERM_STATUS_TEXT[status] : '检查中…'}
+                      </em>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
@@ -207,11 +235,13 @@ export function FirstRunHost({ onDone }: { onDone?: () => void }) {
                   disabled={busy}
                   onClick={() => void finishPerms(true)}
                 >
-                  {busy ? '请求中…' : '授权并进入'}
+                  {busy ? '正在逐项开启…' : '一键全部开启'}
                 </button>
               </div>
               <p className={styles.hint}>
-                {IS_NATIVE ? '将弹出系统权限框；可逐项允许或拒绝。' : '浏览器将询问通知等权限；位置需在使用时确认。'}
+                {IS_NATIVE
+                  ? '会先弹通知/相机/位置授权框，再跳到精确闹钟、电池优化、悬浮窗系统页；请在系统页打开开关后返回。没打开的项会标成「需在系统页打开」。'
+                  : '浏览器会询问通知与位置权限；其余权限在系统设置中管理。'}
               </p>
             </>
           )}

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "heart",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f49a.svg",
+    "sha256": "e6cb7b94cb60c83adbcb4c6103a0d88fe31742c76f37944149a7fb8f9e469ec5",
+    "bytes": 1584
+  },
+  {
+    "name": "sparkles",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u2728.svg",
+    "sha256": "e17f4ea67fb41fd082235eae90f03722980342d478c817e1359ec068d2fa64ab",
+    "bytes": 2637
+  },
+  {
+    "name": "sun",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u2600.svg",
+    "sha256": "822abba4f2e39d9059d85964116b1f9300e04320ee1a9e5af09831bf2f8c82df",
+    "bytes": 2548
+  },
+  {
+    "name": "flower",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f338.svg",
+    "sha256": "587438199f316790a9a0f614dcdd7347cccdf4acd8e9ef648d34572b185f2508",
+    "bytes": 3734
+  },
+  {
+    "name": "party",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f389.svg",
+    "sha256": "4ab7ad6e03994f59b270eca28efc08e408d74a868aa025bb4d4576c195d1e522",
+    "bytes": 5734
+  },
+  {
+    "name": "cat",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f431.svg",
+    "sha256": "fbb19611e927d40ff0188f5d4da8457e8d83faeb18a3adc66d91cb5ef17f2f1c",
+    "bytes": 3625
+  },
+  {
+    "name": "coffee",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u2615.svg",
+    "sha256": "5830ae818458ee3c51208af6196a8a6c3d2a27e652aed2380c0b26a39d13d9dc",
+    "bytes": 3662
+  },
+  {
+    "name": "book",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f4d6.svg",
+    "sha256": "57c8932ae631000c13924155071b37e2a39022e9da7216321394db127c9f6af0",
+    "bytes": 70657
+  },
+  {
+    "name": "star",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u2b50.svg",
+    "sha256": "35ba477f2cd01990a2712384b2ad5c2f9b0ec1def9ad94aaec139ed27f5286cf",
+    "bytes": 1257
+  },
+  {
+    "name": "thumb",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f44d.svg",
+    "sha256": "c30d8e01a118cb2dce565d9153cb885111fade63c8191770cce4ced236dfb98a",
+    "bytes": 5434
+  },
+  {
+    "name": "rainbow",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f308.svg",
+    "sha256": "23a80becfb38d89ebf3ab8aa57136dce162bc74daac358668694e07499101fba",
+    "bytes": 1485
+  },
+  {
+    "name": "smile",
+    "source": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/svg/emoji_u1f60a.svg",
+    "sha256": "fdd7e8f4c8653d709319462cb5d54a6973e15042d6cf7c4c860c5c7776b7059e",
+    "bytes": 4864
+  }
+]

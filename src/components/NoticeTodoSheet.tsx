@@ -3,7 +3,7 @@ import { parseNotice, type NoticeCandidate } from '../lib/notice-parser'
 import { createTodo } from '../lib/todo'
 import { captureQbankSession, isQbankSessionCurrent } from '../lib/qbank'
 import { saveNoticeBatch } from '../lib/notice-todo-batch'
-import { openExternalUrl } from '../lib/campus-links'
+import { openChaoxing } from '../lib/chaoxing'
 import s from './NoticeTodoSheet.module.css'
 
 export function safeTodoLink(note: string | null | undefined): string | null {
@@ -13,7 +13,6 @@ export function safeTodoLink(note: string | null | undefined): string | null {
 }
 type Row = { selected: boolean; title: string; date: string; time: string; link: string; alternatives: NoticeCandidate['dates']; links: string[]; warnings: string[]; dateNeedsReview: boolean; dateConfirmed: boolean; deadlineNeedsReview: boolean; noDeadlineConfirmed: boolean }
 const NOTICE_LIMIT = 10000
-const CHAOXING_URL = 'https://www.chaoxing.com/'
 function parseTodoDraft(text: string): { rows: Row[]; warnings: string[] } {
   const result = parseNotice(text)
   return {
@@ -134,7 +133,7 @@ export function NoticeTodoSheet({ uid, onClose, onSaved, initialText = '', sourc
         : isChaoxingImport
           ? '先在学习通复制老师通知，再粘贴到下面。识别只在本机完成；你可以逐项修改标题、截止日期和作业链接，勾选后保存到哦狐待办。提醒沿用待办现有设置；原文不会保存。哦狐不会索取或保存学习通密码。'
           : '识别在本机完成；候选默认未勾选，请逐项核对并选择。确认后只保存标题、截止时间和作业链接，不保存通知原文。时间按北京时间填写。'}</p>
-      {isChaoxingImport ? <button type="button" className={s.secondary} onClick={() => openExternalUrl(CHAOXING_URL)}>打开学习通 ↗</button> : null}
+      {isChaoxingImport ? <button type="button" className={s.secondary} onClick={() => { void openChaoxing() }}>打开手机学习通 ↗</button> : null}
       <div className={s.noticeInput}>
         <div className={s.noticeHeader}><label htmlFor="notice-todo-text">{isAiDraft ? 'AI 建议（可编辑）' : isChaoxingImport ? '学习通老师通知' : '老师通知'}</label><button type="button" className={s.pasteButton} onClick={() => void pasteNotice()} disabled={busy || uncertain}>从剪贴板粘贴</button></div>
         <textarea id="notice-todo-text" value={text} onPaste={onNoticePaste} onChange={e => {

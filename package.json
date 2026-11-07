@@ -2,7 +2,7 @@
   "name": "sunshine-campus",
   "private": true,
   "license": "MIT",
-  "version": "1.2.146",
+  "version": "1.2.150",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,6 +31,7 @@
     "release:publish": "node tools/publish-release.mjs",
     "release:publish:plan": "node tools/publish-release.mjs --plan",
     "test:release": "node --test tools/app-update.test.mjs tools/live-update.test.mjs tools/release-tools.test.mjs tools/client-surface.test.mjs tools/admin-navigation.test.mjs tools/admin-workspace.test.mjs tools/app-shell.test.mjs tools/boot.test.mjs tools/shell-access.test.mjs tools/settings-section.test.mjs",
+    "test:parsers": "node --test tools/campus-parsers.test.mjs",
     "gen:assets": "python tools/gen-native-assets.py",
     "gen:atlas": "python tools/make-stub-atlas.py --all",
     "import:atlas": "python tools/import-spriteforge.py",
@@ -50,6 +51,7 @@
   "dependencies": {
     "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.1.2",
+    "@capacitor/camera": "7.0.5",
     "@capacitor/core": "^7.6.9",
     "@capacitor/ios": "^7.6.9",
     "@capacitor/local-notifications": "^7.0.7",
@@ -58,6 +60,8 @@
     "@cloudbase/js-sdk": "^3.9.3",
     "browser-image-compression": "^2.0.2",
     "capacitor-freerasp": "^3.2.1",
+    "fabric": "7.4.0",
+    "fft.js": "4.0.4",
     "maplibre-gl": "6.15.0",
     "motion": "^13.4.4",
     "pmtiles": "4.5.0",

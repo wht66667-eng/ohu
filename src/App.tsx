@@ -5,7 +5,7 @@ import { getAppShell, shellHomePath } from './lib/app-shell'
 import { IS_NATIVE } from './lib/platform'
 import { PhoneShell } from './components/PhoneShell'
 import { BootGate } from './components/BootGate'
-import { HomePage } from './pages/HomePage'
+import { SimpleHomePage } from './pages/SimpleHomePage'
 import { AdminWorkspace } from './components/AdminWorkspace'
 import { AdminNotificationRuntime } from './components/AdminNotificationRuntime'
 import { adminScopedPath, isAdminWorkspacePath, shouldOpenDesktopAdmin } from './lib/client-surface'
@@ -19,10 +19,8 @@ type ScreenLoader = () => Promise<{ default: ComponentType }>
 const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/services', () => import('./pages/ServicesPage').then((module) => ({ default: module.ServicesPage }))],
   ['/plugins', () => import('./pages/PluginMarketplacePage').then((module) => ({ default: module.PluginMarketplacePage }))],
-  ['/nearby-food', () => import('./pages/CampusServicePages').then((module) => ({ default: module.NearbyFoodPage }))],
-  ['/campus-card', () => import('./pages/CampusServicePages').then((module) => ({ default: module.CampusCardPage }))],
-  ['/bus', () => import('./pages/CampusServicePages').then((module) => ({ default: module.BusPage }))],
-  ['/library', () => import('./pages/CampusServicePages').then((module) => ({ default: module.LibraryPage }))],
+  ['/plugins/:pluginId', () => import('./pages/plugins/PluginFeaturePage').then((module) => ({ default: module.PluginFeaturePage }))],
+  ['/plugins/fox-safety', () => import('./pages/plugins/FoxSafetyPage').then((module) => ({ default: module.FoxSafetyPage }))],
   ['/contacts', () => import('./pages/ContactsPage').then((module) => ({ default: module.ContactsPage }))],
   ['/contacts/add', () => import('./pages/AddFriendPage').then((module) => ({ default: module.AddFriendPage }))],
   ['/contacts/requests', () => import('./pages/FriendRequestsPage').then((module) => ({ default: module.FriendRequestsPage }))],
@@ -33,6 +31,13 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/info', () => import('./pages/InfoPage').then((module) => ({ default: module.InfoPage }))],
   ['/profile', () => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage }))],
   ['/study/focus', () => import('./pages/study/StudyFocusPage').then((module) => ({ default: module.StudyFocusPage }))],
+  ['/study/chaoxing', () => import('./pages/study/ChaoxingBridgePage').then((module) => ({ default: module.ChaoxingBridgePage }))],
+  ['/study/pu', () => import('./pages/study/PocketUniPage').then((module) => ({ default: module.PocketUniPage }))],
+  ['/study/quality', () => import('./pages/study/QualityPage').then((module) => ({ default: module.QualityPage }))],
+  ['/grades', () => import('./pages/GradesHubPage').then((module) => ({ default: module.GradesHubPage }))],
+  ['/grades/public', () => import('./pages/study/PublicElectivePage').then((module) => ({ default: module.PublicElectivePage }))],
+  ['/grades/courses', () => import('./pages/study/CourseGradesPage').then((module) => ({ default: module.CourseGradesPage }))],
+  ['/study/oneclick', () => import('./pages/study/OneClickPage').then((module) => ({ default: module.OneClickPage }))],
   ['/study/goals', () => import('./pages/study/EnergyGoalsPage').then((module) => ({ default: module.EnergyGoalsPage }))],
   ['/study/plan', () => import('./pages/study/StudyGoalsPage').then((module) => ({ default: module.StudyGoalsPage }))],
   ['/words', () => import('./pages/words/WordsPage').then((module) => ({ default: module.WordsPage }))],
@@ -46,6 +51,7 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/chats', () => import('./pages/ChatListPage').then((module) => ({ default: module.ChatListPage }))],
   ['/chats/:id', () => import('./pages/ChatRoomPage').then((module) => ({ default: module.ChatRoomPage }))],
   ['/schedule', () => import('./pages/schedule/ScheduleHome').then((module) => ({ default: module.ScheduleHome }))],
+  ['/calendar', () => import('./pages/AcademicCalendarPage').then((module) => ({ default: module.AcademicCalendarPage }))],
   ['/schedule/guide', () => import('./pages/schedule/SchoolScheduleGuide').then((module) => ({ default: module.SchoolScheduleGuidePage }))],
   ['/meet', () => import('./pages/meet/MeetPage').then((module) => ({ default: module.MeetPage }))],
   ['/meet/:code', () => import('./pages/meet/MeetPage').then((module) => ({ default: module.MeetPage }))],
@@ -134,7 +140,7 @@ function ApplicationShell({ children }: { children: ReactNode }) {
   if (!isMeetRoute && shouldOpenDesktopAdmin({ native: IS_NATIVE, pathname: location.pathname, width: window.innerWidth, studentPreview })) {
     return <Navigate to="/admin/content" replace />
   }
-  if (!IS_NATIVE && isAdminWorkspacePath(location.pathname)) return <AdminWorkspace><AdminNotificationRuntime />{children}</AdminWorkspace>
+  if (!IS_NATIVE && !explicitStudent && isAdminWorkspacePath(location.pathname)) return <AdminWorkspace><AdminNotificationRuntime />{children}</AdminWorkspace>
   return <PhoneShell>{children}</PhoneShell>
 }
 
@@ -156,7 +162,7 @@ function ShellHome() {
   const shell = getAppShell()
   const home = shellHomePath(shell)
   if (shell !== 'user' && home !== '/') return <Navigate to={home} replace />
-  return <ReadyPage><HomePage /></ReadyPage>
+  return <ReadyPage><SimpleHomePage /></ReadyPage>
 }
 
 export default function App() {

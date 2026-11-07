@@ -11,7 +11,7 @@ import { clearPersonalReminders } from './personal-reminders'
 import { clearReminderOverlays } from './reminder-overlay'
 import { clearCourseReminderPlan } from './reminder-plan'
 
-const LS_EXACT = 'notify.exactAlarm.prompted.v1'
+const LS_EXACT_NOTICE = 'notify.exactAlarm.notice.v1'
 const LS_ASKED = 'notify.consent.asked.v1'
 const LS_GRANTED = 'notify.consent.granted.v1'
 
@@ -54,9 +54,9 @@ export async function requestNotifyPermission(): Promise<boolean> {
     if (IS_NATIVE) {
       const { LocalNotifications } = await import('@capacitor/local-notifications')
       ok = (await LocalNotifications.requestPermissions()).display === 'granted'
-      if (ok && PLATFORM.os === 'android' && !readFlag(LS_EXACT)) {
-        writeFlag(LS_EXACT, true)
-        if (!await exactAlarmGranted()) await requestExactAlarm()
+      if (ok && PLATFORM.os === 'android' && !await exactAlarmGranted()) {
+        /* 每次主动授权都带到精确闹钟页；不再只问一次后永久跳过。 */
+        await requestExactAlarm()
       }
     } else if (typeof Notification !== 'undefined') {
       ok = (await Notification.requestPermission()) === 'granted'
@@ -122,7 +122,15 @@ async function reconcileReminders(session: ReturnType<typeof captureQbankSession
   }
   const errors: string[] = []
   const notices: string[] = []
-  if (health.native && health.exactAlarm === false) notices.push('精确闹钟权限尚未允许，系统可能延后提醒；可在系统“闹钟和提醒”中检查。')
+  if (health.native && health.exactAlarm === false) {
+    /* 只提示一次，避免每次刷新都弹；用户可在提醒设置里重新打开。 */
+    if (!readFlag(LS_EXACT_NOTICE)) {
+      notices.push('精确闹钟权限尚未允许，系统可能延后提醒；可在「通知与提醒」里点「开启精确闹钟」。')
+      writeFlag(LS_EXACT_NOTICE, true)
+    }
+  } else if (health.exactAlarm) {
+    writeFlag(LS_EXACT_NOTICE, false)
+  }
   const tasks = [
     ['上课', rescheduleClassReminders], ['考试', rescheduleExamReminders],
     ['考证', rescheduleCertReminders], ['待办', rescheduleTodoReminders],

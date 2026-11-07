@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
 import { sendFriendRequest } from '../lib/friends'
-import { copyText } from '../lib/campus-account'
+import { FriendScanner, MyFriendQr } from '../components/FriendQr'
 import { AsyncOwner, type OwnerTicket } from '../lib/async-owner'
 import { captureImSession, currentImSession, subscribeImSession } from '../lib/im-session'
 import { PageHeader } from '../components/PageHeader'
-import { CampusIcon } from '../components/CampusIcon'
+
 import { EmptyState } from '../components/ui/StateViews'
 import styles from './AddFriendPage.module.css'
 
@@ -28,7 +28,6 @@ function AddFriendContent() {
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
-  const [copyFeedback, setCopyFeedback] = useState('')
   const capture = (lane: string): Work | null => {
     const session = captureImSession(uid)
     return session ? { page: scope.current.begin(lane), session } : null
@@ -37,26 +36,10 @@ function AddFriendContent() {
   useEffect(() => {
     const off = subscribeImSession(() => {
       scope.current.invalidate(); operation.current = null
-      setCode(''); setMessage(''); setBusy(''); setError(''); setCopyFeedback('')
+      setCode(''); setMessage(''); setBusy(''); setError('')
     })
     return () => { off(); scope.current.invalidate() }
   }, [])
-
-  async function copyCode() {
-    if (operation.current) return
-    const work = capture('copy')
-    if (!work) return
-    operation.current = work; setBusy('copy'); setCopyFeedback('')
-    try {
-      const copied = await copyText(uid)
-      if (current(work)) setCopyFeedback(copied ? '好友码已复制，可发给对方添加。' : '无法自动复制，请选中好友码手动复制。')
-    } catch {
-      if (current(work)) setCopyFeedback('无法自动复制，请选中好友码手动复制。')
-    } finally {
-      if (operation.current === work) operation.current = null
-      if (current(work)) setBusy('')
-    }
-  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -87,17 +70,16 @@ function AddFriendContent() {
     <PageHeader title="添加好友" onBack={() => nav('/contacts')} />
     {!uid ? <EmptyState title="登录后交换好友码" hint="每个账号都有自己的好友码。" action={<button type="button" className={styles.primary} onClick={() => void auth.ensureSignedIn('添加好友需要登录')}>去登录</button>} /> : <main className={styles.main}>
       <section className={styles.card} aria-labelledby="my-friend-code-title">
-        <h2 id="my-friend-code-title">我的好友码</h2><p>复制给对方，对方即可向你发送好友申请。</p>
-        <div className={styles.copyRow}><input aria-label="我的好友码" className={styles.ownCode} value={uid} readOnly onFocus={event => event.currentTarget.select()} /><button type="button" className={styles.secondary} disabled={!!busy} onClick={() => void copyCode()}><CampusIcon name="key" size={18} />{busy === 'copy' ? '正在复制…' : '复制'}</button></div>
-        {copyFeedback ? <p className={styles.feedback} role="status">{copyFeedback}</p> : null}
+        <h2 id="my-friend-code-title">我的好友二维码</h2><p>请同学在哦狐的「添加好友」里扫一扫。</p>
+        <MyFriendQr uid={uid} />
       </section>
       <form className={styles.card} onSubmit={event => void submit(event)} aria-busy={busy === 'send'}>
-        <h2>添加对方</h2><p>向对方获取准确的好友码，再发送申请。</p>
-        <label className={styles.field} htmlFor="friend-code">对方的好友码<input id="friend-code" name="friend-code" type="text" autoComplete="off" autoCapitalize="none" spellCheck={false} enterKeyHint="send" placeholder="粘贴对方的好友码" value={code} disabled={busy === 'send'} onChange={event => setCode(event.target.value)} /></label>
+        <h2>添加对方</h2>
+        <fieldset disabled={!!busy} style={{border:0,padding:0,margin:0}}><FriendScanner uid={uid} onTarget={id=>{setCode(id); setError('')}} /></fieldset>
         <p className={styles.profilePrivacy}>你设置的个人名言和介绍会随申请展示给对方；如果还没设置，可以到“我的 → 编辑资料”补充。</p>
         <label className={styles.field} htmlFor="friend-message">验证消息 <span>选填</span><textarea id="friend-message" name="friend-message" rows={3} maxLength={200} placeholder="补充说明你是谁，方便对方认出你" value={message} disabled={busy === 'send'} onChange={event => setMessage(event.target.value)} /></label>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
-        <button type="submit" className={styles.primary} disabled={!!busy}>{busy === 'send' ? '正在发送…' : '发送好友申请'}</button>
+        <button type="submit" className={styles.primary} disabled={!!busy || !code}>{busy === 'send' ? '正在发送…' : '发送好友申请'}</button>
       </form>
     </main>}
   </div>

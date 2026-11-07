@@ -227,7 +227,7 @@ export function InfoPage() {
             uid: current.user.uid,
             name: current.profile?.username || current.user.nickname || '同学',
             building: current.profile?.building || '',
-            contact: current.user.phone || '',
+            contact: '',
           },
           { category: item.category },
         )
@@ -242,7 +242,7 @@ export function InfoPage() {
       if (!(await auth.ensureSignedIn('查看联系方式需要登录'))) return
       const table = item.group === '失物招领' ? 'lost_items' : 'help_items'
       const res = await queryRows<{ created_at?: string; contact?: string }>(table, { id }, 1)
-      toast(res.rows[0]?.contact || '发起人未留联系方式')
+      toast(res.rows[0]?.contact || '联系方式已保护，请使用站内联系')
     },
     [acts, auth, toast],
   )

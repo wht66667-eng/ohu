@@ -1,0 +1,94 @@
+- generic [ref=f2e5]:
+  - link "跳到主要内容" [ref=f2e6] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=f2e7]:
+    - generic [ref=f2e9]:
+      - generic [ref=f2e10]:
+        - button "返回" [ref=f2e11] [cursor=pointer]
+        - heading "体测成绩" [level=1] [ref=f2e14]
+      - generic [ref=f2e19]:
+        - generic [ref=f2e20]:
+          - generic [ref=f2e21]: 江苏海洋大学 · 成绩由你确认后保存
+          - heading "把体测记录带回哦狐" [level=2] [ref=f2e22]
+          - paragraph [ref=f2e23]: 体测系统（tice.jou.edu.cn:8080）与教务分别是两套账号。从学校入口查询后，复制成绩页文字粘贴到下方即可识别历年成绩、等级与本次单项；也可以在服务器同步可用时直接读取。
+          - button "查看学校体测通知 ↗" [ref=f2e24] [cursor=pointer]
+          - link "联系体测中心 · 85895570" [ref=f2e25] [cursor=pointer]:
+            - /url: tel:85895570
+          - generic [ref=f2e26]:
+            - link "学业中心：课表与成绩 ›" [ref=f2e27] [cursor=pointer]:
+              - /url: /study
+            - link "打开我的课表 ›" [ref=f2e28] [cursor=pointer]:
+              - /url: /schedule
+          - generic [ref=f2e29]: 「0 分」是有效分数，「空」或「---」才表示未公布/未计分；两种口径不会混在一起。
+        - generic [ref=f2e30]:
+          - heading "学校体测系统同步" [level=3] [ref=f2e31]
+          - paragraph [ref=f2e32]: 使用体测系统账号查询，成功后自动保存到本机当前哦狐账号。体测账号与教务账号分别处理。
+          - button "登录哦狐" [ref=f2e33] [cursor=pointer]
+        - generic [ref=f2e34]:
+          - generic [ref=f2e36]:
+            - text: 体测系统 · 页面导入
+            - heading "历年成绩与本次明细" [level=2] [ref=f2e37]
+          - generic [ref=f2e38]:
+            - text: 粘贴体测成绩页文字或表格 HTML
+            - textbox "粘贴体测成绩页文字或表格 HTML" [ref=f2e39]:
+              - /placeholder: 把「学生历年体质测试汇总表」和「体质测试成绩查询」页整页复制后粘贴；也可以从浏览器调试工具复制表格 HTML。
+              - text: 学年 体测成绩 体测等级 2025-2026 70 及格 2024-2025 0 2023-2024 44 不及格 项目名称 测试成绩 分数 结论 身高测量 0.0 --- --- 50米跑 8.5 60 合格
+          - generic [ref=f2e40]:
+            - button "识别体测成绩" [active] [ref=f2e41] [cursor=pointer]
+            - button "保存识别结果" [ref=f2e42] [cursor=pointer]
+          - generic [ref=f2e71]:
+            - generic [ref=f2e72]: 识别结果 · 3 个学年 · 本次 2 项明细
+            - list [ref=f2e73]:
+              - listitem [ref=f2e74]:
+                - generic [ref=f2e75]: 2025-2026
+                - generic [ref=f2e76]: 70 分
+                - generic [ref=f2e77]: 及格
+              - listitem [ref=f2e78]:
+                - generic [ref=f2e79]: 2024-2025
+                - generic [ref=f2e80]: 0 分
+                - generic [ref=f2e81]: 等级未公布
+              - listitem [ref=f2e82]:
+                - generic [ref=f2e83]: 2023-2024
+                - generic [ref=f2e84]: 44 分
+                - generic [ref=f2e85]: 不及格
+            - paragraph [ref=f2e86]: "本次已计分 1/2 项；`---` 的项目按「未计分」保存，不当成 0 分。"
+          - status [ref=f2e87]: 已识别 3 个学年、本次 2 项明细；核对后保存。
+          - generic [ref=f2e43]: 识别只在本机进行；账号密码、cookie 和粘贴原文都不会保存。
+        - generic [ref=f2e44]:
+          - generic [ref=f2e45]:
+            - generic [ref=f2e46]:
+              - text: 本机 · 当前账号隔离
+              - heading "手动补录一次" [level=2] [ref=f2e47]
+            - generic [ref=f2e48]: 0 条
+          - generic [ref=f2e49]:
+            - text: 粘贴成绩页文字（仅用于本次识别）
+            - textbox "粘贴成绩页文字（仅用于本次识别）" [ref=f2e50]:
+              - /placeholder: 可以长按粘贴学校成绩页面中的文字；保存时不会保留这段原文。
+          - button "本机识别并填入" [ref=f2e51] [cursor=pointer]
+          - generic [ref=f2e52]:
+            - generic [ref=f2e53]:
+              - text: 学年
+              - textbox "学年" [ref=f2e54]:
+                - /placeholder: 2026-2027
+                - text: 2026-2027
+            - generic [ref=f2e55]:
+              - text: 测试日期
+              - textbox "测试日期" [ref=f2e56]: 2026-11-06
+            - generic [ref=f2e57]:
+              - text: 体测总分（含加分）
+              - spinbutton "体测总分（含加分）" [ref=f2e58]
+          - generic [ref=f2e59]:
+            - text: 项目明细（每行“项目：成绩”，可选填）
+            - textbox "项目明细（每行“项目：成绩”，可选填）" [ref=f2e60]:
+              - /placeholder: "50米跑：8.5 秒\n立定跳远：2.1 米"
+          - paragraph [ref=f2e61]: 只会保存学年、日期、总分和最多 12 项明细，不会保存姓名、学号或粘贴原文。
+          - button "确认保存成绩" [ref=f2e62] [cursor=pointer]
+        - generic [ref=f2e63]:
+          - generic [ref=f2e65]:
+            - text: 成绩趋势
+            - heading "我的体测记录" [level=2] [ref=f2e66]
+          - generic [ref=f2e67]:
+            - strong [ref=f2e68]: 还没有体测记录
+            - generic [ref=f2e69]: 从学校官方入口查询后，粘贴成绩页文字识别保存，之后就能看最好成绩与变化趋势。
+        - link "返回运动中心" [ref=f2e70] [cursor=pointer]:
+          - /url: /sports

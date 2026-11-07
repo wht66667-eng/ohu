@@ -8,11 +8,15 @@ import { captureQbankSession, isQbankSessionCurrent } from '../lib/qbank'
 import { useQbankRevision } from '../lib/useQbankRevision'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../lib/auth'
+import { useCampusPreference } from '../lib/use-campus-preference'
+import { campusNameFromLabel, preferredCampusRow } from '../lib/campus-preference'
+import { jouCampusChoices } from '../lib/jou-campus-reference'
 import { fetchCampusPois, fetchCampuses, type Campus, type CampusPoi } from '../lib/campus-map'
 import { mergeCampusPois, readLocalPins } from '../lib/campus-map-local'
 import { ensureAlarmChannel } from '../lib/alarm-notify'
 import { IS_NATIVE, PLATFORM } from '../lib/platform'
 import { openPerfectCampusApp } from '../lib/express-app-probe'
+import { openExternalUrl } from '../lib/campus-links'
 import styles from './CampusServicePages.module.css'
 
 const CARD_OFFICIAL = 'https://xxzx.jou.edu.cn/info/1131/2481.htm'
@@ -102,9 +106,17 @@ export function BusPage() {
 
 function BusPageContent({ ownerUid }: { ownerUid: string }) {
   const toast = useToast()
+  const { campus: currentCampus } = useCampusPreference()
   const [direction, setDirection] = useState<BusTrip['direction']>('outbound')
   const [from, setFrom] = useState(BUS_STOPS.outbound[0])
   const [to, setTo] = useState(BUS_STOPS.outbound.at(-1)!)
+  useEffect(() => {
+    const next = currentCampus === '宋跳校区' ? 'inbound' : 'outbound'
+    const nextStops = BUS_STOPS[next]
+    setDirection(next)
+    setFrom(currentCampus === '苍梧校区' ? '苍梧2号门' : nextStops[0])
+    setTo(nextStops.at(-1)!)
+  }, [currentCampus, ownerUid])
   const [weekday, setWeekday] = useState(1)
   const [subscriptions, setSubscriptions] = useState<BusSubscription[]>(() => loadBusSubscriptions(ownerUid))
   const [legacySubscriptions] = useState<BusSubscription[]>(loadLegacyBusSubscriptions)
@@ -294,10 +306,13 @@ function readFoodFavorites(uid: string) {
 
 export function NearbyFoodPage() {
   const auth = useAuth(); const toast = useToast()
-  const uid = auth.user?.uid || ''
+  const uid = auth.isSigned ? auth.user?.uid || '' : ''
+  const { campus: currentCampus, setCampus } = useCampusPreference()
   const [campuses, setCampuses] = useState<Campus[]>([])
   const [pois, setPois] = useState<Array<CampusPoi & { campusName: string }>>([])
-  const [campus, setCampus] = useState('all')
+  const [allScope, setAllScope] = useState<string | null>(null)
+  const campusScope = `${uid}:${currentCampus}`
+  const campus = !currentCampus || allScope === campusScope ? 'all' : String(preferredCampusRow(campuses, currentCampus)?.id ?? 'pending')
   const [query, setQuery] = useState('')
   const [favorites, setFavorites] = useState<string[]>(() => readFoodFavorites(uid))
   const [position, setPosition] = useState<{lat:number;lng:number} | null>(null)
@@ -313,17 +328,17 @@ export function NearbyFoodPage() {
     setError('')
     void (async () => {
       try {
-        const result = await fetchCampuses('lyg')
+        const result = await fetchCampuses('jou')
         if (!live) return
-        setCampuses(result.rows)
-        if (result.error) { setError(result.error); return }
-        const loaded = await Promise.all(result.rows.map(async item => {
-          const [poiResult, localRows] = await Promise.all([fetchCampusPois(item.id), Promise.resolve(readLocalPins(uid, 'lyg', item.id))])
+        const choices = jouCampusChoices(result.rows)
+        setCampuses(choices)
+        const loaded = await Promise.all(choices.map(async item => {
+          const [poiResult, localRows] = await Promise.all([item.id > 0 ? fetchCampusPois(item.id) : Promise.resolve({rows: [] as CampusPoi[], error: null}), Promise.resolve(readLocalPins(uid, 'jou', item.id))])
           const allFoodRows = mergeCampusPois(poiResult.rows, localRows).filter(row => row.category.includes('美食'))
           return { rows: allFoodRows.filter(row => row.verification_status === 'verified' && !/农贸|市场|集市/.test(`${row.name} ${row.category}`)).map(row => ({...row, campusName:item.name})), candidateCount: allFoodRows.length, error: poiResult.error }
         }))
         if (!live) return
-        const bad = loaded.find(item => item.error)?.error
+        const bad = result.error || loaded.find(item => item.error)?.error
         setError(bad || '')
         setPois(loaded.flatMap(item => item.rows))
         setCandidateCount(loaded.reduce((count,item)=>count+item.candidateCount,0))
@@ -357,7 +372,7 @@ export function NearbyFoodPage() {
     <section className={styles.foodIntro}><span className={styles.eyebrow}>校园周边 · 真实地点</span><h2>想吃什么，先看看附近</h2><p>地点来自哦狐地图中已录入的餐饮 POI。当前暂不提供点餐或在线支付。</p></section>
     <div className={styles.foodTools}><label className={styles.search}><span aria-hidden="true">⌕</span><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="搜索店名或校区" aria-label="搜索店名或校区" /></label><button type="button" className={styles.locateButton} onClick={locate}>{position ? '已按距离排序' : '使用当前位置'}</button></div>
     {locError ? <p className={styles.infoLine} role="status">{locError}</p> : null}
-    <div className={styles.campusChips}><button type="button" aria-pressed={campus==='all'} onClick={()=>setCampus('all')}>全部校区</button>{campuses.map(item=><button key={item.id} type="button" aria-pressed={campus===String(item.id)} onClick={()=>setCampus(String(item.id))}>{item.name}</button>)}</div>
+    <div className={styles.campusChips}><button type="button" aria-pressed={campus==='all'} onClick={()=>setAllScope(campusScope)}>全部校区</button>{campuses.map(item=><button key={item.id} type="button" aria-pressed={campus===String(item.id)} onClick={()=>{const name=campusNameFromLabel(item.name);if(name){setCampus(name);setAllScope(null)}}}>{item.name}</button>)}</div>
     {busy && pois.length ? <p className={styles.infoLine} role="status" aria-live="polite">正在刷新地点；暂时保留已加载结果。</p> : null}
     {busy && !pois.length ? <div className={styles.empty} role="status" aria-live="polite">正在读取地图地点…</div> : error && !pois.length ? <div className={styles.empty} role="alert">{error}<button type="button" disabled={busy} onClick={()=>setLoadAttempt(value=>value+1)}>{busy ? '正在重试…' : '重试加载'}</button></div> : visible.length ? <section className={styles.foodList} aria-label="附近美食地点">{visible.map(poi=>{
       const favoriteKey=`${poi.campus_id}:${poi.id}`
@@ -374,7 +389,7 @@ export function NearbyFoodPage() {
 export function CampusCardPage() {
   return <main className={styles.page}><PageHeader title="校园卡" />
     <section className={styles.resourceHero}><span className={styles.resourceIcon}>▣</span><span className={styles.eyebrow}>江苏海洋大学 · 官方服务</span><h2>校园卡服务</h2><p>校园卡余额、充值、消费流水和挂失由学校及完美校园管理。哦狐不收集卡密，也不代办资金操作。</p><FoxSheetPose pose="phone" className={styles.heroFox} /><small className={styles.foxLine}>阿狐带你去官方入口</small></section>
-    <section className={styles.panel}><h2>前往官方服务</h2><a className={styles.primaryLink} href={PERFECT_CAMPUS} target="_blank" rel="noreferrer" onClick={event => { if (!IS_NATIVE || PLATFORM.os !== 'android') return; event.preventDefault(); void openPerfectCampusApp().then(opened => { if (!opened) window.open(PERFECT_CAMPUS, '_blank') }) }}>打开完美校园官方入口 <span>↗</span></a><p className={styles.infoLine}>安卓手机已安装时优先打开完美校园；否则打开官方入口。请在完美校园中选择“江苏海洋大学”。</p><a className={styles.secondaryLink} href={CARD_OFFICIAL} target="_blank" rel="noreferrer">查看江苏海洋大学信息化中心说明 ↗</a><span className={styles.panelFox}><FoxSheetPose pose="waving" /><small>出发前记得带好校园卡</small></span></section>
+    <section className={styles.panel}><h2>校园卡付款码</h2><a className={styles.primaryLink} href={PERFECT_CAMPUS} target="_blank" rel="noreferrer" onClick={event => { if (!IS_NATIVE || PLATFORM.os !== 'android') return; event.preventDefault(); void openPerfectCampusApp().then(opened => { if (!opened) window.open(PERFECT_CAMPUS, '_blank') }) }}>打开完美校园查看付款码 <span>↗</span></a><p className={styles.infoLine}>安卓手机已安装时优先打开完美校园；否则打开官方入口。进入后按官方页面选择“江苏海洋大学”，再打开付款码。</p><p className={styles.infoLine}>付款码由完美校园官方展示；哦狐不会读取、保存或展示付款码截图，也不会读取余额或代为扣款。</p><a className={styles.secondaryLink} href={CARD_OFFICIAL} target="_blank" rel="noreferrer">查看江苏海洋大学信息化中心说明 ↗</a><span className={styles.panelFox}><FoxSheetPose pose="waving" /><small>付款码请在完美校园官方应用中使用</small></span></section>
     <div className={styles.credentialNotice}><b>乘车凭证</b><span>校园班车可凭校园卡或“完美校园”APP 乘车，先到先得。</span></div>
     <p className={styles.source}>学校信息化中心介绍了完美校园的校园卡查询、充值和挂失服务。账号认证与金额操作请在官方系统内完成。</p>
   </main>
@@ -383,7 +398,7 @@ export function CampusCardPage() {
 export function LibraryPage() {
   return <main className={styles.page}><PageHeader title="图书馆座位" />
     <section className={styles.resourceHero}><span className={styles.resourceIcon}>▤</span><span className={styles.eyebrow}>江苏海洋大学图书馆</span><h2>从官方入口预约座位</h2><p>座位预约、现场签到和使用规则由“我去图书馆”系统管理。哦狐不模拟登录，也不代替你选座。</p><FoxSheetPose pose="reading" className={styles.heroFox} /><small className={styles.foxLine}>阿狐陪你找个安静座位</small></section>
-    <section className={styles.panel}><h2>预约前先了解</h2><ol className={styles.steps}><li>用手机打开图书馆公布的预约指引。</li><li>按指引扫描页面二维码，进入“我去图书馆”。</li><li>选择江苏海洋大学与校区，再按规则选座。</li><li>到馆后按要求完成蓝牙或二维码签到。</li></ol><a className={styles.primaryLink} href={LIBRARY_GUIDE} target="_blank" rel="noreferrer">打开图书馆官方预约指引 <span>↗</span></a><a className={styles.secondaryLink} href="https://lib.jou.edu.cn/" target="_blank" rel="noreferrer">访问江苏海洋大学图书馆 ↗</a><span className={styles.panelFox}><FoxSheetPose pose="studying" /><small>选座和签到请按图书馆规则操作</small></span></section>
+    <section className={styles.panel}><h2>预约前先了解</h2><ol className={styles.steps}><li>用手机打开图书馆公布的预约指引。</li><li>按指引扫描页面二维码，进入“我去图书馆”。</li><li>选择江苏海洋大学与校区，再按规则选座。</li><li>到馆后按要求完成蓝牙或二维码签到。</li></ol><button type="button" className={styles.primaryLink} onClick={() => void openExternalUrl(LIBRARY_GUIDE)}>打开图书馆官方预约指引 <span>↗</span></button><button type="button" className={styles.secondaryLink} onClick={() => void openExternalUrl("https://lib.jou.edu.cn/")}>访问江苏海洋大学图书馆 ↗</button><span className={styles.panelFox}><FoxSheetPose pose="studying" /><small>选座和签到请按图书馆规则操作</small></span></section>
     <p className={styles.source}>预约入口与签到方式参考江苏海洋大学图书馆于 2024-04-16 发布的操作说明。若学校更新了指引，请以图书馆最新通知为准。</p>
   </main>
 }

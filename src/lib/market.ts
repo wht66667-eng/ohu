@@ -15,6 +15,9 @@ import { compressImage } from './image-compress'
  * 表现是「进度条一闪、图始终出不来」。
  */
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+/** 早期联调留下的演示闲置，不再展示。 */
+const DEMO_TITLES = new Set(['海洋测绘仪器箱（二手）', '九成新 Kindle Paperwhite 4'])
+function visibleItems(rows: Item[]): Item[] { return rows.filter((row) => !DEMO_TITLES.has(String(row.title || ''))) }
 
 /* ---------------- 类型 ---------------- */
 
@@ -114,6 +117,12 @@ export async function queryRows<T extends { created_at?: string }>(
     const err = readError(res?.error)
     if (err) return { rows: [], error: err }
     const data = Array.isArray(res?.data) ? (res.data as T[]) : []
+    // Cross-user details use the same allowlisted content view as the feed.
+    // The database, not this fallback, enforces contact privacy for old clients too.
+    const publicDetails: Record<string, string> = { secondhand_items: 'v_secondhand_public', tasks: 'v_tasks_public', lost_items: 'v_lost_public', help_items: 'v_help_public' }
+    if (!data.length && publicDetails[name] && filters && Object.keys(filters).length === 1 && Number.isSafeInteger(filters.id) && Number(filters.id) > 0) {
+      return queryRows<T>(publicDetails[name], filters, 1, options)
+    }
     return { rows: sortTimeDesc(data), error: null }
   } catch (e) {
     return { rows: [], error: errText(e) }
@@ -180,7 +189,7 @@ export async function fetchItemsPage(
     const res = await q
     const err = readError(res?.error)
     if (err) return { rows: [], hasMore: false, error: err }
-    const data = Array.isArray(res?.data) ? sortTimeDesc(res.data as Item[]) : []
+    const data = visibleItems(Array.isArray(res?.data) ? sortTimeDesc(res.data as Item[]) : [])
     return { rows: data.slice(0, size), hasMore: data.length > size, error: null }
   } catch (e) {
     return { rows: [], hasMore: false, error: errText(e) }

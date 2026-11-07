@@ -10,6 +10,7 @@ export interface AppProbePlugin {
   canOpenUrl(options: { url: string }): Promise<{ value: boolean }>
   launchUrl(options: { url: string }): Promise<{ ok: boolean }>
   openPerfectCampus(): Promise<{ ok: boolean }>
+  openChaoxingApp(): Promise<{ ok: boolean }>
 }
 
 const AppProbe = registerPlugin<AppProbePlugin>('AppProbe', {
@@ -18,6 +19,7 @@ const AppProbe = registerPlugin<AppProbePlugin>('AppProbe', {
       canOpenUrl: () => Promise.resolve({ value: false }),
       launchUrl: () => Promise.resolve({ ok: false }),
       openPerfectCampus: () => Promise.resolve({ ok: false }),
+      openChaoxingApp: () => Promise.resolve({ ok: false }),
     }),
 })
 
@@ -25,6 +27,12 @@ const AppProbe = registerPlugin<AppProbePlugin>('AppProbe', {
 export async function openPerfectCampusApp(): Promise<boolean> {
   if (!IS_NATIVE) return false
   try { return !!(await AppProbe.openPerfectCampus()).ok } catch { return false }
+}
+
+/** Launch the installed Chaoxing Learning app using a fixed Android package name. */
+export async function openChaoxingApp(): Promise<boolean> {
+  if (!IS_NATIVE) return false
+  try { return !!(await AppProbe.openChaoxingApp()).ok } catch { return false }
 }
 
 /**

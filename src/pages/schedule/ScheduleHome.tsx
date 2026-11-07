@@ -21,7 +21,7 @@ import { ScheduleImageImportSheet } from '../../components/ScheduleImageImportSh
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
 import { PasswordInput } from '../../components/PasswordInput'
 import {
@@ -257,17 +257,27 @@ type ResumedScheduleAction = { id: number; kind: ScheduleAction; session: Return
 export function ScheduleHome() {
   useQbankRevision()
   const auth = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [resumedAction, setResumedAction] = useState<ResumedScheduleAction | null>(null)
   const actionSequence = useRef(0)
   useEffect(() => () => { actionSequence.current++ }, [])
   async function requestAction(kind: ScheduleAction) {
     const request = ++actionSequence.current
-    const allowed = auth.isSigned || await auth.ensureSignedIn('使用课表功能前，请先用手机号登录哦狐；登录后继续绑定学校教务账号。')
+    const allowed = auth.isSigned || await auth.ensureSignedIn('使用课表功能前，请先用学号登录哦狐；登录后继续绑定学校教务账号。')
     if (!allowed || request !== actionSequence.current) return
     const owner = captureQbankSession()
     if (!owner.uid) return
     setResumedAction({ id: request, kind, session: owner })
   }
+  useEffect(() => {
+    if (searchParams.get('calendar') !== '1') return
+    const next = new URLSearchParams(searchParams)
+    next.delete('calendar')
+    setSearchParams(next, { replace: true })
+    void requestAction('calendar')
+    // One explicit deep-link action; authentication may finish asynchronously.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, setSearchParams])
   const session = captureQbankSession()
   // Reset open course details and in-memory query results before another
   // identity renders this page, including an A -> B -> A transition.
@@ -284,7 +294,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
     if (!isQbankSessionCurrent(ownerSession)) return false
     if (auth.isSigned && ownerSession.uid) return true
     if (requestAction) void requestAction(kind)
-    else auth.openLogin('使用课表功能前，请先用手机号登录哦狐')
+    else auth.openLogin('使用课表功能前，请先用学号登录哦狐')
     return false
   }
   const [stuid, setStuid] = useState(() => loadSavedStuid())
@@ -969,7 +979,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
       {Capacitor.getPlatform() === 'android' ? (
         <details className={styles.widgetGuide}>
           <summary>把课表放到手机桌面</summary>
-          <p>在手机桌面空白处长按，选择“小组件”→“哦狐”，添加“今日课表”或“下一节课”。同步过的课表会保留在本机供桌面显示；切换哦狐账号或退出登录时会清除。轻触桌面卡片可直接打开课表。</p>
+          <p>在手机桌面空白处长按，选择“小组件”→“哦狐”，添加“今日课表”“下一节课”或“哦狐陪伴”。同步过的课表会保留在本机供桌面显示；切换哦狐账号或退出登录时会清除。轻触桌面卡片可直接打开哦狐。</p>
           <small>桌面卡片可能被他人看到，请按需添加。</small>
         </details>
       ) : null}
@@ -980,11 +990,14 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
           {!bindOpen ? (
             <EmptyState
               title="还没有绑定课表"
-              hint="绑定教务账号后，自动同步课表、成绩与考试安排"
+              hint="用一键登录自动同步课表、成绩与考试安排"
               action={
-                <button type="button" onClick={onReQuery}>
-                  绑定课表
-                </button>
+                <>
+                  <Link to="/study/oneclick">一键登录同步</Link>
+                  <button type="button" onClick={onReQuery} style={{ background: 'none', color: 'inherit', opacity: 0.65 }}>
+                    手动绑定
+                  </button>
+                </>
               }
             />
           ) : (
@@ -1520,6 +1533,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
                 <button className={styles.textBtn} onClick={() => setDayFocus((d) => (d <= 1 ? 7 : d - 1))}>前一天</button>
                 <button className={styles.textBtn} onClick={() => setDayFocus((d) => (d >= 7 ? 1 : d + 1))}>后一天</button>
                 <button className={styles.textBtn} onClick={openCalSheet}>假期调课</button>
+                <Link className={styles.textBtn} to="/calendar">月历</Link>
                 <button className={styles.textBtn} onClick={openTmSheet}>
                   节次时间
                 </button>

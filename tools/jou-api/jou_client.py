@@ -20,7 +20,7 @@ import re
 import os
 import base64
 from urllib.parse import urljoin
-import random
+import secrets
 import logging
 import threading
 import time
@@ -112,7 +112,7 @@ def zf_rsa_encrypt(password: str, e_hex: str, n_hex: str) -> str:
     b[msg_length] = 0                              # 0x00 分隔
     padded_size = max(8, digit_size - 3 - msg_length)
     for x in range(padded_size):                   # 随机非零填充
-        b[msg_length + 1 + x] = random.randint(1, 254)
+        b[msg_length + 1 + x] = secrets.randbelow(254) + 1
     b[digit_size - 2] = 2                          # PKCS#1 类型标记
     b[digit_size - 1] = 0
 
@@ -749,7 +749,7 @@ class ZfsoftSession:
         except ScheduleError:
             pass
         except Exception:
-            logger.exception("grades: 刷新主页失败，继续尝试直链")
+            logger.warning("grades: 刷新主页失败，继续尝试直链")
 
         resolved = self._resolve_grades_url(username)
         # 菜单若误落到本学期页（_dq），仍把历年页放最前
@@ -804,7 +804,7 @@ class ZfsoftSession:
                 soup = BeautifulSoup(html, "html.parser")
                 payload = self._form_hidden(soup)
             except Exception:
-                logger.exception("grades: 表单解析异常")
+                logger.warning("grades: 表单解析异常")
                 continue
 
             # 有表单则优先 POST「历年成绩」，不要被 GET 上本学期残表提前 return
@@ -842,7 +842,7 @@ class ZfsoftSession:
                         )
                         continue
                     except Exception:
-                        logger.exception("grades POST 编码/提交异常 btn=%s", btn_name)
+                        logger.warning("grades POST 编码/提交异常")
                         continue
                     alert2 = extract_asp_alert(r2.text or "")
                     if alert2:
@@ -850,7 +850,7 @@ class ZfsoftSession:
                     try:
                         grades = parse_grades_html(r2.text or "")
                     except Exception:
-                        logger.exception("grades: POST 页解析异常 btn=%s", btn_name)
+                        logger.warning("grades: POST 页解析异常")
                         continue
                     if grades:
                         # 历年按钮结果直接采用；否则留下最长的一份
@@ -866,7 +866,7 @@ class ZfsoftSession:
             try:
                 grades_get = parse_grades_html(html)
             except Exception:
-                logger.exception("grades: GET 页解析异常")
+                logger.warning("grades: GET 页解析异常")
                 grades_get = []
             if grades_get:
                 if not is_dq:
@@ -1067,7 +1067,7 @@ def auto_query_academic(
             raise
         except Exception as e:
             last = e
-            logger.exception("auto 未预期异常 try=%d", i + 1)
+            logger.warning("auto 未预期异常 try=%d", i + 1)
             continue
     if isinstance(last, ScheduleError):
         raise last
@@ -1117,7 +1117,7 @@ def query_academic(
                 out["grades"] = []
                 out["grades_error"] = str(e) or "成绩获取失败"
             except Exception as e:
-                logger.exception("grades 未预期异常 id=%s", uid[:4] + "***")
+                logger.warning("grades 未预期异常 id=%s", uid[:4] + "***")
                 out["grades"] = []
                 detail = f"{type(e).__name__}: {e}".strip()[:100]
                 out["grades_error"] = f"成绩获取异常（{detail}）" if detail else "成绩获取异常"

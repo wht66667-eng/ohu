@@ -49,5 +49,15 @@
 .empty { display:grid; gap:8px; padding:22px 12px; text-align:center; }
 .empty strong { font-size:16px; }
 .empty span { color:var(--text-2); font-size:13px; line-height:1.7; }
+.buttonRow { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.ticePreview { display:grid; gap:8px; padding:12px; border:1px dashed color-mix(in srgb,var(--green) 45%,var(--line)); border-radius:14px; background:var(--green-soft); }
+.ticePreview>b { color:var(--green-text); font-size:12px; }
+.ticePreview>p { margin:0; color:var(--text-2); font-size:12px; line-height:1.6; }
+.ticePreview ul { display:grid; gap:5px; margin:0; padding:0; list-style:none; }
+.ticePreview li { display:grid; grid-template-columns:1fr auto auto; gap:10px; padding:7px 9px; border-radius:10px; background:var(--card); font-size:12px; }
+.ticePreview li span:first-child { font-weight:700; }
+.ticePreview li span:nth-child(2) { color:var(--green-text); font-weight:700; }
+.ticePreview li span:last-child { color:var(--text-3); }
+.gradePill { margin-left:7px; padding:2px 7px; border-radius:99px; background:var(--green-soft); color:var(--green-text); font-size:11px; font-style:normal; font-weight:700; vertical-align:middle; }
 .back { color:var(--green-text); }
 @media (max-width:380px) { .card { padding:17px 14px; } .formGrid { grid-template-columns:1fr; } .formGrid .field:last-child { grid-column:auto; } .quickLinks { grid-template-columns:1fr; } }

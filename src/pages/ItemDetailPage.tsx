@@ -114,7 +114,7 @@ function ItemDetailContent() {
     if (res.error) { toast.err(res.error); return }
     const row = res.rows.find((row) => Number(row.id) === idNum)
     if (!row || row.status !== 'on') { toast('这件闲置已不可联系'); void load(); return }
-    setContact(row.contact || '卖家未留联系方式')
+    setContact(row.contact || '联系方式已保护，请点击“发私信”联系卖家')
   }, [auth, idNum, active, item, load, toast])
 
   /** 发私信：走腾讯云 IM 单聊（与广场统一） */

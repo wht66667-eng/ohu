@@ -1,5 +1,6 @@
 import type { AppShell } from '../lib/app-shell'
 import type { FoxPose } from '../lib/fox-art'
+import type { PermissionKey } from '../lib/permission-center'
 
 export const STUDENT_INTRO: ReadonlyArray<{ title: string; desc: string; pose: FoxPose; services: string[] }> = [
   { title: '今天怎么安排', desc: '下一节课、最近待办和今日学习，打开首页就能找到。', pose: 'reading', services: ['课表', '待办', '学习'] },
@@ -8,7 +9,7 @@ export const STUDENT_INTRO: ReadonlyArray<{ title: string; desc: string; pose: F
   { title: '哦狐科技 · 插件共创', desc: '用户可以提交自研插件方案，经管理员审核后才会接入。服务页的个人网页入口只是快捷链接，不会运行插件代码。', pose: 'welcome', services: ['用户提交', '管理员审核', '审核后接入'] },
 ]
 
-export type PermKey = 'notify' | 'location' | 'camera'
+export type PermKey = PermissionKey
 
 export type ShellOnboarding = {
   title: string
@@ -38,32 +39,37 @@ export const SHELL_ONBOARDING: Record<AppShell, ShellOnboarding> = {
     ],
     manualTitle: '快速说明书',
     manual: [
-      '登录：手机号注册 / 验证码登录，设置密码后可用「手机号或学号 + 密码」登录；不再使用教务密码登录 App。',
-      '课表与成绩：在「课表」页绑定教务账号（学号 + 正方教务密码），绑定后自动同步课表、成绩与考试安排。',
+      '登录：不需要手机号，也不再注册哦狐账号。在「一键获取」填写学号、校园网（VPN）密码、统一认证密码即可建立本机身份；体测第一次单独登录。',
+      '课表与成绩：同一页点「一键获取」自动登录教务，读取课表、成绩与考试；数据保存在本机。',
+      '权限：首次引导会一次列出全部所需权限，点「一键全部开启」按系统提示逐项允许；精确闹钟、电池优化、悬浮窗会跳到系统页面，需要手动打开开关。',
       '底栏：首页 · 服务 · 发布 · 广场 · 我的。消息在首页、广场与「我的」中查看。',
-      '学业：课表 / 成绩 / 考试 / 考证提醒；需允许通知。',
+      '学业：课表 / 成绩 / 考试 / 考证提醒；需允许通知与精确闹钟，否则系统可能延后提醒。',
       '生活：广场、互助任务、二手集市。运动中心可手动记录健康数据、参加阳光跑小队；轨迹与实时配速尚未开放。',
       '哦狐科技：用户或开发者可通过“提交插件接入方案”留言申请；管理员审核并完成接入核验前，插件不会进入哦狐。当前已提供方案留言入口，插件目录、代码沙箱和运行时仍在建设；“我的网页快捷入口”仅保存本机 HTTPS 链接。',
     ],
     perms: [
-      { key: 'notify', title: '通知', desc: '上课、考试、考证与任务消息提醒' },
-      { key: 'camera', title: '相机 / 相册', desc: '发帖、二手图片、头像上传时使用' },
+      { key: 'notify', title: '通知', desc: '上课、考试、考证、待办与消息提醒；拒绝后收不到到点提醒' },
+      { key: 'exactAlarm', title: '精确闹钟', desc: '关掉 App 也能准点响；Android 12+ 需在「闹钟和提醒」中允许' },
+      { key: 'battery', title: '电池优化白名单', desc: '避免后台被系统冻结，导致提醒延后或悬浮层不弹' },
+      { key: 'overlay', title: '悬浮窗 / 显示在其他应用上层', desc: '到点在任意界面弹出提醒卡片；不需要可跳过' },
+      { key: 'camera', title: '相机 / 相册', desc: '发帖、二手图片、头像与课表拍照上传时使用' },
+      { key: 'location', title: '位置', desc: '校区、天气与附近服务；仅在使用时读取，不后台定位' },
     ],
   },
   admin: {
     title: '哦狐 · 管理端',
-    audience: '平台管理员 / 站长（手机号登录）',
+    audience: '平台管理员 / 站长（学号 + 密码）',
     disclaimerTitle: '免责声明与管理须知',
     disclaimer: [
       '本端仅供经授权的运营人员使用；越权操作会被服务端拒绝并记入审计。',
       '审核与内容治理操作影响真实用户，请按制度留痕、谨慎操作。',
       '站长具备成员治理等高危权限，账号不得外借。',
-      '本端不提供学生课表门禁；请使用手机号验证码或 App 密码登录。',
+      '本端不提供学生课表门禁；请使用管理员学号 + 密码登录。',
       '继续使用即表示您已阅读并同意内部管理规范及《隐私政策》中与运营相关的条款。',
     ],
     manualTitle: '快速说明书',
     manual: [
-      '登录：手机号验证码，或手机号 + App 密码。',
+      '登录：管理员学号 + 密码。',
       '导航：内容管理、校园公告、举报处理、成员与权限、管理消息、账号与设置；手机点顶部“导航”展开。',
       '内容：下架违规帖、删评、处理举报。',
       '学生业务请改用学生端，勿混用工作壳。',

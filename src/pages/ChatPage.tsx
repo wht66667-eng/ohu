@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IconBack, IconSend } from '../components/Icons'
+import { DialogLayer } from '../components/ui/DialogLayer'
 import { askSunshine, tidyReplyText, type ChatMsg } from '../lib/ai-chat'
 import { requestAgnes } from '../lib/agnes-ai'
+import { hasCloudIdentity } from '../lib/cloud-identity'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../lib/auth'
 import { avatar, resolveAvatar } from '../data/images'
@@ -51,7 +53,8 @@ export function ChatPage() {
   const [list, setList] = useState<Msg[]>([{ id: 1, from: 'ai', text: GREETING }])
   const [text, setText] = useState('')
   const [thinking, setThinking] = useState(false)
-  const [privacyConfirmed, setPrivacyConfirmed] = useState(false)
+  const [approvedService, setApprovedService] = useState<'guest' | 'agnes' | null>(null)
+  const [confirmation, setConfirmation] = useState<{ question: string; owner: string; service: 'guest' | 'agnes' } | null>(null)
   const seq = useRef(10)
   const requestSeq = useRef(0)
   const request = useRef<AbortController | null>(null)
@@ -68,7 +71,8 @@ export function ChatPage() {
     setList([{ id: 1, from: 'ai', text: GREETING }])
     setText('')
     setThinking(false)
-    setPrivacyConfirmed(false)
+    setApprovedService(null)
+    setConfirmation(null)
   }, [sessionKey])
 
   useEffect(() => () => {
@@ -81,15 +85,16 @@ export function ChatPage() {
     return seq.current
   }
 
-  async function send(q: string) {
+  async function send(q: string, confirmedService?: 'guest' | 'agnes') {
     const question = q.trim()
-    if (!question || thinking) return
+    if (!question || thinking || request.current) return
     if (question.length > MESSAGE_LIMIT) {
       toast(`单条消息最多 ${MESSAGE_LIMIT} 字，请分段发送`)
       return
     }
-    if (!privacyConfirmed) {
-      toast('请先阅读并确认 AI 对话的数据发送说明')
+    const service = auth.isSigned || hasCloudIdentity() ? 'agnes' : 'guest'
+    if (approvedService !== service && confirmedService !== service) {
+      setConfirmation({ question, owner: sessionKey, service })
       return
     }
     setText('')
@@ -105,12 +110,11 @@ export function ChatPage() {
     const owner = sessionKey
     const sequence = ++requestSeq.current
     const controller = new AbortController()
-    request.current?.abort()
     request.current = controller
 
     try {
       let reply: string
-      if (auth.isSigned) {
+      if (service === 'agnes') {
         const transcript = [...history.slice(-12), { role: 'user' as const, content: STYLE_RULE }]
           .map(message => `${message.role === 'user' ? '同学' : '小海阿狐'}：${message.content}`).join('\n').slice(-9000)
         reply = await requestAgnes('chat', transcript, controller.signal)
@@ -203,13 +207,6 @@ export function ChatPage() {
         ))}
       </div>
 
-      <div className={styles.aiDisclosure}>
-        <p>{auth.isSigned
-          ? '登录对话会把当前提问和最近对话发送给哦狐 AI 服务及 Agnes AI 模型服务商，用于生成回复；服务商的数据处理与保留以其政策为准。'
-          : '访客对话会把当前提问和最近对话发送给哦狐当前问答服务，用于生成回复；请勿输入密码、学号、联系方式等敏感信息。'}</p>
-        <label><input type="checkbox" checked={privacyConfirmed} disabled={thinking} onChange={(event) => setPrivacyConfirmed(event.target.checked)} /><span>我已了解本次对话的数据发送范围，并同意在本会话中发送我提交的问题。</span></label>
-      </div>
-
       <form
         className={styles.composer}
         onSubmit={(e) => {
@@ -218,11 +215,25 @@ export function ChatPage() {
         }}
       >
         <textarea rows={1} enterKeyHint="enter" aria-label="输入你想问的" aria-describedby="chat-message-count" maxLength={MESSAGE_LIMIT} value={text} onChange={(e) => setText(e.target.value)} placeholder="输入你想问的…" onKeyDown={(event) => { if (submitMessageKey(event)) { event.preventDefault(); void send(text) } }} />
-        <button className={styles.send} type="submit" disabled={thinking || !text.trim() || !privacyConfirmed} onPointerDown={(event) => event.preventDefault()} aria-label="发送">
+        <button className={styles.send} type="submit" disabled={thinking || !text.trim()} onPointerDown={(event) => event.preventDefault()} aria-label="发送">
           <IconSend /><span>发送</span>
         </button>
       </form>
       <small id="chat-message-count" className={styles.composerCount}>{text.length}/{MESSAGE_LIMIT} 字 · 长通知请分段粘贴</small>
+      {confirmation?.owner === sessionKey ? <DialogLayer title="发送给小海阿狐" onClose={() => setConfirmation(null)}>
+        <div className={styles.confirmation}>
+          <h2>发送给小海阿狐</h2>
+          <p>本次会话的问题和最近对话会发送给{confirmation.service === 'agnes' ? '哦狐 AI 服务及 Agnes AI' : '哦狐问答服务'}，用于生成回复。请避免输入密码、学号或联系方式。</p>
+          <div className={styles.confirmationActions}>
+            <button type="button" onClick={() => setConfirmation(null)}>返回编辑</button>
+            <button type="button" onClick={() => {
+              setApprovedService(confirmation.service)
+              setConfirmation(null)
+              void send(confirmation.question, confirmation.service)
+            }}>同意并发送</button>
+          </div>
+        </div>
+      </DialogLayer> : null}
     </div>
   )
 }

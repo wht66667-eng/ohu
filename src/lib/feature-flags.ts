@@ -21,7 +21,7 @@
 export const EMAIL_LOGIN = import.meta.env.VITE_EMAIL_LOGIN === 'true'
 
 /** 账号框的占位文案：开关关着时不要误导用户去填邮箱 */
-export const ACCOUNT_PLACEHOLDER = EMAIL_LOGIN ? '手机号或邮箱' : '手机号'
+export const ACCOUNT_PLACEHOLDER = '学号'
 
 /** 账号框上方的字段名 */
 export const ACCOUNT_LABEL = EMAIL_LOGIN ? '账号（手机号 / 邮箱）' : '账号（手机号）'

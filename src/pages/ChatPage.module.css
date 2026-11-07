@@ -134,21 +134,12 @@
   min-height: 44px; min-width: 44px;
 }
 
-.aiDisclosure {
-  flex: 0 0 auto;
-  display: grid;
-  gap: 7px;
-  margin: 0 12px;
-  padding: 9px 11px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  background: var(--card);
-}
-.aiDisclosure p { margin: 0; color: var(--text-2); font-size: 10px; line-height: 1.55; }
-.aiDisclosure label { display: flex; align-items: flex-start; gap: 8px; color: var(--text); font-size: 11px; line-height: 1.5; }
-.aiDisclosure input { flex: 0 0 auto; width: 18px; height: 18px; margin: 0; accent-color: var(--green); }
-.aiDisclosure input:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
-.aiDisclosure input:disabled { opacity: .6; }
+.confirmation { padding: 20px; color: var(--text); }
+.confirmation h2 { margin: 0 0 8px; font-size: 18px; }
+.confirmation p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+.confirmationActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.confirmationActions button { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); }
+.confirmationActions button:last-child { background: var(--green-deep); color: var(--on-primary); }
 
 .composer {
   display: flex;

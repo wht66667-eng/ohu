@@ -1,4 +1,4 @@
-/** Read-only public licensed corpus. Never queries the existing private qbank. */
+/** 公开授权语料的只读入口；不会查询用户私有题库。 */
 const { enforceRateLimit, actorOf } = require('./rate-limit')
 const EXAMS = new Set(['CET-4', 'CET-6', 'KAOYAN-1', 'KAOYAN-2', 'IELTS'])
 const TYPES = new Set(['reading', 'listening', 'vocabulary', 'grammar', 'writing', 'translation'])
@@ -13,6 +13,7 @@ const RATE_LIMITS = {
 }
 
 let database
+/** 复用服务端数据库连接；访问凭据仅从云函数环境读取。 */
 function db() {
   if (!database) {
     const tcb = require('@cloudbase/node-sdk')
@@ -22,6 +23,7 @@ function db() {
   }
   return database
 }
+/** 统一 JSON 响应和禁止缓存策略；跨域授权交给网关白名单。 */
 function response(status, body, extraHeaders) {
   return { statusCode: status, headers: {
     'Content-Type': 'application/json; charset=utf-8',
@@ -33,11 +35,13 @@ function response(status, body, extraHeaders) {
   }, body: status === 204 ? '' : JSON.stringify(body) }
 }
 function invalid(message) { const error = new Error(message); error.status = 400; throw error }
+/** 限定分页参数，阻止负数、超大窗口和非整数扩大查询量。 */
 function integer(value, fallback, max, name) {
   if (value === undefined) return fallback
   if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value) || Number(value) > max) invalid(`${name} 必须是 1–${max} 的整数`)
   return Number(value)
 }
+/** 兼容网关参数格式，同时拒绝同名多值造成的参数解析歧义。 */
 function parameters(event) {
   const raw = event.rawQueryString || event.queryString || ''
   if (raw && typeof raw === 'string') {
@@ -47,6 +51,7 @@ function parameters(event) {
   }
   return event.queryStringParameters || {}
 }
+/** 构建只读路由处理器；可注入隔离数据库，测试无需连接生产库。 */
 function createHandler(getDatabase = db) {
   return async (event = {}) => {
     const method = event.httpMethod || event.requestContext?.http?.method || 'GET'

@@ -5,10 +5,11 @@ import { IMMERSIVE_PACK_HASHES } from './immersive-pack-manifest'
 
 /** 无狐新皮肤（迁入自 ui-design-preview 五套设计：清简/花间/澄光/晴野/星栖）。
  *  纯 CSS 令牌主题，无需 .ohfox 包，选即用；不渲染任何狐狸角色。 */
-export type SkinVariant = 'pure' | 'bloom' | 'glass' | 'meadow' | 'night'
+export type SkinVariant = 'companion' | 'pure' | 'bloom' | 'glass' | 'meadow' | 'night'
 export type UiVariant = 'classic' | 'fox' | 'cute' | 'minimal' | 'immersive' | SkinVariant
 export type PackVariant = Exclude<UiVariant, 'classic' | SkinVariant>
 export const UI_SKINS = [
+  { id: 'companion', title: '微绿版', description: '白色背景 · 绿色操作 · 自定义陪伴' },
   { id: 'pure', title: '第 6 版 · 清简', description: '从容克制 · 细线分隔 · 无狐' },
   { id: 'bloom', title: '第 7 版 · 花间', description: '花瓣粉 · 随身手账 · 无狐' },
   { id: 'glass', title: '第 8 版 · 澄光', description: '轻盈通透 · 磨砂浮层 · 无狐' },
@@ -28,7 +29,7 @@ export const UI_PACKS = [
 ] as const
 const KEY = 'ohfox.ui.variant.v1', DB = 'ohfox-ui-packs-v1', EVENT = 'ohfox-ui-variant'
 const hashes: Record<PackVariant, Record<string, string>> = { fox: FOX_PACK_HASHES, ...NEW_UI_PACK_HASHES, immersive: IMMERSIVE_PACK_HASHES }
-let variant: UiVariant = 'classic'
+let variant: UiVariant = 'companion'
 let installed: Record<PackVariant, boolean> = { fox: false, cute: false, minimal: false, immersive: false }
 let restoration: Promise<void> | undefined
 const urls: Record<PackVariant, Record<string, string>> = { fox: {}, cute: {}, minimal: {}, immersive: {} }
@@ -43,7 +44,7 @@ export function themeAssetUrl(name: string) {
 export function getUiVariant() { return variant }
 function emit() { document.documentElement.dataset.uiVariant = variant; window.dispatchEvent(new Event(EVENT)) }
 const subscribe = (cb: () => void) => { window.addEventListener(EVENT, cb); return () => window.removeEventListener(EVENT, cb) }
-export function useUiVariant() { return useSyncExternalStore(subscribe, getUiVariant, () => 'classic' as UiVariant) }
+export function useUiVariant() { return useSyncExternalStore(subscribe, getUiVariant, () => 'companion' as UiVariant) }
 export function useUiPackInstalled(id: PackVariant) { return useSyncExternalStore(subscribe, () => installed[id], () => false) }
 export function useFoxPackInstalled() { return useUiPackInstalled('fox') }
 export function useInstalledUiPacks() { return useSyncExternalStore(subscribe, () => installed, () => installed) }
@@ -97,15 +98,15 @@ export async function installUiPack(file: File): Promise<PackVariant> {
 }
 export const installFoxPack = installUiPack
 export function chooseUiVariant(next: UiVariant) {
-  if (next !== 'classic' && next !== 'pure') throw new Error('该界面版本已不再提供，请选择经典版或简单版')
+  if (next !== 'classic' && next !== 'pure' && next !== 'companion') throw new Error('该界面版本已不再提供，请选择经典版、简单版或微绿版')
   localStorage.setItem(KEY, next); variant = next; emit()
 }
 async function restore() {
   try {
     const saved = localStorage.getItem(KEY)
-    variant = saved === 'pure' ? 'pure' : 'classic'
+    variant = saved === 'classic' || saved === 'pure' || saved === 'companion' ? saved : 'companion'
     if (saved && saved !== variant) localStorage.setItem(KEY, variant)
-  } catch { variant = 'classic' }
+  } catch { variant = 'companion' }
   emit()
 }
 export function restoreUiVariant() { return restoration ??= restore() }

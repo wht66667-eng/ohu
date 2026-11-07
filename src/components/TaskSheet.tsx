@@ -7,7 +7,8 @@
  */
 import { useState } from 'react'
 import { ConfirmSheet } from './ConfirmSheet'
-import { CAMPUSES, composeLocation, type Campus } from '../lib/campus'
+import { CAMPUSES, composeLocation } from '../lib/campus'
+import { useCampusPreference } from '../lib/use-campus-preference'
 import { TASK_KINDS, createTask } from '../lib/market'
 import { uploadTaskImage } from '../lib/task-images'
 import { useAuth } from '../lib/auth'
@@ -20,7 +21,7 @@ const MAX_TASK_IMAGES = 3
 export function TaskSheet({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const toast = useToast()
   const auth = useAuth()
-  const [campus, setCampus] = useState<Campus | ''>('')
+  const { campus, setCampus } = useCampusPreference()
   const [kind, setKind] = useState<string>(TASK_KINDS[0])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -131,13 +132,13 @@ export function TaskSheet({ onClose, onDone }: { onClose: () => void; onDone: ()
           <span className={styles.headIc}>📦</span>
           <span className={styles.headTxt}>
             <b>发布任务</b>
-            <span>选好校区，同校区的同学才能就近接单</span>
+            <span>{campus ? `已沿用${campus}，无需重复选择` : '选好校区，同校区的同学才能就近接单'}</span>
           </span>
         </div>
 
         <div className={styles.field}>
           <label htmlFor="task-campus">
-            校区<em>必选</em>
+            校区<em>{campus ? '已选，可切换' : '必选'}</em>
           </label>
           <div className={styles.campusRow} id="task-campus">
             {CAMPUSES.map((c) => (
@@ -145,6 +146,7 @@ export function TaskSheet({ onClose, onDone }: { onClose: () => void; onDone: ()
                 key={c}
                 type="button"
                 className={`${styles.campus} ${c === campus ? styles.campusOn : ''}`}
+                aria-pressed={c === campus}
                 onClick={() => setCampus(c)}
               >
                 {c}

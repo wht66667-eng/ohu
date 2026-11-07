@@ -1,8 +1,9 @@
 # 江苏海洋大学课表抓取服务 · 运行依赖（固定版本，保证云端构建可复现）
-flask==3.1.0
+flask==3.1.3
 gunicorn==23.0.0
-requests==2.32.3
+requests==2.34.2
 beautifulsoup4==4.13.3
+pycryptodome==3.23.0
 
 # 验证码 OCR：/api/timetable/auto 免手输验证码用（captcha_ocr.py）。
 #

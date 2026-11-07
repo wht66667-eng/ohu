@@ -29,13 +29,13 @@ test('management output excludes student downloads and cosmetic packs without to
   const root = fs.mkdtempSync(join(tmpdir(), 'ohhu-admin-bundle-'))
   try {
     const output = join(root, 'dist-app')
-    for (const folder of ['download', 'launcher-icon-previews', 'theme-packs', 'pixel-fox', 'boot', 'assets']) { fs.mkdirSync(join(output, folder), { recursive: true }); fs.writeFileSync(join(output, folder, 'fixture'), 'fixture') }
+    for (const folder of ['download', 'launcher-icon-previews', 'theme-packs', 'moment-editor', 'pixel-fox', 'boot', 'assets']) { fs.mkdirSync(join(output, folder), { recursive: true }); fs.writeFileSync(join(output, folder, 'fixture'), 'fixture') }
     fs.writeFileSync(join(output, 'last-snapshot.json'), '{}')
     fs.mkdirSync(join(root, 'public/download'), { recursive: true }); fs.writeFileSync(join(root, 'public/download/source'), 'preserve')
     trimShellPublicAssets(root, output, 'user')
     assert.equal(fs.existsSync(join(output, 'download/fixture')), true)
     trimShellPublicAssets(root, output, 'admin')
-    for (const folder of ['download', 'launcher-icon-previews', 'theme-packs', 'last-snapshot.json']) assert.equal(fs.existsSync(join(output, folder)), false)
+    for (const folder of ['download', 'launcher-icon-previews', 'theme-packs', 'moment-editor', 'last-snapshot.json']) assert.equal(fs.existsSync(join(output, folder)), false)
     for (const folder of ['pixel-fox', 'boot', 'assets']) assert.equal(fs.existsSync(join(output, folder, 'fixture')), true)
     assert.equal(fs.readFileSync(join(root, 'public/download/source'), 'utf8'), 'preserve')
     assert.throws(() => trimShellPublicAssets(root, root, 'admin'), /Unsafe/)

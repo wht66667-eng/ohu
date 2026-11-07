@@ -104,7 +104,7 @@ function TaskDetailContent() {
     if (res.error) { toast.err(res.error); return }
     const row = res.rows.find((row) => Number(row.id) === Number(task.id))
     if (!row || row.status !== 'open') { toast('这条任务已不可联系'); void load(); return }
-    setContact({ uid: authRef.current.user?.uid || '', value: row.contact || '发布者未留联系方式' })
+    setContact({ uid: authRef.current.user?.uid || '', value: row.contact || '联系方式已保护，请点击“发私信”联系发布者' })
   }, [auth, active, task, uid, load, toast])
 
   /** 发私信：走腾讯云 IM 单聊（与广场统一） */

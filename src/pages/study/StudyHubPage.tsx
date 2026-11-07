@@ -57,12 +57,14 @@ import { fadeUp } from '../../lib/animations'
 import { useUiMotion } from '../../lib/motion-pref'
 import { useUiVariant } from '../../lib/ui-variant'
 import { FocusIcon } from '../../components/focus/FocusIcon'
-import { AgnesStudyTools } from '../../components/AgnesStudyTools'
 import { academicTermForDate, academicTermLabel, availableGradeTerms, gradesForScope } from '../../lib/academic-terms'
+import { readPocketUni } from '../../lib/pocketuni-store'
+import { readQuality } from '../../lib/quality-store'
+import { puDisplayTotal, puRowsWithCredit } from '../../lib/pocketuni-parse'
 import styles from './StudyHub.module.css'
 
-type Tab = 'home' | 'ai' | 'grades' | 'exams' | 'certs' | 'ports'
-const TABS: Tab[] = ['home', 'ai', 'grades', 'exams', 'certs', 'ports']
+type Tab = 'home' | 'grades' | 'exams' | 'certs' | 'ports'
+const TABS: Tab[] = ['home', 'grades', 'exams', 'certs', 'ports']
 
 function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, n))
@@ -149,6 +151,12 @@ function StudyHubContent() {
 
   const activeGradeScope = gradeScope === 'current' || gradeScope === 'all' || previousGradeTerms.includes(gradeScope)
     ? gradeScope : 'current'
+
+  /** 进页面时读一次；从 PU 页返回会重新挂载，能拿到刚保存的结果。 */
+  const [puSummary] = useState(() => readPocketUni())
+  const [qualitySummary] = useState(() => readQuality())
+  const puTotal = puSummary ? puDisplayTotal(puSummary) : null
+  const puCount = puSummary ? puRowsWithCredit(puSummary).length : 0
 
   const filteredGrades = useMemo(() => {
     const q = gradeQ.trim().toLowerCase()
@@ -367,7 +375,7 @@ function StudyHubContent() {
 
   async function onSyncAcademic() {
     if (!isQbankSessionCurrent(ownerSession)) return
-    if (!auth.isSigned || !ownerSession.uid) { auth.openLogin('同步教务数据前，请先用手机号登录哦狐'); return }
+    if (!auth.isSigned || !ownerSession.uid) { auth.openLogin('同步教务数据前，请先用学号登录哦狐'); return }
     if (syncInFlight.current || cooldown > 0 || capInFlight.current || !sid || !capImg) return
     if (!captchaSession.current || !isQbankSessionCurrent(captchaSession.current)) {
       void loadCap()
@@ -483,7 +491,7 @@ function StudyHubContent() {
   }
 
   const syncCard = (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${tab === 'grades' ? styles.syncCardFeatured : ''}`}>
       <h3 className={styles.cardTitle}>从教务一键同步</h3>
       <p className={styles.muted}>
         填验证码即可同步课表 · 成绩 · 考试
@@ -491,7 +499,7 @@ function StudyHubContent() {
           ? ` 上次：${new Date(meta.savedAt).toLocaleString('zh-CN', { hour12: false })}`
           : ''}
       </p>
-      {!auth.isSigned ? <button type="button" className={styles.btnMain} onClick={() => auth.openLogin('同步教务数据前，请先用手机号登录哦狐')}>手机号登录后同步</button> : <form ref={syncForm} className={styles.form} aria-busy={syncing} onSubmit={(event) => { event.preventDefault(); void onSyncAcademic() }}>
+      {!auth.isSigned ? <button type="button" className={styles.btnMain} onClick={() => auth.openLogin('同步教务数据前，请先用学号登录哦狐')}>学号登录后同步</button> : <form ref={syncForm} className={styles.form} aria-busy={syncing} onSubmit={(event) => { event.preventDefault(); void onSyncAcademic() }}>
         <div className={styles.field}>
           <label htmlFor={`${tabId}-stuid`}>学号</label>
           <input
@@ -577,8 +585,8 @@ function StudyHubContent() {
 
       <div className={`${styles.hero} ${tab !== 'home' ? styles.heroCompact : ''}`}>
         <div className={styles.heroText}>
-          <h2>{tab === 'grades' ? '每一份努力，都有迹可循' : tab === 'ai' ? '让 AI 帮你理清学习下一步' : cute ? '把学习的小事，安排好～' : '把学习安排清楚'}</h2>
-          <p>{tab === 'grades' ? '先看本学期，也可以切换学期回顾成绩。' : tab === 'ai' ? '选择工具，提供你愿意分享的内容，再核对结果。' : '课表、成绩、考试和专注，按今天的需要选一个。'}</p>
+          <h2>{tab === 'grades' ? '每一份努力，都有迹可循' : cute ? '把学习的小事，安排好～' : '把学习安排清楚'}</h2>
+          <p>{tab === 'grades' ? '先看本学期，也可以切换学期回顾成绩。' : '课表、成绩、考试和专注，按今天的需要选一个。'}</p>
         </div>
         <img className={styles.heroFox} src="/brand/ohu-original/fox-grades-transparent.png" alt="" width="92" height="92" />
         <div className={styles.heroStats}>
@@ -629,7 +637,6 @@ function StudyHubContent() {
         {(
           [
             ['home', '总览'],
-            ['ai', 'AI 工具'],
             ['grades', '成绩'],
             ['exams', '考试'],
             ['certs', '考证'],
@@ -657,11 +664,6 @@ function StudyHubContent() {
       {tab === 'home' ? (
         <section className={styles.sec}>
           <div className={styles.quickGrid}>
-            <button type="button" className={styles.quick} onClick={() => switchTab('ai')}>
-              <span className={styles.quickIc} data-tone="violet">AI</span>
-              <b>AI 学习工具</b>
-              <span>问答、资料整理、计划与自测</span>
-            </button>
             <button type="button" className={styles.quick} onClick={() => switchTab('grades')}>
               <span className={styles.quickIc} data-tone="blue">
                 分
@@ -680,6 +682,11 @@ function StudyHubContent() {
               <b>考试安排</b>
               <span>{exams.length ? `${exams.length} 场已缓存` : '同步后显示时间教室'}</span>
             </button>
+            <Link to="/study/pu" className={styles.quick}>
+              <span className={styles.quickIc}>PU</span>
+              <b>PU 二课</b>
+              <span>{puTotal !== null ? `${puTotal} 学分 · ${puCount} 条明细` : '口袋校园第二课堂学分'}</span>
+            </Link>
             <Link to="/schedule" className={styles.quick}>
               <span className={styles.quickIc} data-tone="green">
                 课
@@ -759,7 +766,6 @@ function StudyHubContent() {
         </section>
       ) : null}
 
-      {tab === 'ai' ? <section className={styles.sec}><AgnesStudyTools uid={ownerSession.uid} onRequireLogin={() => auth.openLogin('使用 AI 学习工具前，请先用手机号登录哦狐')} /></section> : null}
 
       {tab === 'exams' ? (
         <section className={styles.sec}>
@@ -776,6 +782,48 @@ function StudyHubContent() {
 
       {tab === 'grades' ? (
         <section className={styles.sec}>
+          <Link to="/study/oneclick" className={`${styles.card} ${styles.puEntry}`}>
+            <div className={styles.cardHead}>
+              <div>
+                <span className={styles.gradeEyebrow}>设备内登录 · 不经过云端</span>
+                <h3 className={styles.cardTitle}>一键获取校园数据</h3>
+              </div>
+              <span className={styles.gpaPill}>新</span>
+            </div>
+            <p className={styles.puEntryCopy}>学号 + 校园网密码 + 统一认证密码，读取课表、成绩、考试；体测、PU、学习通各授权一次后也能一键更新。</p>
+            <span className={styles.puEntryLink}>去一键获取 ›</span>
+          </Link>
+          {syncCard}
+          <Link to="/study/pu" className={`${styles.card} ${styles.puEntry}`}>
+            <div className={styles.cardHead}>
+              <div>
+                <span className={styles.gradeEyebrow}>第二课堂 · 口袋校园</span>
+                <h3 className={styles.cardTitle}>PU 二课</h3>
+              </div>
+              <span className={styles.gpaPill}>{puTotal !== null ? `${puTotal} 学分` : '未导入'}</span>
+            </div>
+            <p className={styles.puEntryCopy}>
+              {puTotal !== null
+                ? `已保存 ${puCount} 条有学分的明细；与教务「校园档案」分开计算，不互相抵扣。`
+                : '在口袋校园「成绩明细」页复制文字，回到哦狐粘贴，即可查看总学分与 A/B/C 类明细。'}
+            </p>
+            <span className={styles.puEntryLink}>打开 PU 二课 ›</span>
+          </Link>
+          <Link to="/study/quality" className={`${styles.card} ${styles.puEntry}`}>
+            <div className={styles.cardHead}>
+              <div>
+                <span className={styles.gradeEyebrow}>实践系统 · 7058</span>
+                <h3 className={styles.cardTitle}>校园档案</h3>
+              </div>
+              <span className={styles.gpaPill}>{qualitySummary ? `${qualitySummary.totalCredit} 学分` : '未同步'}</span>
+            </div>
+            <p className={styles.puEntryCopy}>
+              {qualitySummary
+                ? `类型2 ${qualitySummary.type2} · 类型3 ${qualitySummary.type3} · 排名 ${qualitySummary.rank || '—'} · 更新 ${new Date(qualitySummary.syncedAt).toLocaleDateString('zh-CN')}`
+                : '在「一键获取」读取 7058；与 PU 官方分开存、不相加。'}
+            </p>
+            <span className={styles.puEntryLink}>查看校园档案 ›</span>
+          </Link>
           <div className={`${styles.card} ${styles.gradeCard}`}>
             <div className={styles.cardHead}>
               <div><span className={styles.gradeEyebrow}>教务同步成绩</span><h3 className={styles.cardTitle}>{activeGradeScope === 'current' ? '本学期成绩' : activeGradeScope === 'all' ? '全部成绩' : academicTermLabel(activeGradeScope)}</h3></div>
@@ -813,7 +861,7 @@ function StudyHubContent() {
               <div className={styles.gradeEmpty} role="status">
                 <img src="/brand/ohu-original/fox-grades-transparent.png" alt="" width="70" height="70" loading="lazy" />
                 <p>
-                {gradeQ.trim() ? '没有匹配的课程，试试其他关键词。' : remoteGrades.length && activeGradeScope === 'current' ? '当前同步结果中暂无本学期成绩。可选择其他学期或全部成绩。' : remoteGrades.length ? '这个学期还没有已同步成绩，可切换学期查看。' : '尚未同步教务成绩。展开下方“同步教务数据”开始查询。'}
+                {gradeQ.trim() ? '没有匹配的课程，试试其他关键词。' : remoteGrades.length && activeGradeScope === 'current' ? '当前同步结果中暂无本学期成绩。可选择其他学期或全部成绩。' : remoteGrades.length ? '这个学期还没有已同步成绩，可切换学期查看。' : '尚未同步教务成绩。使用上方“从教务一键同步”开始查询。'}
                 </p>
               </div>
             ) : (
@@ -836,9 +884,8 @@ function StudyHubContent() {
           </div>
 
           <details className={styles.syncDisclosure}>
-            <summary>同步教务数据与校园账号 <span>更新成绩、课表和考试 ›</span></summary>
+            <summary>校园账号设置 <span>管理账号与教务密码 ›</span></summary>
             <CampusAccountCard onApplied={(a) => { setStuid(a.stuid); setPwd(a.jwPassword); setRememberPwd(a.remember) }} />
-            {syncCard}
           </details>
 
           <details className={styles.memoDisclosure}>

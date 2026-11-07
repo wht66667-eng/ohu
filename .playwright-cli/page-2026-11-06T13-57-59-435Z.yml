@@ -1,0 +1,18 @@
+- generic [active] [ref=f2e1]:
+  - region "哦狐":
+    - button "跳过动画"
+    - generic:
+      - generic:
+        - heading "哦狐" [level=1]
+        - paragraph: 校园每一步
+      - generic:
+        - generic:
+          - heading "校园里，又见面啦" [level=2]
+          - paragraph: 带上好心情，开始今天的校园生活。
+      - generic:
+        - paragraph: 正在准备你的校园…
+        - status: 正在准备页面
+  - generic [ref=f2e5]:
+    - link "跳到主要内容" [ref=f2e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - main [ref=f2e7]

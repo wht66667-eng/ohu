@@ -115,7 +115,7 @@ export async function runAutoSync(opts?: {
   const run = opts?.run ?? beginAcademicSync()
   const session = run.session
   if (!isAcademicSyncCurrent(run)) return emptyFail({ message: '同步请求已更新，请在当前页面重试。' })
-  if (!session.uid) return emptyFail({ message: '请先用手机号登录哦狐，再同步教务数据。' })
+  if (!session.uid) return emptyFail({ message: '请先用学号登录哦狐，再同步教务数据。' })
   const acc = loadCampusAccount(session)
   const stuid = (opts?.stuid ?? acc.stuid).trim()
   /** 输入法常打出全角！？等，正方教务只认半角；NFKC 统一成 ASCII */
@@ -188,7 +188,7 @@ export async function runCaptchaSync(opts: {
 }): Promise<AutoSyncResult> {
   const run = beginAcademicSync()
   const session = run.session
-  if (!session.uid) return emptyFail({ message: '请先用手机号登录哦狐，再同步教务数据。' })
+  if (!session.uid) return emptyFail({ message: '请先用学号登录哦狐，再同步教务数据。' })
   try {
     const data = await queryAcademic(
       opts.sid,

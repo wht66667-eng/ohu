@@ -7,6 +7,8 @@ import { getCurrentMapLocation, type MapLocation } from '../lib/campus-map-locat
 import { isJouGuidePoi, jouCampusChoices, jouReferencePois, JOU_OFFICIAL_MAP } from '../lib/jou-campus-reference'
 import { ImagePickButton } from '../components/ImageUploadField'
 import { useAuth } from '../lib/auth'
+import { useCampusPreference } from '../lib/use-campus-preference'
+import { campusNameFromLabel, preferredCampusRow } from '../lib/campus-preference'
 import { uploadImages } from '../lib/market'
 import { createCampusPoiCheckin, submitCampusPoi, fetchCampusPois, fetchCampuses, fetchCampusPosts, fetchCampusSchools, createCampusPost, toggleCampusLike, fetchCampusComments, createCampusComment, type Campus, type CampusComment, type CampusPoi, type CampusPost, type CampusSchool } from '../lib/campus-map'
 import { submitReport } from '../lib/reports'
@@ -27,7 +29,9 @@ export function CampusMapPage() {
   const ownerUid = auth.isSigned ? auth.user?.uid || '' : ''
   const draftOwnerUid = useRef(ownerUid)
   const [schools, setSchools] = useState<CampusSchool[]>([]); const schoolId: string = 'jou'
-  const [campuses, setCampuses] = useState<Campus[]>([]); const [campusId, setCampusId] = useState<number | null>(null)
+  const [campuses, setCampuses] = useState<Campus[]>([])
+  const { campus: currentCampus, setCampus } = useCampusPreference()
+  const campusId = preferredCampusRow(campuses, currentCampus)?.id ?? null
   const [pois, setPois] = useState<CampusPoi[]>([]); const [localPois, setLocalPois] = useState<LocalPin[]>([]); const [posts, setPosts] = useState<CampusPost[]>([])
   const [view, setView] = useState<'map'|'list'>('map'); const [filter, setFilter] = useState<MapCategory>('全部'); const [selectedPoi, setSelectedPoi] = useState<CampusPoi | null>(null)
   const [query,setQuery] = useState('')
@@ -73,7 +77,7 @@ export function CampusMapPage() {
   const postRequest = useRef(0)
   const loadPosts = useCallback(async () => { const request = ++postRequest.current; const scope = actionScope.current; setLoading(true); const r = await fetchCampusPosts(schoolId, cloudCampusId); if (request !== postRequest.current || scope !== actionScope.current) return; setLoading(false); setError(r.error || ''); setPosts(r.rows) }, [schoolId, cloudCampusId, campusId, ownerUid])
   useEffect(() => { void fetchCampusSchools().then(r => { setSchools(r.rows); if (r.error) setError(`${r.error}（请先应用校园地图数据库迁移）`) }) }, [])
-  useEffect(() => { let live = true; setCampusId(null); setCampuses([]); setPois([]); setSelectedPoi(null); void fetchCampuses(schoolId).then(r => { if (!live) return; const rows = schoolId === 'jou' ? jouCampusChoices(r.rows) : r.rows; setCampuses(rows); const first = rows.find(x => x.name.includes('苍梧')) || rows[0]; if (first) setCampusId(first.id); else if (r.error) setError(`${r.error}（地点范围尚未配置）`) }); return () => { live = false } }, [schoolId])
+  useEffect(() => { let live = true; setCampuses([]); setPois([]); setSelectedPoi(null); void fetchCampuses(schoolId).then(r => { if (!live) return; const rows = schoolId === 'jou' ? jouCampusChoices(r.rows) : r.rows; setCampuses(rows); if (!rows.length && r.error) setError(`${r.error}（地点范围尚未配置）`) }); return () => { live = false } }, [schoolId])
   useEffect(() => {
     let live=true
     setSelectedPoi(null);setPinForm(false);setCheckinOpen(false);setQuery('')
@@ -234,7 +238,7 @@ export function CampusMapPage() {
       <div><span className={s.eyebrow}>OHU · CAMPUS MAP</span><h2>和阿狐一起，探索校园</h2><p>每一个喜欢的地方，都值得记下来。</p></div>
       <FoxSheetPose pose="map" className={s.mapFox}/>
     </section>
-    <div className={s.campusPicker} role="group" aria-label="选择江苏海洋大学校区">{campuses.map(x=><button type="button" key={x.id} aria-pressed={campusId===x.id} onClick={()=>setCampusId(x.id)}>{x.name.replace('校区','')}</button>)}</div>
+    <div className={s.campusPicker} role="group" aria-label="选择江苏海洋大学校区">{campuses.map(x=><button type="button" key={x.id} aria-pressed={campusId===x.id} onClick={()=>{const name=campusNameFromLabel(x.name);if(name)setCampus(name)}}>{x.name.replace('校区','')}</button>)}</div>
     <label className={s.mapSearch}><MapIcon name="search"/><input type="search" value={query} onChange={e=>{setQuery(e.target.value);setSelectedPoi(null)}} placeholder="搜索地点、食堂、教学楼…" aria-label="搜索校园地点"/>{query?<button type="button" aria-label="清空地图搜索" onClick={()=>setQuery('')}><MapIcon name="close"/></button>:null}</label>
     <div className={s.categoryBar} role="group" aria-label="地点分类">{MAP_CATEGORIES.map(x=><button type="button" key={x.label} style={{'--category-color':x.color,'--category-bg':x.background} as import('react').CSSProperties} aria-pressed={filter===x.label} onClick={()=>{setFilter(x.label);setSelectedPoi(null)}}><MapIcon name={x.icon}/>{x.label}</button>)}</div>
     <div className={s.mapToolbar}><span>{selectedCampus?.name||'正在加载校区'}<small> · {visiblePois.length} 个地点</small></span><div role="group" aria-label="地图或地点列表"><button type="button" aria-pressed={view==='map'} onClick={()=>setView('map')}>地图</button><button type="button" aria-pressed={view==='list'} onClick={()=>setView('list')}>列表</button></div></div>

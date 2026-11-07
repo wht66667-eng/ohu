@@ -35,6 +35,23 @@ public class AppProbePlugin extends Plugin {
         call.resolve(ret);
     }
 
+    /** Launch only the official Chaoxing Learning app when it is installed. */
+    @PluginMethod
+    public void openChaoxingApp(PluginCall call) {
+        JSObject ret = new JSObject();
+        boolean ok = false;
+        try {
+            Intent launch = getContext().getPackageManager().getLaunchIntentForPackage("com.chaoxing.mobile");
+            if (launch != null) {
+                launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(launch);
+                ok = true;
+            }
+        } catch (RuntimeException ignored) { /* The web page provides an official fallback. */ }
+        ret.put("ok", ok);
+        call.resolve(ret);
+    }
+
     /** Fixed QuickJump destinations; caller-supplied URL/component/extras are ignored. */
     @PluginMethod
     public void openExpressEntry(PluginCall call) {

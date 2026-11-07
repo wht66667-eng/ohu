@@ -1,0 +1,96 @@
+- generic [ref=e5]:
+  - link "跳到主要内容" [ref=e6] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=e7]:
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - button "返回" [ref=e81] [cursor=pointer]
+        - heading "PU 二课" [level=1] [ref=e84]
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - text: 第二课堂 · 口袋校园
+          - heading "把 PU 学分 带回哦狐看" [level=2] [ref=e91]: 把 PU 学分带回哦狐看
+          - generic [ref=e92]:
+            - strong [ref=e93]: "4.85"
+            - generic [ref=e94]: 总学分
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: 活动类
+              - generic [ref=e98]: "4.25"
+            - generic [ref=e99]:
+              - generic [ref=e100]: 成果类
+              - generic [ref=e101]: "0.6"
+          - button "打开口袋校园 ↗" [ref=e102] [cursor=pointer]
+          - generic [ref=e103]: PU 是口袋校园的独立账号体系，和教务「公选进度」不是同一口径，两边学分不混算。
+        - status [ref=e104]: 当前未登录哦狐，PU 数据保存在本机访客区；登录后会按账号隔离。
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - text: 已保存
+              - heading "PU 学分概览" [level=3] [ref=e141]
+            - generic [ref=e142]: 口袋校园
+          - generic [ref=e143]:
+            - generic [ref=e144]:
+              - generic [ref=e145]: A 类
+              - emphasis [ref=e146]: "1.2"
+            - generic [ref=e147]:
+              - generic [ref=e148]: B 类
+              - emphasis [ref=e149]: "0.85"
+            - generic [ref=e150]:
+              - generic [ref=e151]: C 类
+              - emphasis [ref=e152]: "0.6"
+            - generic [ref=e153]:
+              - generic [ref=e154]: 劳动教育
+              - emphasis [ref=e155]: "1"
+          - list [ref=e156]:
+            - listitem [ref=e157]:
+              - generic [ref=e158]:
+                - generic [ref=e159]: 团员主题教育
+                - generic [ref=e160]: 【素质拓展B类】团员主题教育
+              - generic [ref=e161]:
+                - emphasis [ref=e162]: "0.85"
+                - generic [ref=e163]: B 类
+            - listitem [ref=e164]:
+              - generic [ref=e165]:
+                - generic [ref=e166]: 志愿服务
+                - generic [ref=e167]: 【素质拓展A类】志愿服务
+              - generic [ref=e168]:
+                - emphasis [ref=e169]: "1.2"
+                - generic [ref=e170]: A 类
+            - listitem [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: 公益劳动
+                - generic [ref=e174]: 【劳动教育】公益劳动
+              - generic [ref=e175]:
+                - emphasis [ref=e176]: "1"
+                - generic [ref=e177]: 劳动教育
+            - listitem [ref=e178]:
+              - generic [ref=e179]:
+                - generic [ref=e180]: 日常性劳动
+                - generic [ref=e181]: 【素质拓展C类】日常性劳动
+              - generic [ref=e182]:
+                - emphasis [ref=e183]: "0.6"
+                - generic [ref=e184]: C 类
+          - generic [ref=e185]:
+            - generic [ref=e186]: 更新于 2026/11/6 21:57:48 · 来源 pocketuni
+            - button "清除本机缓存" [ref=e187] [cursor=pointer]
+        - generic [ref=e117]:
+          - generic [ref=e119]:
+            - text: 导入
+            - heading "粘贴成绩明细或接口 JSON" [level=3] [ref=e120]
+          - generic [ref=e121]:
+            - text: 粘贴内容
+            - textbox "粘贴内容" [ref=e122]:
+              - /placeholder: "活动类 4.25 + 成果类 0.60 = 总成绩 4.85\n【素质拓展B类】团员主题教育（0.85）\n【劳动教育】公益劳动（1.00）"
+          - generic [ref=e123]:
+            - button "识别内容" [disabled] [ref=e124]
+            - button "保存到本机" [disabled] [ref=e125]
+          - status [ref=e140]: PU 二课学分已保存到本机当前账号；下次打开可直接查看。
+          - generic [ref=e126]: 识别只在本机进行；不会把粘贴内容发送到服务器。保存时只保留学分数字与分类名。
+        - generic [ref=e127]:
+          - generic [ref=e128]: 口径说明
+          - paragraph [ref=e129]: · 没读到 ≠ 0：未读取到的总分会显示「—」，不会写成 0 学分。
+          - paragraph [ref=e130]: · 0 分分类只用于看「还差哪类」，不进合计与明细。
+          - paragraph [ref=e131]: · 学校尚未公布 A/B/C 类毕业要求，页面不写「还差 X 学分」，避免伪造达标线。
+          - link "返回成绩 ›" [ref=e132] [cursor=pointer]:
+            - /url: /study?tab=grades

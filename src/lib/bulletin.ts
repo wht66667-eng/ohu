@@ -2,7 +2,7 @@
  * 校园信息站数据层：公告 news / 活动 activities / 报名 / 失物招领 lost_items
  *
  * - 公开列表：读公开视图 v_news_public / v_activities_public / v_lost_public（匿名可读，已剥联系方式）
- * - 失物详情联系方式：登录后读主表 lost_items（RLS 允许非游客登录用户读全部行）
+ * - 私人联系方式：主表仅本人／授权管理员可读，公开内容走不含联系字段的视图
  * - 活动报名：activity_signups（每人每活动一条，服务端触发器校验名额/重复）
  */
 import { cbRdb } from './cb'
@@ -498,7 +498,11 @@ export interface ActivitySignup {
 
 /** 某活动的报名名单（主办人可读，依赖 20260914100000 迁移放行 organizer 策略） */
 export async function fetchActivitySignups(activity_id: number): Promise<QueryRes<ActivitySignup>> {
-  return selectRows<ActivitySignup>('activity_signups', { activity_id })
+  try {
+    const res = await (cbRdb() as Any).rpc('activity_signup_roster_149', { p_activity_id: activity_id })
+    const error = readError(res?.error)
+    return { rows: !error && Array.isArray(res?.data) ? res.data : [], error }
+  } catch (error) { return { rows: [], error: errText(error) } }
 }
 
 /** 我报名过的活动 id 列表 */

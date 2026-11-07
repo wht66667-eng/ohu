@@ -1,0 +1,25 @@
+- generic [ref=e5]:
+  - link "跳到主要内容" [ref=e6] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=e7]
+  - dialog "首次使用引导" [ref=e8]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: 在校同学（学号登录）
+        - heading "哦狐 · 学生端" [level=1] [ref=e37]
+        - paragraph [ref=e16]: 你可以选择现在授权，也可以稍后设置
+      - generic [ref=e17]:
+        - heading "权限获取" [level=2] [ref=e65]
+        - paragraph [ref=e66]: 下列权限均可在系统设置中随时关闭。拒绝不影响浏览公开内容，但相关功能将不可用。
+        - generic [ref=e67]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: 通知
+            - generic [ref=e71]: 上课、考试、考证与任务消息提醒
+          - generic [ref=e73]:
+            - generic [ref=e74]: 相机 / 相册
+            - generic [ref=e75]: 发帖、二手图片、头像上传时使用
+      - generic [ref=e33]:
+        - generic [ref=e76]:
+          - button "暂不授权" [ref=e77] [cursor=pointer]
+          - button "授权并进入" [ref=e78] [cursor=pointer]
+        - paragraph [ref=e64]: 浏览器将询问通知等权限；位置需在使用时确认。

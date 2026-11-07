@@ -63,7 +63,25 @@ let identityRevision = 0
 let storeRevision = 0
 const subscribers = new Set<() => void>()
 
-function storageKey(uid = currentUid): string {
+/** 学号本机身份（与云端手机账号并存）：没有云端登录时用它隔离本机数据。 */
+const LOCAL_IDENTITY_KEY = 'ohu.local-identity.v1'
+
+function localIdentityUid(): string {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(LOCAL_IDENTITY_KEY) || 'null')
+    const uid = raw && typeof raw === 'object' ? String((raw as { uid?: unknown }).uid ?? '') : ''
+    return uid.startsWith('local:') ? uid : ''
+  } catch {
+    return ''
+  }
+}
+
+/** 云端 uid 优先；未登录云端时退回学号本机身份。 */
+export function effectiveQbankUid(): string {
+  return currentUid || localIdentityUid()
+}
+
+function storageKey(uid = effectiveQbankUid()): string {
   return uid ? `qbank.v3:uid:${encodeURIComponent(uid)}` : 'qbank.v3:guest'
 }
 
@@ -87,10 +105,10 @@ export function subscribeQbank(notify: () => void): () => void {
 }
 
 export function captureQbankSession() {
-  return { uid: currentUid, revision: identityRevision }
+  return { uid: effectiveQbankUid(), revision: identityRevision }
 }
 export function isQbankSessionCurrent(session: ReturnType<typeof captureQbankSession>): boolean {
-  return currentUid === session.uid && identityRevision === session.revision
+  return effectiveQbankUid() === session.uid && identityRevision === session.revision
 }
 
 export class QbankStorageError extends Error {
@@ -235,7 +253,8 @@ export function submitAttemptLocal(paperId: string, answers: Record<string, stri
 /* ---------------- 云端（尽力而为） ---------------- */
 
 export function setQbankUid(uid: string | undefined | null) {
-  const next = typeof uid === 'string' ? uid.trim() : ''
+  /* 云端登出时不要清掉学号本机身份：它仍要承载课表/成绩/体测本机数据。 */
+  const next = (typeof uid === 'string' ? uid.trim() : '') || localIdentityUid()
   if (next === currentUid) return
   identityRevision++
   currentUid = next

@@ -64,6 +64,7 @@ function fixture(opts = {}) {
     react, 'react/jsx-runtime': { jsx: node, jsxs: node },
     'motion/react': { motion: { div: 'div' }, useReducedMotion: () => true },
     './PasswordInput': { PasswordInput },
+    './fox/FoxRequestIndicator': { FoxRequestIndicator: 'request-indicator' },
     '../lib/auth': {
       useAuth: () => ({
         sendPhoneCode: async (p) => sendPhoneCode(p),

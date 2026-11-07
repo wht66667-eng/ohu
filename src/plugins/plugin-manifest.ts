@@ -4,7 +4,7 @@
  * 插件实现必须由源码静态导入并随 Web / APK 一起构建；不支持远程脚本、eval、动态模块 URL。
  * manifest 是商城展示、入口路由和审核权限的唯一声明。
  */
-export type OhuPluginPermission = 'schedule:open' | 'todo:open' | 'focus:open' | 'word-study:read' | 'word-study:write' | 'qbank:read'
+export type OhuPluginPermission = 'schedule:open' | 'todo:open' | 'focus:open' | 'word-study:read' | 'word-study:write' | 'qbank:read' | 'local-bank:read' | 'local-bank:write'
 
 export interface OhuPluginManifest {
   id: string
@@ -51,22 +51,22 @@ export const BUILT_IN_PLUGINS: readonly OhuPluginManifest[] = [
     author: '哦狐',
   },
   {
-    id: 'daily-tarot-reflection', version: '1.0.0', name: '今日塔罗灵感', category: '趣味探索',
-    summary: '抽一张牌，获得一个用于自我反思的小提示；牌面不预测现实结果。',
-    entryPath: '/plugins', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
-    sourceName: 'anois/tarot（仅作开源参考）', sourceHref: 'https://github.com/anois/tarot', sourceLicense: 'MIT（哦狐模块独立实现，未复制代码或牌面素材）',
+    id: 'daily-tarot-reflection', version: '1.1.0', name: '今日塔罗灵感', category: '趣味探索',
+    summary: '先与 AI 聊塔罗知识或直接翻牌；可提问并让 AI 结合本机抽牌给出反思提示，不预测现实。',
+    entryPath: '/plugins/daily-tarot-reflection', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
+    sourceName: 'anois/tarot（交互灵感）', sourceHref: 'https://github.com/anois/tarot', sourceLicense: '上游源码 MIT；哦狐独立实现洗牌、牌阵与自绘牌面，未复制代码、数据或图像',
   },
   {
-    id: 'daily-zodiac-mood', version: '1.0.0', name: '星座今日灵感', category: '趣味探索',
-    summary: '选择星座，生成轻松的今日行动提示；不收集生日信息。',
-    entryPath: '/plugins', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
-    sourceName: 'fortune-org/fortune-platform（仅作开源参考）', sourceHref: 'https://github.com/fortune-org/fortune-platform', sourceLicense: 'MIT（哦狐模块独立实现，未复制代码或素材）',
+    id: 'daily-zodiac-mood', version: '1.1.0', name: '星座今日灵感', category: '趣味探索',
+    summary: '可先与 AI 聊星座知识，再点亮星图获取行动提示；不收集生日信息，不预测现实。',
+    entryPath: '/plugins/daily-zodiac-mood', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
+    sourceName: 'fortune-org/fortune-platform（开源交互参考）', sourceHref: 'https://github.com/fortune-org/fortune-platform', sourceLicense: 'MIT；哦狐独立实现星图选择与本机提示，未复制代码或素材',
   },
   {
     id: 'birthday-number-play', version: '1.0.0', name: '生日数字趣玩', category: '趣味探索',
-    summary: '在本机临时计算一个数字主题与自我提问；输入不会保存或上传。',
-    entryPath: '/plugins', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
-    sourceName: 'fortune-org/fortune-platform（仅作开源参考）', sourceHref: 'https://github.com/fortune-org/fortune-platform', sourceLicense: 'MIT（哦狐模块独立实现，未复制代码或素材）',
+    summary: '可先询问数字主题相关知识，再在本机生成反思提示；生日输入不会保存或上传。',
+    entryPath: '/plugins/birthday-number-play', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
+    sourceName: 'fortune-org/fortune-platform（开源交互参考）', sourceHref: 'https://github.com/fortune-org/fortune-platform', sourceLicense: 'MIT；哦狐独立实现，未复制代码或素材',
   },
   {
     id: 'local-review-cards', version: '1.0.0', name: '今日记忆卡', category: '学习效率',
@@ -79,6 +79,13 @@ export const BUILT_IN_PLUGINS: readonly OhuPluginManifest[] = [
     summary: '从哦狐本机题库随机抽取最多五题即时练习，不额外上传答案或创建试卷。',
     entryPath: '/english/bank', permissions: ['qbank:read'], bundled: true, reviewed: true, official: false, author: 'wft',
     sourceName: 'Exameow（题库练习流程参考）', sourceHref: 'https://github.com/heshengtao/exameow', sourceLicense: 'Apache-2.0（哦狐模块独立实现，未复制代码或题目素材）',
+  },
+  {
+    id: 'fox-safety-library', version: '1.0.0', name: 'fox 安全知识', category: '学习效率',
+    summary: '内置 1000 条安全知识记录，离线检索与查看参考答案；可导入自己的 JSON 题库。',
+    entryPath: '/plugins/fox-safety', permissions: ['local-bank:read', 'local-bank:write'], bundled: true, reviewed: true, official: false, author: 'wft',
+    sourceName: 'Scwizard/jiangsu-safety-competition（题库数据来源）', sourceHref: 'https://github.com/Scwizard/jiangsu-safety-competition/tree/4b797158c1886d5c457eaf33a4afd1a4a0218fbd',
+    sourceLicense: 'Apache-2.0；保留 Scwizard 署名。插件界面独立实现，未接入平台自动作答或交卷。',
   },
 ] as const
 

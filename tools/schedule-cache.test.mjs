@@ -200,9 +200,10 @@ test('the mounted homepage signals readiness while its task and listing requests
   const mocks = {
     'react': { lazy: (loader) => loader, Suspense: 'div', useEffect: (effect) => effects.push(effect), useMemo: (read) => read(), useRef: (value) => ({ current: value }), useState: (value) => [typeof value === 'function' ? value() : value, () => {}] },
     'react/jsx-runtime': { jsx, jsxs: jsx },
-    'react-router-dom': { Link: 'a', useNavigate: () => () => {} },
+    'react-router-dom': { Link: 'a', useNavigate: () => () => {}, useSearchParams: () => [new URLSearchParams(), () => {}] },
     'motion/react': { motion: { div: 'div', header: 'header' }, useReducedMotion: () => true },
     '../lib/auth': { useAuth: () => ({ phase: 'signed', isSigned: true, user: { uid: 'student-a' } }) },
+    '../lib/use-campus-preference': { useCampusPreference: () => ({ campus: '', setCampus: () => {} }) },
     '../lib/useQbankRevision': { useQbankRevision: () => 0 },
     '../lib/hooks': { usePollingRows: () => ({ rows: [], loading: true, error: null, reload: () => {} }) },
     '../lib/boot': { markBootReady: (key) => ready.push(key) },

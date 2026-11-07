@@ -3,7 +3,8 @@
  * 图片上传到 pgstore 桶 images；登录门控在提交前做。
  */
 import { useState } from 'react'
-import { CAMPUSES, composeLocation, type Campus } from '../lib/campus'
+import { CAMPUSES, composeLocation } from '../lib/campus'
+import { useCampusPreference } from '../lib/use-campus-preference'
 import { createItem, uploadImages } from '../lib/market'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
@@ -17,7 +18,7 @@ const MAX_IMAGES = 3
 export function GoodsPublishSheet({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const toast = useToast()
   const auth = useAuth()
-  const [campus, setCampus] = useState<Campus | ''>('')
+  const { campus, setCampus } = useCampusPreference()
   const [category, setCategory] = useState<string>(CATEGORIES[0])
   const [condition, setCondition] = useState<string>(CONDITIONS[1])
   const [title, setTitle] = useState('')
@@ -94,6 +95,7 @@ export function GoodsPublishSheet({ onClose, onDone }: { onClose: () => void; on
                 key={c}
                 type="button"
                 className={`${sheet.segBtn} ${c === campus ? sheet.segOn : ''}`}
+                aria-pressed={c === campus}
                 onClick={() => setCampus(c)}
               >
                 {c}

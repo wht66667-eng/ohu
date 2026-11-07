@@ -141,7 +141,8 @@ export function TasksPage() {
     async (id: number) => {
       if (!(await auth.ensureSignedIn('查看联系方式需要登录'))) return
       const res = await queryRows<Task>('tasks', { id }, 1)
-      const contact = res.rows[0]?.contact || '发布者未留联系方式'
+      const contact = res.rows[0]?.contact
+      if (!contact) { toast('联系方式已保护，请打开任务详情发私信'); return }
       try {
         await navigator.clipboard.writeText(contact)
         toast.ok('联系方式已复制到剪贴板')

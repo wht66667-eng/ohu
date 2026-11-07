@@ -505,44 +505,13 @@ def timetable_auto():
 # 旧版简易接口（保留兼容）
 # ============================================================
 
-@app.route("/api/schedule", methods=["POST"])
-def api_schedule():
-    body = read_object(request)
-    student_id = credential(body, "student_id", 80, strip=True)
-    password = credential(body, "password")
-    if not student_id or not password:
-        return _err_simple("1000", 400, "请提供 student_id 和 password")
-    rejected = _query_limit(_rid(), _client_ip(), student_id)
-    if rejected is not None:
-        return rejected
-    if MOCK:
-        return _ok({"student_id": student_id, "rows": MockSchedule.rows()})
-    # 有 OCR 时走自动；否则提示用新接口
-    from captcha_ocr import ocr_available
-    if ocr_available():
-        if not _enter_upstream(_rid(), _client_ip(), "schedule-legacy"):
-            return _err_simple("1004", 429, "当前查询人数较多，请稍后重试", 5)
-        try:
-            data = auto_query_academic(student_id, password, fetch=["schedule"], max_tries=5)
-            return _ok(data)
-        except ScheduleError as e:
-            return _err(e)
-        finally:
-            _leave_upstream()
-    return _err_simple(
-        "1010",
-        501,
-        "请使用 /api/timetable/auto（需 OCR）或 /api/timetable/captcha + /query",
-    )
-
-
 @app.route("/api/integrations/capabilities", methods=["GET"])
 def integration_capabilities():
     from importlib.util import find_spec
     from physical_read import configured
     enabled = os.environ.get("CHAOXING_READ_ENABLED", "") == "1" and find_spec("Crypto") is not None
     return _ok({"chaoxing": {"enabled": enabled, "readOnly": True},
-                "physical": {"enabled": configured(), "source": "jou-tice", "httpUpstream": True}})
+                "physical": {"enabled": False, "source": "jou-tice", "httpUpstream": False, "note": "device-sync-only"}})
 
 
 def _integration_json():
@@ -554,57 +523,6 @@ def _integration_json():
         return json.loads(payload)
     except (ValueError, UnicodeError):
         return None
-
-
-@app.route("/api/physical/captcha", methods=["POST"])
-def physical_captcha():
-    from physical_read import configured, prepare, PhysicalReadError
-    if not configured():
-        return _err_simple("INTEGRATION_DISABLED", 503, "体测同步尚未在服务器启用")
-    limited, retry = _win_ip_query.hit(_client_ip())
-    if limited: return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
-    if not _enter_upstream(_rid(), _client_ip(), "physical-captcha"):
-        return _err_simple("1004", 429, "体测查询人数较多", 5)
-    try:
-        return _ok(prepare())
-    except PhysicalReadError as error:
-        return _err_simple("PHYSICAL_SOURCE_UNSUPPORTED", 422, str(error))
-    except Exception:
-        return _err_simple("PHYSICAL_UNREACHABLE", 502, "学校体测系统暂不可达，可能需要校园网；原记录已保留")
-    finally:
-        _leave_upstream()
-
-
-@app.route("/api/physical/query", methods=["POST"])
-def physical_query():
-    from physical_read import configured, query, PhysicalReadError
-    if not configured():
-        return _err_simple("INTEGRATION_DISABLED", 503, "体测同步尚未在服务器启用")
-    if request.content_length is not None and request.content_length > 8192:
-        return _err_simple("INVALID_INPUT", 400, "请求内容过长")
-    body = _integration_json()
-    if not isinstance(body, dict) or body.get("consent") is not True or body.get("httpConsent") is not True:
-        return _err_simple("CONSENT_REQUIRED", 400, "请确认本次查询及学校旧系统的 HTTP 连接方式")
-    values = [body.get(k, "") for k in ("sid", "username", "password", "captcha")]
-    if any(not isinstance(v, str) or len(v) > 256 for v in values) or not all(values[:3]):
-        return _err_simple("INVALID_INPUT", 400, "请填写体测账号与密码，并重新准备验证码")
-    sid, username, password, captcha = values
-    for window, key in ((_win_global_query, "global"), (_win_ip_query, _client_ip()), (_win_username, "physical:" + username)):
-        limited, retry = window.hit(key)
-        if limited: return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
-    if not _enter_upstream(_rid(), _client_ip(), "physical-query"):
-        return _err_simple("1004", 429, "体测查询人数较多", 5)
-    try:
-        return _ok(query(sid, username, password, captcha))
-    except PhysicalReadError as error:
-        return _err_simple("PHYSICAL_READ_FAILED", 422, str(error))
-    except Exception:
-        return _err_simple("PHYSICAL_UNREACHABLE", 502, "学校体测系统暂不可达或表单已改变，原记录已保留")
-    finally:
-        values.clear()
-        body.clear()
-        password = ""
-        _leave_upstream()
 
 
 @app.route("/api/learning/chaoxing/query", methods=["POST"])

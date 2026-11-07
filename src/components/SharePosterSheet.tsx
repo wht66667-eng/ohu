@@ -1,40 +1,73 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { saveShareImage } from '../lib/share-image'
+import { OHU_SHARE_URL, shareOhuLink } from '../lib/ohu-sharing'
+import styles from './ohu-share-panel.module.css'
 
 type PosterModule = { renderSharePoster: (index: number) => Promise<Blob> }
-const names = ['森林绿', '橘子汽水', '晴空蓝']
+const themes = ['森林绿', '橘子汽水', '晴空蓝']
 
-export function SharePosterSheet({ onClose }: { onClose: () => void }) {
+/** One embedded page for links, QR art and platform-specific image saving. */
+export function OhuSharePanel() {
   const [theme, setTheme] = useState(0)
+  const [mode, setMode] = useState<'link' | 'image'>('link')
   const [image, setImage] = useState('')
-  const [message, setMessage] = useState('正在生成分享图…')
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const mounted = useRef(true)
+  const busyRef = useRef(false)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   useEffect(() => {
     let active = true
-    setImage(''); setMessage('正在生成分享图…')
+    let reader: FileReader | undefined
+    setImage(''); setLoading(true); setLoadError(''); setMessage('')
+    const timer = window.setTimeout(() => {
+      active = false
+      if (mounted.current) { setLoading(false); setLoadError('分享图暂时未能生成，仍可分享链接。') }
+    }, 15000)
     const path = new URL('/download/share-poster.mjs', window.location.origin).href
     void import(/* @vite-ignore */ path).then((mod: PosterModule) => mod.renderSharePoster(theme)).then(blob => {
-      const reader = new FileReader()
-      reader.onload = () => { if (active && typeof reader.result === 'string') { setImage(reader.result); setMessage('安卓 App 保存到 Ohhu 相册；iPhone 打开系统分享面板；浏览器下载图片。') } }
-      reader.onerror = () => { if (active) setMessage('生成图片失败，请重试。') }
+      if (!active) return
+      reader = new FileReader()
+      reader.onload = () => {
+        if (active && typeof reader?.result === 'string') { setImage(reader.result); setLoading(false); window.clearTimeout(timer) }
+      }
+      reader.onerror = () => { if (active) { setLoading(false); setLoadError('分享图生成失败，仍可分享链接。'); window.clearTimeout(timer) } }
       reader.readAsDataURL(blob)
-    }).catch(() => { if (active) setMessage('生成图片失败，请检查网络或重新打开。') })
-    return () => { active = false }
-  }, [theme])
-  async function save() {
-    if (!image || busy) return
-    setBusy(true); setMessage('正在保存到相册…')
-    try { setMessage(await saveShareImage(image, 'ohu-share.png')) }
-    catch (error) { setMessage(error instanceof Error ? error.message : '保存失败，请检查相册权限后重试。') }
-    finally { setBusy(false) }
+    }).catch(() => { if (active) { setLoading(false); setLoadError('分享图生成失败，仍可分享链接。'); window.clearTimeout(timer) } })
+    return () => { active = false; window.clearTimeout(timer); if (reader?.readyState === 1) reader.abort() }
+  }, [theme, attempt])
+
+  const platform = Capacitor.getPlatform()
+  const imageAction = platform === 'android' ? '保存分享图到相册' : platform === 'ios' ? '分享图片' : '下载分享图'
+  async function share() {
+    if (busyRef.current || (mode === 'image' && !image)) return
+    busyRef.current = true; setBusy(true); setMessage('')
+    try {
+      const result = mode === 'image' ? await saveShareImage(image, 'ohu-share.png') : await shareOhuLink()
+      if (mounted.current) setMessage(result)
+    } catch (error) {
+      if (mounted.current) setMessage(error instanceof Error ? error.message : '分享未完成，请重试。')
+    } finally { busyRef.current = false; if (mounted.current) setBusy(false) }
   }
-  return <div role="dialog" aria-modal="true" aria-label="分享哦狐" style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#10281dcc', display: 'grid', placeItems: 'center', padding: 18 }}>
-    <div style={{ width: 'min(100%, 420px)', maxHeight: '90dvh', overflow: 'auto', background: '#fffefa', borderRadius: 22, padding: 18, textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><strong>分享哦狐</strong><button type="button" onClick={onClose} aria-label="关闭">关闭</button></div>
-      {image && <img src={image} alt="哦狐分享卡" style={{ width: 'min(75%, 240px)', maxHeight: '50dvh', objectFit: 'contain', margin: '12px auto' }} />}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>{names.map((name, i) => <button type="button" key={name} aria-pressed={theme === i} onClick={() => setTheme(i)}>{name}</button>)}</div>
-      <button type="button" disabled={!image || busy} onClick={() => void save()} style={{ marginTop: 12, padding: '12px 28px', background: '#17654d', color: 'white', border: 0, borderRadius: 12 }}>{busy ? '正在处理…' : '保存 / 分享图片'}</button>
-      <p role="status" style={{ fontSize: 14 }}>{message}</p>
+
+  return <section className={styles.panel} aria-label="分享哦狐">
+    <h2>把哦狐分享给同学</h2>
+    <div className={styles.preview}>
+      <img src={image || '/download/assets/share-qr.png'} alt={image ? '哦狐分享图，含官网二维码' : '哦狐官网二维码'} width={image ? 720 : 360} height={image ? 1080 : 360} />
+      <span>扫码打开哦狐官网</span>
     </div>
-  </div>
+    <div className={styles.options}>
+      <label>分享方式<select value={mode} disabled={busy} onChange={event => { setMode(event.target.value as 'link' | 'image'); setMessage('') }}><option value="link">链接</option><option value="image">二维码分享图</option></select></label>
+      {mode === 'image' ? <label>分享图样式<select value={theme} disabled={busy} onChange={event => setTheme(Number(event.target.value))}>{themes.map((name, index) => <option key={name} value={index}>{name}</option>)}</select></label> : null}
+    </div>
+    {loadError ? <p className={styles.note}>{loadError} <button type="button" disabled={loading || busy} onClick={() => setAttempt(value => value + 1)}>重新生成</button></p> : null}
+    <div className={styles.action}><button type="button" className={styles.primary} disabled={busy || (mode === 'image' && !image)} onClick={() => void share()}>{busy ? '正在处理…' : mode === 'link' ? '分享哦狐' : loading ? '正在生成分享图…' : imageAction}</button></div>
+    {message ? <p className={styles.note} role="status">{message}</p> : null}
+    <a className={styles.website} href={OHU_SHARE_URL} target="_blank" rel="noopener noreferrer">官网与安装说明 ↗</a>
+    <a className={styles.website} href="/download/student.html" target="_blank" rel="noopener noreferrer">安卓 APK / iOS 安装包 →</a>
+  </section>
 }

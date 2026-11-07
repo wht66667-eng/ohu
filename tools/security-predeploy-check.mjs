@@ -46,6 +46,7 @@ function walk(dir, pred, acc = [], depth = 0) {
     const name = e.name
     if (
       name === 'node_modules' ||
+      name === '.codex' || // Local QA tool environments are not application source or release assets.
       name === '.git' ||
       name === 'dist' ||
       name === 'dist-app' ||

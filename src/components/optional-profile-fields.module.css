@@ -1,0 +1,8 @@
+.root { border:1px solid var(--line); border-radius:14px; padding:0 14px; }
+.root summary { display:flex; align-items:center; min-height:48px; gap:8px; cursor:pointer; color:var(--text); font-size:14px; font-weight:650; list-style:none; }
+.root summary span { color:var(--text-3); font-weight:400; font-size:12px; }
+.root summary::after { content:'⌄'; margin-left:auto; }
+.root[open] summary::after { content:'⌃'; }
+.fields { display:grid; gap:14px; padding:6px 0 16px; }
+.fields label,.field { display:grid; gap:7px; color:var(--text-2); font-size:14px; }
+.root summary:focus-visible { outline:2px solid var(--green); outline-offset:3px; }

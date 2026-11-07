@@ -52,8 +52,8 @@
       <p class="hint">适用于 64 位安卓手机，Android 6.0 及以上。</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
-    <section class="wechat" id="wechat-tip" hidden aria-label="微信下载提示">
-      <strong>在微信里没有开始下载？</strong>
+    <section class="wechat" id="wechat-tip" hidden aria-label="内置浏览器下载提示">
+      <strong>在应用内没有开始下载？</strong>
       <p>点右上角「···」，选择「在浏览器打开」，再点击下载按钮。</p>
     </section>
     <div class="steps" aria-label="安装步骤">
@@ -70,7 +70,10 @@
       var meta = document.getElementById('release-meta');
       var status = document.getElementById('status');
       var currentBuild = 0;
-      var wechat = /MicroMessenger/i.test(navigator.userAgent);
+      var embeddedBrowser = /MicroMessenger/i.test(navigator.userAgent) ? "微信" : /QQ\/|MQQBrowser/i.test(navigator.userAgent) ? "QQ" : "";
+      var wechat = Boolean(embeddedBrowser);
+      var tip = document.getElementById("wechat-tip");
+      if (embeddedBrowser) tip.querySelector("strong").textContent = "在" + embeddedBrowser + "里没有开始下载？";
       document.getElementById('wechat-tip').hidden = !wechat;
       document.getElementById('ios-tip').hidden = !/iPhone|iPad|iPod/i.test(navigator.userAgent);
       link.addEventListener('click', function (event) {
@@ -116,3 +119,5 @@
   </script>
 </body>
 </html>
+
+

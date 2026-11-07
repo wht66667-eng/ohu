@@ -17,7 +17,7 @@ import {
   type MeetActivity, type MeetRoom, type MeetRoomPreview, type MeetVibe,
 } from '../../lib/meet-api'
 import styles from './MeetPage.module.css'
-import { meetPersonalityName, readMeetPersonalityProfile, saveMeetPersonalityProfile, type MeetPersonality } from '../../lib/meet-personality'
+import { meetPersonalityName, meetPersonalitySimilarity, readMeetPersonalityProfile, saveMeetPersonalityProfile, type MeetPersonality } from '../../lib/meet-personality'
 
 const ACTIVITIES: Array<{ id: MeetActivity; label: string; icon: string }> = [
   { id: 'study', label: '一起自习', icon: '✎' },
@@ -336,7 +336,10 @@ function MeetDetail({ code }: { code: string }) {
           <section className={styles.section}>
             <div className={styles.sectionTitle}><div><span>THE GROUP</span><h2>一起参加的人</h2></div><small>{room.participantCount}/{room.targetSize}</small></div>
             {!room.detailsVisible ? <p className={styles.hint}>提交参加时间后，可查看已加入的同学。</p>
-              : room.participants.length ? <div className={styles.people}>{room.participants.map((person, index) => <span key={`${person.name}-${index}`}><i aria-hidden="true">{person.name.slice(0, 1)}</i>{person.name}<small>{person.personalityType ? `${person.personalityType} · ${meetPersonalityName(person.personalityType)}` : person.vibe === 'any' ? '' : vibeName(person.vibe)}</small></span>)}</div> : <p className={styles.hint}>还没有同学填写时间。</p>}
+              : room.participants.length ? <div className={styles.people}>{room.participants.map((person, index) => {
+                const similarity = personalityType && person.personalityType ? meetPersonalitySimilarity(personalityType, person.personalityType) : null
+                return <span key={`${person.name}-${index}`}><i aria-hidden="true">{person.name.slice(0, 1)}</i><span className={styles.personCopy}><b>{person.name}</b><small>{person.personalityType ? `${person.personalityType} · ${meetPersonalityName(person.personalityType)}` : person.vibe === 'any' ? '' : vibeName(person.vibe)}</small>{similarity !== null ? <small className={styles.personalityMatchScore}>与你相似 {similarity}/4</small> : null}</span></span>
+              })}</div> : <p className={styles.hint}>还没有同学填写时间。</p>}
           </section>
           {room.confirmedStart && room.confirmedEnd ? <section className={`${styles.section} ${styles.confirmed}`}><span>时间定啦</span><h2>{slotLabel(room.confirmedStart, room.confirmedEnd)}</h2><p>集合地点还没有记录，请在活动里和成员确认。</p>{calendar ? <button type="button" className={styles.calendarAction} onClick={() => { downloadIcs('哦狐碰个空活动.ics', calendar); setNotice('已发起日历文件下载。打开文件可导入系统日历；集合地点仍需与成员确认。') }}>下载日历文件</button> : <p className={styles.hint}>活动时间格式暂不可导出，请刷新活动信息。</p>}</section>
             : <section className={styles.section}>

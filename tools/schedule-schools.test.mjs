@@ -17,7 +17,7 @@ function schoolApi({ stored, failRead = false, failWrite = false, unavailable = 
   const storage = new Map(stored === undefined ? [] : [[key, stored]])
   const writes = []
   const module = { exports: {} }
-  const globals = { module, exports: module.exports }
+  const globals = { module, exports: module.exports, require: (name) => name === './qbank' ? { captureQbankSession: () => ({ uid: '' }) } : (() => { throw new Error('unexpected dependency ' + name) })() }
   if (!unavailable) globals.localStorage = {
     getItem(name) { if (failRead) throw new Error('storage blocked'); return storage.get(name) ?? null },
     setItem(name, value) { if (failWrite) throw new Error('quota'); writes.push([name, value]); storage.set(name, value) },

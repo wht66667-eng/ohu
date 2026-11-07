@@ -20,11 +20,16 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import type { ReactNode } from 'react'
 import { cbAuth, cbRdb } from './cb'
 import { SessionReadGuard } from './auth-session'
-import { setQbankUid } from './qbank'
+import { captureQbankSession, isQbankSessionCurrent, setQbankUid } from './qbank'
+import { applyPasswordSetup, passwordSetupError, passwordSetupMessage, type PasswordSetupInput } from './password-setup'
 import { selectImSession } from './im-session'
 import { markBootReady } from './boot'
 import { resetLauncherMoodForAccountChange } from './app-icon'
 import { toast } from './toast'
+import { getAppShell } from './app-shell'
+import { clearLocalIdentity, loadLocalIdentity } from './local-identity'
+import { readLocalProfile, saveLocalProfile } from './local-profile'
+import { cloudIdentityUid, ensureCloudIdentity } from './cloud-identity'
 
 export type AuthPhase = 'booting' | 'guest' | 'anon' | 'signed'
 
@@ -41,55 +46,14 @@ export interface AuthUser {
   isAnonymous: boolean
   /** 账号密码登录用的用户名（auth user_metadata.username；与展示昵称可能不同） */
   loginName: string
-  /** 是否已设置登录密码（手机验证码注册的账号默认为 false，需引导补设） */
+  /** 是否已设置登录密码；验证码注册后不自动要求补设。 */
   hasPassword: boolean
+  /** 元数据中是否明确给出密码状态；缺字段时不能误判为无密码。 */
+  passwordStatusKnown: boolean
 }
 
-/** 「设置登录账号 + 密码」表单入参 */
-export interface CredentialInput {
-  /** 昵称，同时作为账号密码登录时的用户名 */
-  nickname: string
-  /** 登录密码（≥6 位） */
-  password: string
-  /** 短信验证码（reauthenticate 下发） */
-  code: string
-  /** 新头像地址；空串表示沿用当前头像 */
-  avatarUrl?: string
-  /** 楼栋（选填） */
-  building?: string
-  /** 真实姓名（选填） */
-  realName?: string
-  /** 学号（选填） */
-  studentId?: string
-  /** 年级：大一 / 大二 / 大三 / 大四 / 大五 / 研究生（选填） */
-  grade?: string
-  /** 专业（选填） */
-  major?: string
-  /** 所属学院 key（选填；填了才能进同学院交流群） */
-  college?: string
-}
-
-/** 本地标记：用户对某个账号选了「稍后再说」，不再自动弹出设置面板 */
-function credSkipKey(uid: string): string {
-  return `credSkip:${uid}`
-}
-
-function readCredSkip(uid: string): boolean {
-  try {
-    return localStorage.getItem(credSkipKey(uid)) === '1'
-  } catch {
-    return false
-  }
-}
-
-function writeCredSkip(uid: string, skip: boolean): void {
-  try {
-    if (skip) localStorage.setItem(credSkipKey(uid), '1')
-    else localStorage.removeItem(credSkipKey(uid))
-  } catch {
-    // 隐私模式下 localStorage 不可用：降级为「不记忆」，不影响主流程
-  }
-}
+/** 密码设置与昵称、学籍资料分别保存。 */
+export type CredentialInput = PasswordSetupInput
 
 export interface AuthProfile {
   username: string
@@ -125,12 +89,14 @@ export interface AuthApi {
   profileOpen: boolean
   /** 资料编辑面板（换头像 / 换名字）可见性 */
   editOpen: boolean
-  /** 「设置登录账号 + 密码」面板可见性 */
+  /** 用户主动设置／修改密码的面板可见性 */
   credOpen: boolean
   ensureGuest: () => Promise<void>
   ensureSignedIn: (reason: string) => Promise<boolean>
   openLogin: (reason?: string) => void
   closeLogin: () => void
+  /** 学生端学号登录成功后调用：刷新本机身份并放行等待中的操作 */
+  completeStudentLogin: () => void
   loginWithPassword: (account: string, password: string) => Promise<string | null>
   sendPhoneCode: (phone: string) => Promise<string | null>
   submitPhoneCode: (code: string) => Promise<string | null>
@@ -150,19 +116,37 @@ export interface AuthApi {
   dismissProfile: () => void
   openEdit: () => void
   closeEdit: () => void
-  /** 打开「设置登录账号 + 密码」面板（设置页入口） */
+  /** 打开设置密码面板（设置页入口） */
   openCred: () => void
-  /** 关闭并记住「稍后再说」（下次验证码登录不再自动弹出） */
+  /** 关闭设置密码面板 */
   dismissCred: () => void
   /** 发送设置密码用的短信验证码（reauthenticate，会消耗一次短信） */
   sendCredCode: () => Promise<string | null>
-  /** 提交：写入昵称/登录用户名、头像，并用验证码设置登录密码 */
+  /** 提交：仅用验证码设置当前账号密码，不更改昵称或资料 */
   saveCredentials: (p: CredentialInput) => Promise<string | null>
 }
 
 const AuthCtx = createContext<AuthApi | null>(null)
 
-function errText(e: unknown): string {
+/** 学生端不再有手机号登录：所有「去登录」都落到本机学号登录弹窗。 */
+
+function localAuthUser(studentId: string, uid: string): AuthUser {
+  return {
+    uid,
+    nickname: `同学 ${studentId}`,
+    phone: '',
+    avatarUrl: '',
+    profileMotto: '',
+    profileIntro: '',
+    isAnonymous: false,
+    loginName: studentId,
+    hasPassword: false,
+    passwordStatusKnown: true,
+  }
+}
+
+export function errText(e: unknown): string {
+  if (typeof e === 'string' && e.trim()) return e.trim()
   if (!e) return '操作失败，请稍后重试'
   const anyE = e as { message?: unknown; msg?: unknown; helpMessage?: unknown; code?: unknown }
   const msg = typeof anyE.message === 'string' && anyE.message ? anyE.message : anyE.msg
@@ -220,7 +204,7 @@ function toUser(raw: unknown): AuthUser | null {
   const uid = safeUid(r.id) || safeUid(r.uid) || safeUid(m.uid)
   return {
     uid,
-    nickname: String(m.username || m.nickName || m.nickname || m.name || ''),
+    nickname: String(m.nickname || m.nickName || m.name || m.username || ''),
     phone: String(r.phone || m.phone || ''),
     // 头像可能落在 metadata 的三个键上（写入用 avatar_url，历史数据是 avatarUrl / picture）
     avatarUrl: String(m.avatar_url || m.avatarUrl || m.picture || ''),
@@ -229,8 +213,9 @@ function toUser(raw: unknown): AuthUser | null {
     isAnonymous: !!r.is_anonymous,
     // 登录用户名单独取 username：改名只同步 nickname，不会动它
     loginName: String(m.username || ''),
-    // 平台在 user_metadata 里回写 hasPassword；读不到时按「未设置」处理（引导补设一次）
+    // 平台在 user_metadata 里回写 hasPassword；读不到时显示为未设置，不自动弹窗。
     hasPassword: m.hasPassword === true || m.has_password === true,
+    passwordStatusKnown: typeof m.hasPassword === 'boolean' || typeof m.has_password === 'boolean',
   }
 }
 
@@ -299,6 +284,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [credOpen, setCredOpen] = useState(false)
+  /** 每个活跃账号仅自动提示一次；关闭后可从设置再次打开。 */
+  const passwordNoticeUid = useRef('')
 
   /** 防抖：同一次封禁会话只提示一次（登录/恢复/刷新可能触发多次 refresh） */
   const bannedNotified = useRef(false)
@@ -319,14 +306,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * 返回的 updateUser({ nonce, password }) 内部走 sudo + setPassword，
    * 因此手机验证码注册（无旧密码）的账号也能设置/重置登录密码。
    */
-  const credVerifyRef = useRef<((p: { nonce: string; password: string }) => Promise<unknown>) | null>(null)
+  const credVerifyRef = useRef<{ uid: string; session: ReturnType<typeof captureQbankSession>; verify: (p: { nonce: string; password: string }) => Promise<unknown> } | null>(null)
   const loginPending = useRef<((ok: boolean) => void) | null>(null)
   const profilePending = useRef<((ok: boolean) => void) | null>(null)
   const guestBusy = useRef<Promise<void> | null>(null)
 
   /** 依据 session 刷新 phase/user/profile */
   const sessionRead = useRef(new SessionReadGuard())
+  /* 学生端：学号本机身份；不再使用手机号 / 云端账号。管理端仍走原有账号。 */
+  const localOnly = getAppShell() === 'user'
   const refresh = useCallback(async () => {
+    if (localOnly) {
+      const identity = loadLocalIdentity()
+      if (!identity) {
+        sessionRead.current.reset()
+        setQbankUid(null)
+        selectImSession(null)
+        setUser(null)
+        setProfile(null)
+        setPhase('guest')
+        return
+      }
+      setQbankUid(identity.uid)
+      selectImSession(cloudIdentityUid() || null)
+      setUser(localAuthUser(identity.studentId, identity.uid))
+      setProfile(readLocalProfile(identity.uid, identity.studentId))
+      setPhase('signed')
+      return
+    }
     const ticket = sessionRead.current.begin()
     let u: AuthUser | null = null
     try {
@@ -355,6 +362,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setQbankUid(u.isAnonymous ? null : u.uid)
     selectImSession(u.isAnonymous ? null : u.uid)
     setUser(u)
+    if (!u.isAnonymous && u.passwordStatusKnown && !u.hasPassword) {
+      if (passwordNoticeUid.current !== u.uid) {
+        passwordNoticeUid.current = u.uid
+        setCredOpen(true)
+      }
+    } else if (u.hasPassword) {
+      passwordNoticeUid.current = ''
+    }
     if (u.isAnonymous) {
       // A confirmed anonymous session differs from a temporarily unresolved cold start.
       window.dispatchEvent(new Event('ohhu-reminder-auth-anonymous'))
@@ -411,6 +426,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 挂载恢复会话 + 无会话时静默匿名登录 + 订阅登录态变化（多标签页 / 令牌刷新后同步）
   useEffect(() => {
+    if (localOnly) {
+      void (async () => {
+        try {
+          const cur = await snapshotUser()
+          if (!cur) await cbAuth().signInAnonymously()
+        } catch {
+          /* 匿名只读不可用时静默降级，页面显示空态 */
+        }
+        const identity = loadLocalIdentity()
+        if (identity?.studentId) await ensureCloudIdentity(identity.studentId)
+        await refresh()
+      })().finally(() => {
+        setPhase((p) => (p === 'booting' ? 'guest' : p))
+        markBootReady('auth')
+      })
+      return
+    }
     void (async () => {
       await refresh()
       try {
@@ -479,13 +511,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const openLogin = useCallback((reason = '该操作需要先登录') => {
+    if (localOnly) {
+      setLoginReason(reason)
+      setLoginOpen(true)
+      return
+    }
     setLoginReason(reason)
     setLoginOpen(true)
-  }, [])
+  }, [localOnly])
 
   /** 用户名/手机号 + 密码登录（先清空旧会话避免账号冲突） */
   const loginWithPassword = useCallback(
     async (account: string, password: string): Promise<string | null> => {
+      if (localOnly) return '学生端已改为学号本机登录，请到「一键获取」填写学号与校园密码。'
       const acc = account.trim()
       if (!acc || !password) return '请填写账号与密码'
       try {
@@ -521,6 +559,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const ensureSignedIn = useCallback(
     (reason: string) =>
       new Promise<boolean>((resolve) => {
+        if (localOnly) {
+          if (loadLocalIdentity()) resolve(true)
+          else {
+            loginPending.current = resolve
+            setLoginReason(reason)
+            setLoginOpen(true)
+          }
+          return
+        }
         void (async () => {
           if (phase === 'signed' && user) {
             resolve(true)
@@ -532,11 +579,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })()
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [phase, user],
+    [phase, user, localOnly],
   )
+
+  const completeStudentLogin = useCallback(() => {
+    if (!localOnly) return
+    void refresh()
+    loginPending.current?.(true)
+    loginPending.current = null
+    setLoginOpen(false)
+    setLoginReason('')
+  }, [localOnly, refresh])
 
   /** 发送手机验证码（signInWithOtp；首次使用自动注册，老用户直接登录） */
   const sendPhoneCode = useCallback(async (phone: string): Promise<string | null> => {
+    if (localOnly) return '学生端已取消手机号登录，请使用学号。'
     const p = phone.trim()
     if (!/^1\d{10}$/.test(p)) return '请输入正确的 11 位手机号'
     try {
@@ -556,6 +613,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** 提交短信验证码完成登录 */
   const submitPhoneCode = useCallback(
     async (code: string): Promise<string | null> => {
+      if (localOnly) return '学生端已取消手机号登录，请使用学号。'
       const verify = otpRef.current
       if (!verify) return '请先获取验证码'
       const c = code.trim()
@@ -566,15 +624,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res.error) return errText(res.error)
         await refresh()
         finishLogin()
-        // 验证码注册（或从未设置过密码）的账号：引导选择头像 / 昵称 / 密码，供下次账号密码登录
-        try {
-          const u2 = await snapshotUser()
-          if (u2 && u2.uid === sessionRead.current.uid && !u2.isAnonymous && !u2.hasPassword && !readCredSkip(u2.uid)) {
-            setCredOpen(true)
-          }
-        } catch {
-          // 读不到会话就不弹，避免误打断
-        }
         return null
       } catch (e) {
         return errText(e)
@@ -590,6 +639,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * `provider email not found` / `invalid_env`，errText 会把原因直出给用户。
    */
   const sendEmailCode = useCallback(async (email: string): Promise<string | null> => {
+    if (localOnly) return '学生端已取消邮箱登录，请使用学号。'
     const m = email.trim().toLowerCase()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)) return '请输入正确的邮箱地址'
     try {
@@ -612,6 +662,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** 提交邮箱验证码完成登录（注册与登录同一条路径，首次自动建档） */
   const submitEmailCode = useCallback(
     async (code: string): Promise<string | null> => {
+      if (localOnly) return '学生端已取消邮箱登录，请使用学号。'
       const held = emailOtpRef.current
       if (!held) return '请先获取邮箱验证码'
       const c = code.trim()
@@ -632,15 +683,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res?.error) return errText(res.error)
         await refresh()
         finishLogin()
-        /* 与短信验证码注册一致：没设过密码的账号引导设置头像 / 昵称 / 密码 */
-        try {
-          const u2 = await snapshotUser()
-          if (u2 && u2.uid === sessionRead.current.uid && !u2.isAnonymous && !u2.hasPassword && !readCredSkip(u2.uid)) {
-            setCredOpen(true)
-          }
-        } catch {
-          // 读不到会话就不弹，避免误打断
-        }
         return null
       } catch (e) {
         return errText(e)
@@ -651,6 +693,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const logout = useCallback(async () => {
+    if (localOnly) {
+      clearLocalIdentity()
+      setQbankUid(null)
+      selectImSession(null)
+      setProfile(null)
+      setUser(null)
+      setCredOpen(false)
+      setPhase('guest')
+      return
+    }
     const reminderOwner = sessionRead.current.uid
     if (reminderOwner) window.dispatchEvent(new CustomEvent('ohhu-reminder-owner-logout', { detail: { ownerUid: reminderOwner } }))
     if (reminderOwner) void resetLauncherMoodForAccountChange()
@@ -660,6 +712,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     otpRef.current = null
     emailOtpRef.current = null
     credVerifyRef.current = null
+    passwordNoticeUid.current = ''
     bannedNotified.current = false
     setProfile(null)
     setUser(null)
@@ -687,6 +740,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user) return '请先登录'
       const username = p.username.trim()
       if (!username) return '昵称不能为空'
+      if (localOnly) {
+        const next: AuthProfile = { ...p, username, isAdmin: false, isSuperAdmin: false }
+        if (!saveLocalProfile(user.uid, next)) return '本机保存失败，请检查存储空间'
+        setProfile(next)
+        setUser((current) => (current ? { ...current, nickname: username } : current))
+        return null
+      }
       try {
         const rdb = cbRdb().from('profiles') as unknown as {
           upsert: (r: object, o?: object) => Promise<{ error?: unknown }>
@@ -737,6 +797,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const saveAvatar = useCallback(
     async (url: string): Promise<string | null> => {
       if (!user) return '请先登录'
+      if (localOnly) return null
       const next = url.trim()
       try {
         const res = (await cbAuth().updateUser({ avatar_url: next })) as { error?: unknown }
@@ -765,6 +826,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const savePersonalIntro = useCallback(
     async (motto: string, intro: string): Promise<string | null> => {
       if (!user) return '请先登录'
+      if (localOnly) return null
       const nextMotto = motto.trim().slice(0, 40)
       const nextIntro = intro.trim().slice(0, 160)
       try {
@@ -789,6 +851,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const rename = useCallback(
     async (username: string): Promise<string | null> => {
       const e = await saveProfile({
+        ...profile,
         username,
         building: profile?.building || '',
         isAdmin: !!profile?.isAdmin,
@@ -816,18 +879,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const openEdit = useCallback(() => setEditOpen(true), [])
   const closeEdit = useCallback(() => setEditOpen(false), [])
 
-  /** 设置页入口：主动打开「账号 + 密码」面板（清掉历史跳过标记，允许随时补设） */
+  /** 设置页入口：只有用户主动操作才打开密码面板。 */
   const openCred = useCallback(() => {
     credVerifyRef.current = null
     setCredOpen(true)
   }, [])
 
-  /** 「稍后再说」：记住该账号已跳过，验证码登录时不再自动弹出 */
+  /** 关闭面板并丢弃本次验证码回调。 */
   const dismissCred = useCallback(() => {
-    if (user?.uid) writeCredSkip(user.uid, true)
     credVerifyRef.current = null
     setCredOpen(false)
-  }, [user])
+  }, [])
 
   /**
    * 发送设置密码用的验证码。
@@ -835,8 +897,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * 必须走 reauthenticate：给当前账号手机号发码 → 用码换 sudo_token → setPassword。
    */
   const sendCredCode = useCallback(async (): Promise<string | null> => {
+    if (localOnly) return '学生端已取消手机号账号密码。'
     if (!user) return '请先登录'
     if (!user.phone) return '当前账号没有可用手机号，无法设置密码'
+    const session = captureQbankSession()
+    credVerifyRef.current = null
     try {
       const res = (await cbAuth().reauthenticate()) as {
         data?: {
@@ -847,69 +912,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res?.error) return errText(res.error)
       const verify = res?.data?.updateUser
       if (typeof verify !== 'function') return '验证码发送失败，请稍后重试'
-      credVerifyRef.current = verify
+      if (!isQbankSessionCurrent(session) || session.uid !== user.uid) return '账号已切换，请重新打开密码设置'
+      credVerifyRef.current = { uid: user.uid, session, verify }
       return null
     } catch (e) {
       return errText(e)
     }
   }, [user])
 
-  /** 提交账号密码设置：先写用户名/昵称/头像，再用验证码设置密码，最后落 profiles */
-  const saveCredentials = useCallback(
-    async (p: CredentialInput): Promise<string | null> => {
-      if (!user) return '请先登录'
-      const name = p.nickname.trim()
-      const pwd = p.password
-      const code = p.code.trim()
-      if (!name) return '请填写昵称'
-      if (name.length < 2) return '昵称至少 2 个字符'
-      if (!/^[A-Za-z0-9_\u4e00-\u9fa5]{2,20}$/.test(name)) return '昵称只支持中英文、数字和下划线（2-20 位）'
-      if (pwd.length < 6) return '密码至少 6 位'
-      if (!code) return '请输入短信验证码'
-      const verify = credVerifyRef.current
-      if (!verify) return '请先获取验证码'
-      try {
-        // 1) 登录用户名（+ 同步展示昵称），头像沿用 saveAvatar 的落盘与本地覆盖逻辑
-        const upd = (await cbAuth().updateUser({ username: name, nickname: name })) as { error?: unknown }
-        if (upd?.error) return errText(upd.error)
-        if (p.avatarUrl !== undefined && p.avatarUrl !== user.avatarUrl) {
-          const ae = await saveAvatar(p.avatarUrl)
-          if (ae) return ae
-        }
-
-        const r2 = (await verify({ nonce: code, password: pwd })) as { error?: unknown }
-        if (r2?.error) return errText(r2.error)
-        credVerifyRef.current = null
-
-        const rdb = cbRdb().from('profiles') as unknown as {
-          upsert: (r: object, o?: object) => Promise<{ error?: unknown }>
-        }
-        const res = await rdb.upsert(
-          {
-            uid: user.uid,
-            username: name,
-            building: (p.building ?? profile?.building ?? '').trim(),
-            real_name: p.realName ?? null,
-            student_id: p.studentId ?? null,
-            grade: p.grade ?? null,
-            major: p.major ?? null,
-            college: p.college ?? null,
-          },
-          { onConflict: 'uid' },
-        )
-        if (res.error) return errText(res.error)
-
-        writeCredSkip(user.uid, false)
-        await refresh()
-        setCredOpen(false)
-        return null
-      } catch (e) {
-        return errText(e)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, profile, refresh, saveAvatar],
-  )
+  /** 只设置当前账号密码，不写登录用户名，不修改任何个人或学籍资料。 */
+  const saveCredentials = useCallback(async (input: CredentialInput): Promise<string | null> => {
+    if (localOnly) return '学生端已取消手机号账号密码。'
+    if (!user) return '请先登录'
+    const invalid = passwordSetupError(input)
+    if (invalid) return invalid
+    const held = credVerifyRef.current
+    if (!held) return '请先获取验证码'
+    if (held.uid !== user.uid || !isQbankSessionCurrent(held.session)) return '账号已切换，请重新获取验证码'
+    try {
+      const result = await applyPasswordSetup(input, held.verify) as { error?: unknown } | undefined
+      if (result?.error) return passwordSetupMessage(errText(result.error))
+      if (!isQbankSessionCurrent(held.session)) return '账号已切换，请回原账号查看密码设置结果'
+      credVerifyRef.current = null
+      await refresh()
+      if (!isQbankSessionCurrent(held.session)) return '账号已切换，请回原账号查看密码设置结果'
+      setUser(previous => previous?.uid === held.uid ? { ...previous, hasPassword: true, passwordStatusKnown: true } : previous)
+      setCredOpen(false)
+      return null
+    } catch (error) { return passwordSetupMessage(errText(error)) }
+  }, [user, refresh])
 
   const api = {
     phase,
@@ -925,6 +956,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ensureSignedIn,
     openLogin,
     closeLogin,
+    completeStudentLogin,
     loginWithPassword,
     sendPhoneCode,
     submitPhoneCode,

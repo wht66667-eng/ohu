@@ -136,7 +136,30 @@ printf '\n' | env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy \
 | `UPSTREAM_CONNECT_TIMEOUT` / `UPSTREAM_READ_TIMEOUT` | `5` / `20` | 访问教务系统的连接/读取超时（秒） |
 | `SAVE_DEBUG_HTML` | 空 | `1` = 把最近一次课表页快照写到 `_schedule_debug.html`（默认关闭） |
 
-来源 IP 取网关回源的 `X-Forwarded-For` 首段。
+来源 IP 默认只采用连接对端，忽略客户端伪造的 `X-Forwarded-For`／`X-Real-IP`。
+仅在已核实网关会追加真实来源、且应用只能经该网关访问后，配置
+`TRUSTED_PROXY_HOPS`（1–5）和 `TRUSTED_PROXY_CIDRS`（逗号分隔的真实代理网段）。
+两者缺一或对端不在网段内时，仍采用连接对端；从链的右端按可信跳数取值。
+不要把 `0.0.0.0/0` 当作可信代理。未配置时，共享网关出口会共享 IP 限额；
+需要根据实际网关拓扑验证后调整，不能为避免限流而重新信任任意转发头。
+
+### 安全回归（2026-11-02）
+
+`2.4.1-security150` 将三个教务查询入口统一到相同的限流与输入边界：
+JSON 对象、字符串凭据、8KB 请求体、OCR 最多8次；旧 `/api/schedule` 同样受保护。
+所有 `/api/` 响应（含错误）带 `Cache-Control: no-store`，请求解析错误不会回显原文；
+上游异常日志不再附带可能包含个人信息的原始异常堆栈。RSA填充改用系统密码学随机数。
+
+开源工具：Schemathesis4.33.0、Hypothesis6.170.14（接口生成测试）、Bandit1.9.4、
+pip-audit2.10.1；Gitleaks8.30.1用于独立源码／Git扫描。工具仅安装在本机隔离环境，
+不添加到生产依赖。测试以 `test_security_attacks.py` 为入口，全部学校请求均替换为合成结果：
+
+```powershell
+& '.\.codex\qa\security150\venv\Scripts\python.exe' -X utf8 -m pytest tools/jou-api/test_security_attacks.py tools/jou-api/test_read_integrations.py -q
+```
+
+命令从项目根目录执行。测试会新增仅在测试进程内存在的Schema路由；生产Docker不复制测试文件。
+依赖审计结果不等同于确认漏洞可在本项目被远程利用；具体结果见项目安全报告。
 
 ## 安全与隐私
 
@@ -169,8 +192,21 @@ curl -s -X POST $BASE/api/timetable/auto \
 
 ## 与 H5 站点对接
 
+新增外部只读适配（默认关闭）：`GET /api/integrations/capabilities`、
+`POST /api/learning/chaoxing/query`、`POST /api/physical/captcha`、`POST /api/physical/query`。
+学习通使用 `CHAOXING_READ_ENABLED=1` 启用；体测需要源站连通/表单验证后，再设置
+`PHYSICAL_READ_ENABLED=1` 与 `PHYSICAL_ALLOW_HTTP=1`。体测旧源站使用 HTTP，页面有独立的连接方式确认。
+这些适配未进行真实账号验收；网关需配置新增路由，不能仅上传 H5。
+详见 `docs/architecture/EXTERNAL-SERVICE-INTEGRATIONS.md`（项目根目录）。
+离线测试：在本目录运行 `python -m unittest -v test_read_integrations`；不访问真实账号。
+
 - `xm-main/.env.production`：`VITE_TIMETABLE_API` = 上面的「后端基地址」（**不要再写 127.0.0.1**）
 - `xm-main/.env.development`：默认同样指向线上地址（本地 `npm run dev` 无需先起 Flask）
 - 需要调本地后端时临时覆盖：`VITE_TIMETABLE_API=http://127.0.0.1:8090 npm run dev`
 - 浏览器直连线上后端时，来源必须是网关安全域名白名单成员；本机 dev 端口（43123）已在列，
   若换端口记得同步加到「环境 → 安全域名」
+
+
+### 2026-11-04 演示页面隔离
+
+生产默认不提供本地查询演示页与通配静态文件。只有人工联调时设置 `ENABLE_QUERY_DEMO=1` 才启用；真实教务、体测、学习通 API 与健康检查不受影响。`/api/schedule` 仍为受限流和输入校验保护的兼容入口，不在无旧客户端调用证据时删除。

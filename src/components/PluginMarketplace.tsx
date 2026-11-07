@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
 import { CampusIcon } from './CampusIcon'
@@ -16,15 +16,6 @@ import {
 import { BUILT_IN_PLUGIN_MODULES } from '../plugins/registry'
 import styles from './PluginMarketplace.module.css'
 
-const GITHUB_REFERENCES = [
-  { name: '塔罗 · 3D（anois/tarot）', license: 'MIT', href: 'https://github.com/anois/tarot', summary: '浏览器内塔罗体验与本地隐私设计参考；哦狐没有复制代码或牌面素材。' },
-  { name: 'Fortune Platform', license: 'MIT', href: 'https://github.com/fortune-org/fortune-platform', summary: '塔罗、星座与生日数字等趣味工具参考；哦狐没有复制代码或素材。' },
-  { name: 'Exameow', license: 'Apache-2.0', href: 'https://github.com/heshengtao/exameow', summary: '独立的资料转题库应用；哦狐已按本机题库实现“五题快测”，没有嵌入原项目。', status: '哦狐同类轻量模块已实现' },
-  { name: 'AnkiDroid', license: 'GPL-3.0', href: 'https://github.com/ankidroid/Anki-Android', summary: '独立的 Android 间隔复习应用；哦狐已复用自身单词计划实现记忆卡，没有复制其代码。', status: '哦狐同类轻量模块已实现' },
-  { name: 'StudyDesk 学习规划', license: 'MIT', href: 'https://github.com/arun-v-p/StudyDesk', summary: '课表、截止日期、日历、笔记与番茄钟，可作学习计划交互参考。' },
-  { name: 'StudyHelper 课程工作台', license: 'AGPL-3.0', href: 'https://github.com/veniplex/study-helper', summary: '课程资料、作业、日历与自测内容；自托管项目，接入前需评估许可证。' },
-] as const
-
 const PERMISSION_LABELS: Record<OhuPluginManifest['permissions'][number], string> = {
   'schedule:open': '打开课表',
   'todo:open': '打开待办',
@@ -32,6 +23,8 @@ const PERMISSION_LABELS: Record<OhuPluginManifest['permissions'][number], string
   'word-study:read': '读取本机单词计划',
   'word-study:write': '保存本机复习进度',
   'qbank:read': '读取本机题库',
+  'local-bank:read': '读取本插件的本机导入题库',
+  'local-bank:write': '保存或移除本插件的导入题库',
 }
 
 export function PluginMarketplace() {
@@ -43,6 +36,9 @@ export function PluginMarketplace() {
 }
 
 function AccountPluginMarketplace({ uid }: { uid: string | null }) {
+  const [searchParams] = useSearchParams()
+  const requestedPlugin = searchParams.get('plugin')
+  const cardRefs = useRef(new Map<string, HTMLElement>())
   const toast = useToast()
   const session = useRef(captureQbankSession())
   const [preferences, setPreferences] = useState<PluginLocalPreferences>(() => readPluginPreferences(uid))
@@ -54,6 +50,16 @@ function AccountPluginMarketplace({ uid }: { uid: string | null }) {
     window.addEventListener(PLUGIN_PREFERENCES_EVENT, onChange)
     return () => { window.removeEventListener('storage', onStorage); window.removeEventListener(PLUGIN_PREFERENCES_EVENT, onChange) }
   }, [uid])
+
+  useEffect(() => {
+    if (!requestedPlugin || !BUILT_IN_PLUGINS.some(plugin => plugin.id === requestedPlugin)) return
+    const frame = window.requestAnimationFrame(() => {
+      const card = cardRefs.current.get(requestedPlugin)
+      card?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      card?.focus({ preventScroll: true })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [requestedPlugin])
 
   function persist(change: (current: PluginLocalPreferences) => PluginLocalPreferences, successMessage: string) {
     if (!isQbankSessionCurrent(session.current)) { toast.err('账号已切换，请重新选择插件'); return }
@@ -86,7 +92,7 @@ function AccountPluginMarketplace({ uid }: { uid: string | null }) {
           const enabled = preferences.enabled.includes(plugin.id)
           const rating = preferences.ratings[plugin.id] || 0
           return (
-            <article className={styles.card} key={plugin.id}>
+            <article className={styles.card} key={plugin.id} tabIndex={-1} data-plugin-id={plugin.id} ref={node => { if (node) cardRefs.current.set(plugin.id, node); else cardRefs.current.delete(plugin.id) }}>
               <div className={styles.cardTop}>
                 <span className={styles.icon}><CampusIcon name={icon} /></span>
                 <span className={styles.bundled}>{plugin.official ? '哦狐官方模块' : plugin.category === '趣味探索' ? '非官方 · 趣味内容' : '非官方 · 学习工具'}</span>
@@ -94,7 +100,7 @@ function AccountPluginMarketplace({ uid }: { uid: string | null }) {
               <h4>{plugin.name}</h4>
               <p>{plugin.summary}</p>
               <div className={styles.meta}><span>{plugin.category}</span><span>v{plugin.version}</span><span>创作者：{plugin.author}</span>{plugin.permissions.map((permission) => <span key={permission}>使用：{PERMISSION_LABELS[permission]}</span>)}</div>
-              {plugin.sourceHref ? <p className={styles.attribution}>开源灵感：{plugin.sourceLicense} · <a href={plugin.sourceHref} target="_blank" rel="noopener noreferrer">{plugin.sourceName} ↗</a></p> : null}
+              {plugin.sourceHref ? <p className={styles.attribution}>来源与许可：{plugin.sourceLicense} · <a href={plugin.sourceHref} target="_blank" rel="noopener noreferrer">{plugin.sourceName} ↗</a></p> : null}
               {enabled ? <Controls enabled onToggle={() => toggle(plugin)} /> : <div className={styles.actions}><button type="button" className={styles.enable} aria-label={`启用${plugin.name}`} aria-pressed={false} onClick={() => toggle(plugin)}>未使用 · 点击启用</button></div>}
               <div className={styles.rating}>
                 <span>给插件评分</span>
@@ -112,17 +118,6 @@ function AccountPluginMarketplace({ uid }: { uid: string | null }) {
         })}
       </div>
 
-      <div className={styles.sectionHeading}>
-        <div><b>GitHub 开源参考</b><span>仅作发现与学习，不会下载或执行仓库代码</span></div>
-      </div>
-      <div className={styles.references}>
-        {GITHUB_REFERENCES.map((project) => (
-          <article className={styles.reference} key={project.href}>
-            <div><b>{project.name}</b><span>{project.summary}</span><small>{project.license} · {'status' in project ? project.status : '仅外部参考，未接入哦狐'}</small></div>
-            <a href={project.href} target="_blank" rel="noopener noreferrer" aria-label={`在 GitHub 查看${project.name}`}>查看 ↗</a>
-          </article>
-        ))}
-      </div>
       <p className={styles.ratingNote}>星级是保存在本机、按当前账号区分的个人评分，不是全站平均分；不会公开或同步到其他设备。</p>
       <details className={styles.guide}>
         <summary>插件作者工作流：从提交到上架</summary>
@@ -138,9 +133,9 @@ function AccountPluginMarketplace({ uid }: { uid: string | null }) {
         <summary>我是用户：如何启用和使用？</summary>
         <ol>
           <li>打开“服务 → 哦狐插件”，或“我的 → 哦狐科技”，查看插件用途、版本和权限说明。</li>
-          <li>每张插件卡都可以单独选择“启用”或“停用”；已启用的工具会显示具体操作入口，停用后隐藏操作区。选择会按当前账号保存在本机，下次打开仍会记住。</li>
+          <li>每张插件卡都可以单独选择“启用”或“停用”；启用后会自动加入“服务 → 已启用插件”功能区，停用后从功能区移除。选择会按当前账号保存在本机，下次打开仍会记住。</li>
           <li>星级按钮用于记录你自己的体验评分；当前只保存在本机，不会公开给其他同学。</li>
-          <li>GitHub 参考项目只会打开外部仓库，不会自动安装。只有审核并随哦狐版本发布的内置模块才能在 App 内使用。</li>
+          <li>每个内置插件的来源与许可见该插件卡片；插件已由哦狐审核并静态打包，来源仓库不会在 App 里被下载或执行。</li>
         </ol>
       </details>
       <div className={styles.rule}>

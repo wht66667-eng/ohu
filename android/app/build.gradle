@@ -8,8 +8,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // 两端（学生端 / 管理端）共用 versionCode / versionName，保证同步更新
-        versionCode 146
-        versionName "1.2.146"
+        versionCode 150
+        versionName "1.2.150"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // 默认只打 arm64，体积更小（参考酱海带分 ABI 包；老机需另出 armeabi-v7a）
         ndk {
@@ -64,6 +64,8 @@ android {
         }
         debug {
             minifyEnabled false
+            // TEST ONLY: 独立包名，避免覆盖手机上已安装的 release 版（签名不同装不进去）。
+            applicationIdSuffix ".devtest"
         }
         // F-Droid signs the resulting APK with its repository key.
         fdroid {

@@ -8,6 +8,16 @@ import { mutateRows, type QueryRes, type MutateRes } from './market'
 import { DEFAULT_LOAD, normLoad, type LoadValue } from './todo-energy'
 import { captureQbankSession, isQbankSessionCurrent } from './qbank'
 import { notifyTodoDataChanged } from './todo-data-events'
+import { createLocalTodo, deleteLocalTodo, listLocalTodos, updateLocalTodo } from './local-todos'
+
+function localOpen(limit = 200): TodoRow[] {
+  return listLocalTodos().filter((row) => !row.done).slice(0, limit)
+}
+
+function localPage(): TodoPageRes {
+  const rows = listLocalTodos()
+  return { rows, error: null, has_more: false, next_cursor: null }
+}
 
 type Any = any
 
@@ -83,18 +93,24 @@ export async function fetchOpenTodosForHome(limit = 200): Promise<HomeTodoRes> {
       .order('id', { ascending: false })
       .limit(size + 1)
     const error = readError(result?.error)
-    if (error) return { ...empty, error }
+    if (error) return { rows: localOpen(size), error: null, hasMore: false }
     const raw = Array.isArray(result?.data) ? result.data as Any[] : []
+    const cloudRows = raw.slice(0, size).map((row) => ({
+      ...row,
+      load: normLoad(row?.load ?? DEFAULT_LOAD),
+    })) as TodoRow[]
+    if (!cloudRows.length) {
+      const local = localOpen(size)
+      if (local.length) return { rows: local, error: null, hasMore: false }
+    }
     return {
-      rows: raw.slice(0, size).map((row) => ({
-        ...row,
-        load: normLoad(row?.load ?? DEFAULT_LOAD),
-      })) as TodoRow[],
+      rows: cloudRows,
       error: null,
       hasMore: raw.length > size,
     }
   } catch (error) {
-    return { ...empty, error: errText(error) }
+    const local = localOpen(size)
+    return local.length ? { rows: local, error: null, hasMore: false } : { ...empty, error: errText(error) }
   }
 }
 
@@ -147,7 +163,7 @@ export async function fetchTodosPage(beforeId: number | null = null, pageSize = 
     query = query.order('id', { ascending: false }).limit(size + 1)
     const result = await query
     const error = readError(result?.error)
-    if (error) return { ...empty, error }
+    if (error) return localPage()
     const raw = Array.isArray(result?.data) ? result.data as Any[] : []
     const hasMore = raw.length > size
     const rows = raw.slice(0, size).map((row) => ({
@@ -155,6 +171,10 @@ export async function fetchTodosPage(beforeId: number | null = null, pageSize = 
       // load 列可能还没上线（SQL 未执行 / 老包），兜成默认档而不是让 UI 出现 NaN
       load: normLoad(row?.load ?? DEFAULT_LOAD),
     })) as TodoRow[]
+    if (!rows.length) {
+      const local = listLocalTodos()
+      if (local.length) return { ...localPage(), rows: local.slice(0, size) }
+    }
     return {
       rows,
       error: null,
@@ -162,7 +182,8 @@ export async function fetchTodosPage(beforeId: number | null = null, pageSize = 
       next_cursor: hasMore && rows.length ? rows[rows.length - 1].id : null,
     }
   } catch (error) {
-    return { ...empty, error: errText(error) }
+    const local = listLocalTodos()
+    return local.length ? { ...localPage(), rows: local.slice(0, size) } : { ...empty, error: errText(error) }
   }
 }
 
@@ -207,7 +228,9 @@ export async function createTodoWithId(
     }
     return { error: null, id: validId, inserted: true }
   } catch (error) {
-    return { error: `待办写入结果暂时无法确认：${errText(error)}`, ...empty, inserted: true }
+    const local = createLocalTodo(d)
+    if (options.notify !== false) notifyTodoDataChanged()
+    return { error: null, id: local.id, inserted: true }
   }
 }
 
@@ -217,6 +240,11 @@ export async function deleteTodoConfirmed(
   expectedSession = captureQbankSession(),
 ): Promise<MutateRes> {
   const session = expectedSession
+  if (id < 0) {
+    if (!deleteLocalTodo(id)) return { error: '本机待办不存在，请刷新后重试' }
+    notifyTodoDataChanged()
+    return { error: null }
+  }
   if (!session.uid) return { error: '请先登录后再操作' }
   if (!Number.isSafeInteger(id) || id <= 0) return { error: '待办编号无效，请刷新后重试' }
   if (!isQbankSessionCurrent(session)) return { error: '账号已切换，请回到原账号重试' }
@@ -288,6 +316,11 @@ async function updateTodoConfirmed(
   body: Record<string, unknown>,
   session: ReturnType<typeof captureQbankSession>,
 ): Promise<MutateRes> {
+  if (id < 0) {
+    const ok = updateLocalTodo(id, { title: body.title as string | undefined, note: body.note as string | undefined, due_at: body.due_at as string | null | undefined, done: body.done as boolean | undefined })
+    if (ok) notifyTodoDataChanged()
+    return ok ? { error: null } : { error: '本机待办不存在，请刷新后重试' }
+  }
   if (!session.uid) return { error: '请先登录后再操作' }
   if (!Number.isSafeInteger(id) || id <= 0) return { error: '待办编号无效，请刷新后重试' }
   if (!Object.keys(body).length) return { error: '没有可保存的修改' }

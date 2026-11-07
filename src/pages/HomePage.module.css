@@ -317,3 +317,23 @@
 .quickAll:active,.serviceOrder button:active,.servicePicker button:active { transform:scale(.985); }
 :global(html[data-ui-variant='pure']) .servicePicker button[aria-pressed='true'] { border-color:var(--text); background:var(--mint); color:var(--text); }
 @media (prefers-reduced-motion:reduce) { .quickAll,.serviceOrder button,.servicePicker button { transition:none; } }
+
+/* 清新绿有独立的白底／绿色控件，不让首页经典版的暖色覆盖皮肤令牌。 */
+:global(html[data-ui-variant='companion']) .page { --green:#07c160; --green-text:#07883f; --mint:#f5f5f5; --line:#ededed; --card:#fff; --text:#171717; --text-2:#555; --text-3:#777; background:#fff; }
+:global(html[data-ui-variant='companion']) .avatarLink { display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:8px; background:var(--mint); color:var(--green-text); }
+:global(html[data-ui-variant='companion']) .brandLabel { color:var(--text); font-size:20px; font-weight:650; letter-spacing:0; }
+:global(html[data-ui-variant='companion']) .brandLabel>span { display:none; }
+:global(html[data-ui-variant='companion']) .page :is(.searchButton,.topActions a,.dotsBtn,.campusChoice) { background:transparent; color:var(--green-text); border-radius:6px; }
+:global(html[data-ui-variant='companion']) .todayCard,
+:global(html[data-ui-variant='companion']) .block { border:1px solid var(--line); border-radius:10px; box-shadow:none; background:var(--card); padding:12px; }
+:global(html[data-ui-variant='companion']) .page :is(.todayHeading h2,.blockHead h2) { color:var(--text); font-size:17px; font-weight:650; letter-spacing:0; }
+:global(html[data-ui-variant='companion']) .page :is(.headingIcon,.icon,.stateIcon) { color:var(--green-text); filter:none; }
+:global(html[data-ui-variant='companion']) .icon svg { filter:none; stroke-width:1.9; }
+:global(html[data-ui-variant='companion']) .page :is(.todayHeading>.more,.scheduleState,.classPreview,.taskEmpty,.taskRow,.cell) { background:var(--mint); color:var(--text); border-radius:7px; }
+:global(html[data-ui-variant='companion']) .page .more { color:var(--green-text); }
+:global(html[data-ui-variant='companion']) .stateIcon { background:var(--card); }
+:global(html[data-ui-variant='companion']) .taskLayout { grid-template-columns:minmax(0,1fr); }
+:global(html[data-ui-variant='companion']) .readingFox { display:none; }
+:global(html[data-ui-variant='companion']) .page .cell { background:transparent; }
+:global(html[data-ui-variant='companion']) .page .cellLabel { color:var(--text); font-weight:500; }
+:global(html[data-ui-variant='companion'][data-theme='dark']) .page { --green:#07c160; --green-text:#61d999; --mint:#242424; --line:#333; --card:#191919; --text:#eee; --text-2:#c2c2c2; --text-3:#999; background:#151515; }

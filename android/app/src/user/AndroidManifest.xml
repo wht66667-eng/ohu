@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application>
         <receiver
             android:name="com.sunshinecampus.app.TodayScheduleWidgetProvider"
@@ -22,6 +24,17 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_next_class_info" />
+        </receiver>
+        <receiver
+            android:name="com.sunshinecampus.app.FoxCompanionWidgetProvider"
+            android:exported="false"
+            android:label="哦狐陪伴">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_fox_companion_info" />
         </receiver>
     </application>
 </manifest>

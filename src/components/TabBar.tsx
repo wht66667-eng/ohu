@@ -36,7 +36,7 @@ function StudentTabBar({
 }) {
   const variant = useUiVariant()
   const plainHome = pathname === '/'
-  const fox = !plainHome && (variant === 'fox' || variant === 'cute' || variant === 'immersive')
+  const fox = variant === 'classic' || variant === 'fox' || variant === 'cute' || variant === 'immersive'
   const cute = !plainHome && (variant === 'cute' || variant === 'immersive')
   const minimal = plainHome || variant === 'minimal'
   const scheduleTab = pathname === '/schedule'
@@ -49,7 +49,7 @@ function StudentTabBar({
       transition={reduce ? { duration: 0 } : minimal ? SOFT : SPRING}
       aria-label="主导航"
     >
-      <Tab to="/" label="首页" icon={fox ? <img src={foxAssetUrl('avatar')} className={styles.foxTab} width="28" height="28" alt="" /> : <IconHome size={22} />} active={pathname === '/'} plain={plainHome} />
+      <Tab to="/" label="首页" icon={fox ? <img src={variant === 'classic' ? '/ohu-v7-assets/fox-mascot.webp' : foxAssetUrl('avatar')} className={styles.foxTab} width="28" height="28" alt="" /> : <IconHome size={22} />} active={pathname === '/'} plain={plainHome} />
       <Tab
         to={scheduleTab ? '/schedule' : '/services'}
         label={scheduleTab ? '课程' : '服务'}

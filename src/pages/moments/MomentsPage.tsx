@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth'
 import { captureImSession, currentImSession, subscribeImSession } from '../../lib/im-session'
 import { positiveRecordId } from '../../lib/async-owner'
 import { fetchMoments, type Moment } from '../../lib/moments'
+import { cloudIdentityUid } from '../../lib/cloud-identity'
 import { MomentCard } from './MomentCard'
 import { MomentComposer } from './MomentComposer'
 import { MomentDetails } from './MomentDetails'
@@ -18,7 +19,7 @@ export function MomentsPage() {
   if (!auth.isSigned || !auth.user) return <div className={styles.page}>
     <header className={styles.header}><h1>朋友圈 <FoxSheetPose pose="waving" className={styles.headerFox} /></h1></header>
     <div className={styles.emptyState}><FoxSheetPose pose="waving" className={styles.emptyFox} /><strong>好友的校园日常都在这里</strong><p>登录后查看好友动态、分享校园生活</p>
-      <button type="button" onClick={() => auth.openLogin('登录后使用朋友圈')}>手机号登录</button></div>
+      <button type="button" onClick={() => auth.openLogin('登录后使用朋友圈')}>学号登录</button></div>
   </div>
   return <MomentsContent key={`${uid}:${sessionRevision}`} uid={uid} />
 }
@@ -40,8 +41,10 @@ function MomentsContent({ uid }: { uid: string }) {
     setParams(next, { replace: !value })
   }
   const load = useCallback(async (refresh = false) => {
-    const sequence = ++request.current, session = captureImSession(uid)
-    if (!session) return
+    const sequence = ++request.current
+    const socialUid = cloudIdentityUid() || uid
+    const session = captureImSession(socialUid)
+    if (!session) { setLoading(false); setRefreshing(false); setError('朋友圈需要先登录哦狐账号'); return }
     if (refresh) setRefreshing(true); else setLoading(true)
     const result = await fetchMoments()
     if (!live.current || sequence !== request.current || !currentImSession(session)) return

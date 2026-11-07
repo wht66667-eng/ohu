@@ -66,10 +66,15 @@
 .cardHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .cardTitle { margin: 0 0 12px; font-size: 17px; line-height: 1.5; font-weight: 750; }
 .cardHead .cardTitle { margin: 0; }
+.syncCardFeatured { border-color: var(--green); border-inline-start-width: 4px; }
+.syncCardFeatured > .btnMain { width: 100%; }
 .muted { margin: 0 0 14px; font-size: 14px; line-height: 1.7; color: var(--text-3); }
 .gpaPill { padding: 5px 10px; border-radius: 999px; background: var(--mint); color: var(--green-text); font-size: 12px; line-height: 1.5; font-weight: 650; }
 .gradeCard { border-color: color-mix(in srgb, var(--green) 18%, var(--line)); box-shadow: var(--shadow-sm); }
 .gradeEyebrow { display: block; margin-bottom: 3px; color: var(--green-text); font-size: 11px; font-weight: 750; letter-spacing: .07em; }
+.puEntry { display: block; color: inherit; text-decoration: none; border-color: color-mix(in srgb, var(--green) 20%, var(--line)); background: linear-gradient(150deg, var(--card), var(--mint)); }
+.puEntryCopy { margin: 0 0 10px; color: var(--text-2); font-size: 13px; line-height: 1.7; }
+.puEntryLink { color: var(--green-text); font-size: 13px; font-weight: 750; }
 .gradeEmpty { display: flex; align-items: center; gap: 10px; min-height: 88px; padding: 10px; border-radius: 16px; background: var(--mint); }
 .gradeEmpty img { flex: none; width: 70px; height: 70px; object-fit: contain; }
 .gradeEmpty p { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.6; }

@@ -1,4 +1,4 @@
-import { SharePosterSheet } from '../components/SharePosterSheet'
+import { OhuSharePanel } from '../components/SharePosterSheet'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
@@ -43,6 +43,7 @@ import { isFoxDockOn, setFoxDockOn } from '../lib/fox-dock-pref'
 import { getLauncherMoodError, isLauncherMoodEnabled, LAUNCHER_MOOD_STATUS_EVENT, refreshLauncherMoodStatus, setLauncherMoodEnabled } from '../lib/app-icon'
 import { scheduleTestReminder } from '../lib/reminder-self-test'
 import { ReminderDisplaySettings } from '../components/ReminderDisplaySettings'
+import { PermissionCenterCard } from '../components/PermissionCenterCard'
 import { CourseReminderSettings } from '../components/CourseReminderSettings'
 import { PluginMarketplace } from '../components/PluginMarketplace'
 import { ExamReminderSettings } from '../components/ExamReminderSettings'
@@ -66,6 +67,7 @@ import { UiThemeSettings } from '../components/fox/UiThemeSettings'
 import { isFoxFreeVariant, useUiVariant } from '../lib/ui-variant'
 import { FoxAvatar } from '../components/fox/FoxAvatar'
 import { StorageDiagnostics } from '../components/StorageDiagnostics'
+import { UserServiceLinksSettings } from '../components/UserServiceLinksSettings'
 
 function SettingsLink({ icon, title, detail, onClick }: { icon: string; title: string; detail: string; onClick: () => void }) {
   return <Pressable className={settingStyles.menuRow} onClick={onClick}>
@@ -106,7 +108,7 @@ function SettingsForAccount() {
   const isAdmin = auth.isSigned && !!(auth.profile?.isAdmin || auth.profile?.isSuperAdmin)
   const isSuperAdmin = !!auth.profile?.isSuperAdmin
   const showAdminBlock = signed && isAdmin && (shell === 'user' || shell === 'admin')
-  const section = resolveSettingsSection(params.get('section'), { studentRemind, showAdminBlock, showData: !work })
+  const section = resolveSettingsSection(params.get('section'), { studentRemind, showAdminBlock, showData: !work, showLinks: !work, showInstall: !work })
   function openSection(next: SettingsSection) {
     const query = new URLSearchParams(params)
     query.set('section', next)
@@ -119,7 +121,6 @@ function SettingsForAccount() {
     setParams(query, { replace: true })
   }
 
-  const [sharePosterOpen, setSharePosterOpen] = useState(false)
   const [modPending, setModPending] = useState<{ count: number | null; atLeast: boolean }>({ count: 0, atLeast: false })
   const [theme, setTheme] = useState<Theme>(() => getStoredTheme())
   const [updateBusy, setUpdateBusy] = useState(false)
@@ -310,7 +311,6 @@ function SettingsForAccount() {
 
   return (
     <div className={`${styles.page} ${settingStyles.page}`}>
-      {sharePosterOpen ? <SharePosterSheet onClose={() => setSharePosterOpen(false)} /> : null}
       <PageHeader title={SETTINGS_SECTION_TITLES[section]} onBack={section === 'overview' ? undefined : backToSettings} />
 
       {section === 'overview' ? <>
@@ -318,28 +318,23 @@ function SettingsForAccount() {
         <section className={settingStyles.menu} aria-label="应用设置分类">
           <SettingsLink icon="sun" title="外观与陪伴" detail={theme === 'system' ? '跟随系统主题' : theme === 'dark' ? '深色模式' : '浅色模式'} onClick={() => openSection('appearance')} />
           {studentRemind ? <SettingsLink icon="bell" title="通知与提醒" detail="提醒时点、弹窗样式与系统权限" onClick={() => openSection('reminders')} /> : null}
-          <SettingsLink icon="shield" title="账号与安全" detail={signed ? '登录密码与退出登录' : '登录与注册'} onClick={() => openSection('account')} />
+          <SettingsLink icon="shield" title="账号与安全" detail={signed ? '学号身份与退出' : '用学号开始'} onClick={() => openSection('account')} />
           {!work ? <SettingsLink icon="box" title="数据与缓存" detail="查看本机存储估算，不会自动清理" onClick={() => openSection('data')} /> : null}
           <SettingsLink icon="update" title="哦狐科技" detail={`插件共创 · 管理员审核 · v${APP_VERSION}`} onClick={() => openSection('about')} />
-          {!work ? <SettingsLink icon="link" title="安装与分享页面" detail="iPhone 自签工具与安装包" onClick={() => window.open('https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/index.html', '_system')} /> : null}
-          {!work && isAndroidNative() ? <SettingsLink icon="link" title="保存分享图" detail="生成分享卡并保存到相册" onClick={() => setSharePosterOpen(true)} /> : null}
-          {!work ? <SettingsLink icon="link" title="分享哦狐" detail="把哦狐介绍给同学" onClick={() => {
-            const url = 'https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/index.html'
-            if (navigator.share) {
-              void navigator.share({ title: '哦狐', text: '和哦狐一起探索校园生活', url }).catch((error: unknown) => {
-                if (error instanceof Error && error.name !== 'AbortError') toast('分享未完成，请重试')
-              })
-            } else if (navigator.clipboard?.writeText) {
-              void navigator.clipboard.writeText(url).then(() => toast('分享链接已复制')).catch(() => toast('复制失败，请重试'))
-            } else {
-              window.prompt('复制分享链接', url)
-            }
-          }} /> : null}
+          {!work ? <SettingsLink icon="link" title="网页快捷入口" detail="管理自己添加的校园网页" onClick={() => openSection('links')} /> : null}
+          {!work ? <SettingsLink icon="link" title="安装与分享" detail="二维码、分享图与安装说明" onClick={() => openSection('install')} /> : null}
         </section>
         {showAdminBlock ? <section className={settingStyles.menu} aria-label="管理">
           <SettingsLink icon="flag" title="管理工作台" detail={isSuperAdmin ? '内容治理、举报与成员管理' : '内容治理与举报处理'} onClick={() => openSection('admin')} />
         </section> : null}
       </> : null}
+
+      {section === 'links' && !work ? <>
+        <p className={settingStyles.intro}>把常用的校园网页放在一起，入口只保存在这台设备上。</p>
+        <UserServiceLinksSettings />
+      </> : null}
+
+      {section === 'install' && !work ? <OhuSharePanel /> : null}
 
       {section === 'appearance' ? (
       <section className={styles.sec} style={{ paddingTop: 6 }}>
@@ -362,7 +357,12 @@ function SettingsForAccount() {
             </button>
           ))}
         </div>
-        {work || uiVariant === 'minimal' || isFoxFreeVariant(uiVariant) ? null : (
+        {!work ? <button type="button" className={styles.setRow} onClick={() => nav('/?customize=home')}>
+          <span className={styles.setIc} style={{ background: 'var(--green-soft)' }}><CampusIcon name="grid" /></span>
+          <span className={styles.setGrow}><b>首页内容卡片</b><span>选择首页显示内容并调整顺序</span></span>
+          <span className={styles.setArrow}>›</span>
+        </button> : null}
+        {work || uiVariant === 'minimal' ? null : (
           <button
             type="button"
             className={styles.setRow}
@@ -371,18 +371,18 @@ function SettingsForAccount() {
               const next = !foxOn
               setFoxDockOn(next)
               setFoxOn(next)
-              toast(next ? '小狐狸浮岛已显示' : '小狐狸浮岛已收起')
+              toast(next ? '陪伴已显示' : '陪伴已收起')
             }}
           >
             <span className={styles.setIc} style={{ background: uiVariant === 'cute' ? 'var(--fox-paw)' : '#fff3e0' }}>
               <FoxAvatar pose="chat" size={32} ring={false} alt="" />
             </span>
             <span className={styles.setGrow}>
-              <b>小狐狸浮岛</b>
+              <b>陪伴角色</b>
               <span>
                 {foxOn
-                  ? '已开启：右下角显示狐狸气泡，点击跳 AI 助手，可拖动 / × 收起'
-                  : '已收起：打开开关后狐狸气泡立即显示'}
+                  ? '已开启：各皮肤均显示宠物，可拖动、点开菜单或自定义图片'
+                  : '已收起：打开后显示宠物，外观设置支持更换图片'}
               </span>
             </span>
             <span className={styles.setArrow}>{foxOn ? '开' : '关'}</span>
@@ -435,6 +435,7 @@ function SettingsForAccount() {
         <CourseReminderSettings />
         <ExamReminderSettings />
         <ReminderDisplaySettings />
+        <PermissionCenterCard />
         <button
           type="button"
           className={styles.setRow}
@@ -737,17 +738,13 @@ function SettingsForAccount() {
         {signed ? (
           <>
             {!work && signed ? <QuietLoginStreak /> : null}
-            <button type="button" className={styles.setRow} onClick={auth.openCred}>
-              <span className={styles.setIc} style={{ background: '#fff4c2' }}>
+            <button type="button" className={styles.setRow} onClick={() => void login()}>
+              <span className={styles.setIc} style={{ background: 'var(--green-soft)' }}>
                 <CampusIcon name="key" />
               </span>
               <span className={styles.setGrow}>
-                <b>{auth.user?.hasPassword ? '修改登录密码' : '设置登录密码'}</b>
-                <span>
-                  {auth.user?.hasPassword
-                    ? `登录账号：${auth.user?.loginName || auth.profile?.username || '未命名'}`
-                    : '设置后可用「昵称 + 密码」或「手机号 + 密码」登录'}
-                </span>
+                <b>学号身份</b>
+                <span>{auth.user?.loginName || auth.profile?.studentId || '本机'}</span>
               </span>
               <span className={styles.setArrow}>›</span>
             </button>
@@ -768,8 +765,8 @@ function SettingsForAccount() {
               ⚙
             </span>
             <span className={styles.setGrow}>
-              <b>登录 / 注册</b>
-              <span>手机验证码 · 账号密码</span>
+              <b>用学号开始</b>
+              <span>学号 + 校园网 + 统一认证</span>
             </span>
             <span className={styles.setArrow}>›</span>
           </button>

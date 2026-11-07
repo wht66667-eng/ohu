@@ -5,28 +5,26 @@ import {
   downloadAndQueueOta,
   fetchOtaManifest,
   getOtaCompatibilityError,
-  hasMatchingPendingOta,
   shouldApplyOta,
   type OtaManifest,
 } from '../lib/live-update'
-import { APP_VERSION, checkAppUpdate, openUpdateDownload } from '../lib/app-update'
+import { APP_VERSION } from '../lib/app-update'
 import styles from './OtaUpdateHost.module.css'
 
 const LS_SKIP = 'sc.ota.skip.v1'
+const SKIP_MS = 6 * 3600 * 1000
 
 type Phase = 'hidden' | 'prompt' | 'downloading' | 'ready' | 'error'
 
 /**
- * 进门弹窗：发现界面更新时提示下载，带进度条与重试。
- * 下载成功后用原生 set() 立刻切包，避免「重启后又要更新」死循环。
+ * 热更新提示：只让用户选「更新 / 不更新」，不再自动切包、不再阻断使用。
+ * 安装包与应用端不匹配时静默跳过（设置页仍可手动检查）。
  */
 export function OtaUpdateHost() {
   const [phase, setPhase] = useState<Phase>('hidden')
   const [remote, setRemote] = useState<OtaManifest | null>(null)
   const [localVer, setLocalVer] = useState(APP_VERSION)
   const [nativeVersion, setNativeVersion] = useState('')
-  const [blocked, setBlocked] = useState(false)
-  const [apkBusy, setApkBusy] = useState(false)
   const [percent, setPercent] = useState(0)
   const [error, setError] = useState('')
   const started = useRef(false)
@@ -36,32 +34,15 @@ export function OtaUpdateHost() {
     started.current = true
 
     const run = async () => {
-      await new Promise((r) => setTimeout(r, 900))
+      await new Promise((resolve) => setTimeout(resolve, 900))
       const rem = await fetchOtaManifest()
       if (!rem) return
       const runtime = await currentOtaRuntime()
       const local = runtime.version
       setLocalVer(local)
       setNativeVersion(runtime.native?.version || '')
-      const incompatible = getOtaCompatibilityError(rem, runtime)
-      if (incompatible) {
-        setRemote(rem)
-        setError(incompatible)
-        setBlocked(true)
-        setPhase('error')
-        return
-      }
+      if (getOtaCompatibilityError(rem, runtime)) return
       if (!shouldApplyOta(rem, local, runtime)) return
-
-      // 已下载排队：自动切过去，不再弹「发现新版本」
-      if (await hasMatchingPendingOta(rem)) {
-        const result = await downloadAndQueueOta(rem)
-        if (result.ok) return
-        setRemote(rem)
-        setError(result.error)
-        setPhase('error')
-        return
-      }
 
       try {
         const skip = JSON.parse(localStorage.getItem(LS_SKIP) || 'null') as {
@@ -72,7 +53,7 @@ export function OtaUpdateHost() {
         if (
           skip?.version === rem.version &&
           Number(skip.build || 0) === Number(rem.build || 0) &&
-          Date.now() - Number(skip.at || 0) < 6 * 3600 * 1000
+          Date.now() - Number(skip.at || 0) < SKIP_MS
         ) {
           return
         }
@@ -82,7 +63,7 @@ export function OtaUpdateHost() {
       setRemote(rem)
       setPhase('prompt')
     }
-    void run().catch(() => { /* A transient startup failure can be retried from Settings. */ })
+    void run().catch(() => { /* 设置页仍可手动检查更新 */ })
   }, [])
 
   if (phase === 'hidden' || !remote) return null
@@ -95,22 +76,21 @@ export function OtaUpdateHost() {
     setPhase('downloading')
     setPercent(0)
     setError('')
-    const r = await downloadAndQueueOta(remote, (p) => setPercent(p.percent))
-    // set() 成功时页面会立刻被原生 reload，下面通常执行不到
-    if (r.ok) {
-      if (r.alreadyCurrent) {
+    const result = await downloadAndQueueOta(remote, (progress) => setPercent(progress.percent))
+    if (result.ok) {
+      if (result.alreadyCurrent) {
         setPhase('hidden')
         return
       }
       setPhase('ready')
       setPercent(100)
     } else {
-      setError(r.error)
+      setError(result.error)
       setPhase('error')
     }
   }
 
-  function dismissLater() {
+  function skipNow() {
     try {
       localStorage.setItem(
         LS_SKIP,
@@ -122,39 +102,23 @@ export function OtaUpdateHost() {
     setPhase('hidden')
   }
 
-  async function openCompatibleApk() {
-    if (apkBusy) return
-    setApkBusy(true)
-    try {
-      const result = await checkAppUpdate()
-      if (result.status === 'error') setError(result.message)
-      else if (result.status === 'up_to_date') setError('线上暂未提供所需的新安装包，请稍后检查更新或联系管理员。')
-      else if (openUpdateDownload(result.manifest)) setError('已打开下载页面。请安装对应端的新 APK，然后重新打开应用。')
-      else setError('暂未提供当前应用端的下载地址，请联系管理员。')
-    } catch {
-      setError('暂时无法检查安装包，请检查网络后重试。')
-    } finally { setApkBusy(false) }
-  }
-
   return (
     <div className={styles.mask} role="dialog" aria-label="界面更新">
       <div className={styles.card}>
         <div className={styles.badge}>界面更新</div>
         <h2 className={styles.title}>
-          {blocked ? '请先更新安装包' : phase === 'ready' ? '正在切换到最新界面…' : `一键更新到 ${remote.version}`}
+          {phase === 'ready' ? '更新已就绪' : '发现新的界面版本'}
         </h2>
         <p className={styles.sub}>
           当前 v{localVer}
           {nativeVersion ? ` · 安装包 v${nativeVersion}` : ''}
           {mb > 0 ? ` · 约 ${mb}MB` : ''}
-          {phase === 'ready'
-            ? ' · 请稍候自动刷新'
-            : ' · 这是完整最新包，不用按 1.2.20、1.2.21 逐级安装，中间做过的功能都在里面'}
+          {' · 更新后自动重启，不影响本地数据'}
         </p>
         {notes.length > 0 ? (
           <ul className={styles.notes}>
-            {notes.map((n) => (
-              <li key={n}>{n}</li>
+            {notes.map((note) => (
+              <li key={note}>{note}</li>
             ))}
           </ul>
         ) : null}
@@ -168,39 +132,37 @@ export function OtaUpdateHost() {
           </div>
         ) : null}
 
-        {phase === 'error' ? <p className={styles.err}>{error || '下载失败'}</p> : null}
+        {phase === 'error' ? <p className={styles.err}>{error || '下载失败，请稍后重试'}</p> : null}
 
         <div className={styles.actions}>
           {phase === 'prompt' ? (
             <>
-              <button type="button" className={styles.ghost} onClick={dismissLater}>
-                稍后
+              <button type="button" className={styles.ghost} onClick={skipNow}>
+                不更新
               </button>
               <button type="button" className={styles.main} onClick={() => void startDownload()}>
-                一键更新到最新
+                更新
               </button>
             </>
           ) : null}
           {phase === 'downloading' ? (
             <button type="button" className={styles.ghost} disabled>
-              请稍候…
+              正在下载…
             </button>
           ) : null}
           {phase === 'error' ? (
             <>
-              <button type="button" className={styles.ghost} onClick={dismissLater}>
-                关闭
+              <button type="button" className={styles.ghost} onClick={skipNow}>
+                不更新
               </button>
-              {!blocked ? <button type="button" className={styles.main} onClick={() => void startDownload()}>
+              <button type="button" className={styles.main} onClick={() => void startDownload()}>
                 重试
-              </button> : <button type="button" className={styles.main} disabled={apkBusy} onClick={() => void openCompatibleApk()}>
-                {apkBusy ? '正在检查…' : '更新安装包'}
-              </button>}
+              </button>
             </>
           ) : null}
           {phase === 'ready' ? (
             <button type="button" className={styles.main} onClick={() => void startDownload()}>
-              立即切换
+              立即生效
             </button>
           ) : null}
         </div>

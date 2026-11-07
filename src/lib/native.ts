@@ -177,6 +177,8 @@ export function handleBack({ isRoot, canGoBack }: BackDecisionOptions): void {
   // Study pages use the same parent-return policy as their visible back button.
   if (!window.dispatchEvent(new Event('app-study-back', { cancelable: true }))) return
   if (canGoBack && !isRoot) {
+    /* 连续两次返回键：第一次正常回上一页，第二次由页面层接管回首页。 */
+    if (!window.dispatchEvent(new Event('app-back-nav', { cancelable: true }))) return
     window.history.back()
     return
   }

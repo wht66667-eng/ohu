@@ -404,3 +404,9 @@ textarea.field-input {
 .auth-link { min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--green-text); font-size: 13px; font-weight: 650; }
 .auth-link:hover, .auth-link:active { text-decoration: underline; }
 .auth-dot { color: var(--text-3); opacity: .5; }
+
+.auth-optional { border:1px solid var(--line); border-radius:14px; padding:0 12px; }
+.auth-optional summary { display:flex; align-items:center; min-height:46px; font-size:14px; color:var(--text-2); cursor:pointer; }
+.auth-optional[open] { padding-bottom:12px; }
+.auth-optional[open] > .af-field { margin-top:12px; }
+.auth-optional summary:focus-visible { outline:2px solid var(--green); outline-offset:3px; }

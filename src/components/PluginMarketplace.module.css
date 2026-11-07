@@ -23,13 +23,7 @@
 .stars button { padding: 2px; background: transparent; color: var(--text-3); font-size: 19px; line-height: 1; }
 .stars .starActive { color: #e69a31; }
 .stars > span { margin-left: 4px; white-space: nowrap; font-size: 11px; }
-.references { display: grid; gap: 8px; }
-.reference { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
-.reference > div { display: grid; gap: 3px; min-width: 0; }
-.reference b { color: var(--text); font-size: 13px; }
-.reference span { color: var(--text-2); font-size: 12px; line-height: 1.5; }
-.reference small { color: var(--text-3); font-size: 11px; }
-.reference a, .rule a { flex: none; color: var(--green-text); font-size: 12px; font-weight: 650; text-decoration: none; }
+.rule a { flex: none; color: var(--green-text); font-size: 12px; font-weight: 650; text-decoration: none; }
 .ratingNote { margin: -3px 0 0; color: var(--text-3); font-size: 11px; line-height: 1.5; }
 .guide { padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text-2); }
 .guide summary { display: flex; align-items: center; min-height: 46px; color: var(--text); font-size: 13px; font-weight: 650; cursor: pointer; }
@@ -38,4 +32,4 @@
 .rule { padding: 13px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--mint); }
 .rule b { display: block; margin-bottom: 5px; color: var(--green-text); font-size: 13px; }
 .rule a { display: inline-flex; min-height: 38px; align-items: center; margin-top: 6px; font-size: 13px; }
-.actions button:focus-visible, .open:focus-visible, .stars button:focus-visible, .reference a:focus-visible, .rule a:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.actions button:focus-visible, .open:focus-visible, .stars button:focus-visible, .rule a:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
