@@ -267,6 +267,11 @@ export function OneClickPage() {
       summary.push('PU 需授权')
     }
 
+    try {
+      const publicResult = await runPublicElectiveSync({ studentId: creds.stuid, vpnPassword: creds.vpnPassword, casPassword: creds.casPassword, report })
+      summary.push(`公选 ${publicResult.count ?? 0} 门`)
+    } catch { summary.push('公选失败') }
+
     setStage('')
     setNotice(summary.join(' · '))
   })
