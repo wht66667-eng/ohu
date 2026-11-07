@@ -4,7 +4,7 @@ import type { TiceSummary, TiceYear } from './tice-parse'
 const STORAGE_KEY = 'ohu.physical-test-results.v1'
 
 export type PhysicalTestEvent = { name: string; result: string; score?: number | null; note?: string }
-export type PhysicalTestSource = 'jou-tice' | 'tice-import' | 'manual'
+export type PhysicalTestSource = 'jou-tice' | 'tice-import'
 export type PhysicalTestRecord = {
   id: string
   academicYear: string
