@@ -36,6 +36,7 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/study/pu', () => import('./pages/study/PocketUniPage').then((module) => ({ default: module.PocketUniPage }))],
   ['/study/quality', () => import('./pages/study/QualityPage').then((module) => ({ default: module.QualityPage }))],
   ['/grades', () => import('./pages/GradesHubPage').then((module) => ({ default: module.GradesHubPage }))],
+  ['/grades/manual', () => import('./pages/ManualScorePage').then((module) => ({ default: module.ManualScorePage }))],
   ['/grades/public', () => import('./pages/study/PublicElectivePage').then((module) => ({ default: module.PublicElectivePage }))],
   ['/grades/courses', () => import('./pages/study/CourseGradesPage').then((module) => ({ default: module.CourseGradesPage }))],
   ['/study/oneclick', () => import('./pages/study/OneClickPage').then((module) => ({ default: module.OneClickPage }))],

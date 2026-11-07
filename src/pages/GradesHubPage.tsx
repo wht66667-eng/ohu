@@ -40,6 +40,7 @@ export function GradesHubPage() {
         <h1>成绩与通知</h1>
       </div>
       <div className={styles.actions}>
+        <Link to="/grades/manual" style={{ fontSize: 12, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--line)', color: 'inherit', textDecoration: 'none' }}>录入</Link>
         <Link to="/" aria-label="返回首页">‹</Link>
       </div>
     </header>

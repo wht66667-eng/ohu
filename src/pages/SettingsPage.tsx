@@ -4,6 +4,8 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { CampusIcon } from '../components/CampusIcon'
 import { ConfirmSheet } from '../components/ConfirmSheet'
+import { DialogLayer } from '../components/ui/DialogLayer'
+import { clearLocalAppDataAndReload } from '../lib/local-data-reset'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../context/ToastContext'
 import { fetchModerationPendingCount } from '../lib/moderation'
@@ -286,6 +288,7 @@ function SettingsForAccount() {
 
   /* 退出登录是不可逆操作，先二次确认，避免误触清空登录态 */
   const [askLogout, setAskLogout] = useState(false)
+  const [askClearData, setAskClearData] = useState(false)
 
   async function logout() {
     await auth.logout()
@@ -761,6 +764,7 @@ function SettingsForAccount() {
             </button>
           </>
         ) : (
+          <>
           <button type="button" className={styles.setRow} onClick={login}>
             <span className={styles.setIc} style={{ background: 'var(--green-soft)' }}>
               ⚙
@@ -771,6 +775,17 @@ function SettingsForAccount() {
             </span>
             <span className={styles.setArrow}>›</span>
           </button>
+          <button type="button" className={styles.setRow} onClick={() => setAskLogout(true)}>
+            <span className={styles.setIc} style={{ background: '#ffe0e6' }}>
+              <CampusIcon name="logout" />
+            </span>
+            <span className={styles.setGrow}>
+              <b>退出登录</b>
+              <span>可选是否清空本机缓存</span>
+            </span>
+            <span className={styles.setArrow}>›</span>
+          </button>
+          </>
         )}
       </section>
       ) : null}
@@ -778,6 +793,10 @@ function SettingsForAccount() {
       {section === 'data' && !work ? <>
         <p className={settingStyles.intro}>查看当前浏览器或 App 可报告的本机存储信息。</p>
         <StorageDiagnostics />
+        <section className={settingStyles.menu} aria-label="本机数据操作" style={{ marginTop: 14 }}>
+          <SettingsLink icon="update" title="一键更新本机数据" detail="重新登录校园系统，更新课表、成绩、考试" onClick={() => nav('/study/oneclick')} />
+          <SettingsLink icon="box" title="一键清空本机数据" detail="清空身份、缓存与设置，回到首次认证" onClick={() => setAskClearData(true)} />
+        </section>
       </> : null}
 
       {section === 'about' ? (
@@ -920,16 +939,24 @@ function SettingsForAccount() {
       ) : null}
 
       {askLogout ? (
+        <DialogLayer title="退出登录？" onClose={() => setAskLogout(false)}>
+          <p style={{ margin: '0 0 14px', fontSize: 14, lineHeight: 1.6 }}>退出后回到游客状态，发布与消息需要重新登录。</p>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <button type="button" style={{ minHeight: 46, borderRadius: 12, border: 0, background: 'var(--green, #16735b)', color: '#fff', fontSize: 15, fontWeight: 600 }} onClick={async () => { setAskLogout(false); try { localStorage.removeItem('ohu.campus-gate.v1') } catch { /* 忽略 */ } await logout(); window.setTimeout(() => window.location.reload(), 150) }}>仅退出（保留本机缓存）</button>
+            <button type="button" style={{ minHeight: 46, borderRadius: 12, border: '1px solid var(--danger, #b83b3b)', background: 'transparent', color: 'var(--danger, #b83b3b)', fontSize: 15, fontWeight: 600 }} onClick={async () => { setAskLogout(false); await auth.logout(); await clearLocalAppDataAndReload() }}>退出并清空本机缓存</button>
+            <button type="button" style={{ minHeight: 44, borderRadius: 12, border: 0, background: 'transparent', color: 'var(--text-2, #4b5e7a)', fontSize: 14 }} onClick={() => setAskLogout(false)}>取消</button>
+          </div>
+        </DialogLayer>
+      ) : null}
+
+      {askClearData ? (
         <ConfirmSheet
-          title="退出登录？"
-          desc="退出后回到游客状态，发布与消息需要重新登录"
-          confirmText="退出"
+          title="清空本机数据？"
+          desc="会删除本机登录身份、课表、成绩、考试、待办和设置，并回到首次认证页。此操作不可撤销。"
+          confirmText="清空并重新认证"
           danger
-          onClose={() => setAskLogout(false)}
-          onConfirm={async () => {
-            setAskLogout(false)
-            await logout()
-          }}
+          onClose={() => setAskClearData(false)}
+          onConfirm={async () => { setAskClearData(false); await clearLocalAppDataAndReload() }}
         />
       ) : null}
       {availableUpdate ? (
