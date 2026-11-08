@@ -26,6 +26,10 @@ function enableLinks(release) {
     node.querySelector('[data-ios-version]')?.replaceChildren(document.createTextNode(`第二步 · ${release.version}`))
     node.querySelector('[data-ios-label]')?.replaceChildren(document.createTextNode('下载哦狐 IPA 安装包'))
   })
+  document.querySelectorAll('[data-ios-current]').forEach((node) => {
+    node.textContent = `当前提供 ${release.version}（构建 ${release.build}）的未签名 IPA，与安卓安装包同版本。`
+    node.hidden = false
+  })
   updateStatus(`版本 ${release.version} · 构建 ${release.build} · ${(release.size / 1024 / 1024).toFixed(1)} MB · SHA-256 ${release.sha256}`)
 }
 
