@@ -2,16 +2,17 @@
 
 面向高校学生的校园应用，提供课表与学业查询、待办和提醒、专注学习、校园服务、校园广场及「碰个空」活动组队；项目同时包含独立管理端。
 
-当前源码版本：**1.2.146**。本仓库保存客户端与服务端代码、构建脚本和产品文档。部分能力依赖 CloudBase、校园教务服务或外部网关，源码存在不代表对应生产服务已经部署。
+当前源码版本：**1.2.155**。本仓库保存客户端与服务端代码、构建脚本和产品文档。部分能力依赖 CloudBase、校园教务服务或外部网关，源码存在不代表对应生产服务已经部署。
 
 ## 官网与下载
 
 - 官网／下载入口：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/>
+- 自有域名入口：<https://jouxyfwglzx.cn/download/>
 - 学生端 Android：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/student.html>
 - 管理端 Android：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/admin.html>
 - iPhone 安装说明：<https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/download/ios-guide.html>
 
-目前核验可用的域名是 CloudBase 默认 HTTPS 域名。绑定自有品牌域名还需要域名所有者提供域名并完成 DNS／平台验证；在此之前不把未验证域名写成官网地址。Android 下载页按已发布的核验清单展示对应安装包。iPhone 下载只有取得同版本、身份与 SHA-256 均通过核验的 IPA 后才会启用；无同版本产物时页面显示不可用；有可用 IPA 时提供文件与自签教程。
+CloudBase 默认 HTTPS 域名与自有域名 `jouxyfwglzx.cn` 现在部署同一份静态产物（自有域名由 `deploy/windows/deploy-ecs.ps1` 同步到 Windows ECS 上的 Caddy）；平台可用性与备案状态以实际访问为准。Android 下载页按已发布的核验清单展示对应安装包。iPhone 下载只有取得同版本、身份与 SHA-256 均通过核验的 IPA 后才会启用；无同版本产物时页面显示不可用；有可用 IPA 时提供文件与自签教程。
 
 ## 技术栈
 

@@ -7,29 +7,57 @@ definition and unrelated routes must be preserved.
 ## Current release
 
 - Domain: `jouxyfwglzx.cn` and `www.jouxyfwglzx.cn`
-- Release directory: `C:\OHUWebsite\releases\ohu-website-1.2.146-20261031\dist`
+- Release directory: `C:\OHUWebsite\releases\ohu-website-1.2.155-20261108\dist`
 - Caddy executable: `C:\MuMuLicense\bin\caddy.exe`
-- Existing configuration backup: `C:\OHUWebsite\backups\Caddyfile.pre-ohu-20261031.bak`
-- Website archive: `artifacts/ohu-website-1.2.146-20261031.tar.gz`
-- Archive SHA-256: `A47962F2BB4C7A04209C711A65C9A5BCE728E46DD29EEBC3AA631F2D4FDCE0E5`
+- Active configuration: `C:\MuMuLicense\Caddyfile`
+- Configuration backup before 1.2.155: `C:\OHUWebsite\backups\Caddyfile.pre-155-20261108-115526.bak`
+- Website archive used for 1.2.155: `ohu-web-1.2.155-20261108.tar.gz` (61.5 MB)
+- Archive SHA-256: `5F9C73C7A1E733EB15EC87E6E8E94EB09F895A2EAD20E0C4E5572713D4FD69E5`
 
-The existing IP reverse-proxy site was retained. OHU is an additive hostname
-block; Caddy was hot-reloaded without restarting the MuMuLicense Windows
-service. The website is present on the server. Public requests are currently
-blocked by Alibaba Cloud's ICP filing gate, so domain availability is pending
-the filing step described in `docs/release/ALIBABA-CLOUD-DEPLOYMENT-PLAN.md`.
+The existing IP reverse-proxy site is retained. OHU is an additive hostname
+block. Caddy is hot-reloaded with `caddy reload`; the MuMuLicense Windows
+service and its data directories are never touched.
 
-## Safe update outline
+The 1.2.155 site includes the Android download page, the iOS unsigned IPA
+(`download/Ohhu-user-1.2.155-155-unsigned.ipa`), the version announcement bar
+and `update.json`. Android APK bytes stay on CloudBase; the download page links
+to the CloudBase URL, so the custom domain never has to host APKs.
 
-1. Build and archive the static output; record its SHA-256.
-2. Upload to a new release directory and verify the archive hash before
-   extraction.
-3. Add the site block from `Caddyfile.ohu` to a copy of the current Caddyfile.
-4. Run `caddy.exe validate` against the candidate configuration.
-5. Back up the active Caddyfile, replace it atomically, then run
-   `caddy.exe reload --config C:\MuMuLicense\Caddyfile --adapter caddyfile`.
-6. Verify the current site, the existing IP reverse proxy, both domain names,
-   the `/download/` assets, and HTTPS from outside the server.
+## Safe update with the committed script
+
+`deploy-ecs.ps1` performs the whole sync on the server and is safe to rerun for
+a new version:
+
+1. Build the site bundle locally from `.release-out/web-upload` plus
+   `.release-out/apk-upload-manifest/update.json`, then `tar -czf`.
+2. Record the archive SHA-256 and upload it to
+   `C:\OHUWebsite\incoming\` on the ECS (scp over the existing SSH key).
+3. Run on the ECS:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File C:\OHUWebsite\incoming\deploy-ecs.ps1 `
+     -Version 1.2.155 `
+     -Archive C:\OHUWebsite\incoming\ohu-web-1.2.155-20261108.tar.gz `
+     -Sha256 5F9C73C7A1E733EB15EC87E6E8E94EB09F895A2EAD20E0C4E5572713D4FD69E5
+   ```
+
+The script verifies the hash, extracts into
+`C:\OHUWebsite\releases\ohu-website-<version>\dist`, rewrites only the
+`root * .../dist` line for the OHU site, runs `caddy validate` on a candidate,
+backs up the active Caddyfile, reloads Caddy, and verifies the site through the
+local Caddy listener with SNI.
+
+## Rollback
+
+Restore the recorded backup and reload:
+
+```powershell
+Copy-Item C:\OHUWebsite\backups\Caddyfile.pre-155-20261108-115526.bak C:\MuMuLicense\Caddyfile -Force
+C:\MuMuLicense\bin\caddy.exe reload --config C:\MuMuLicense\Caddyfile --adapter caddyfile
+```
+
+Previous release directories are kept, so rolling back is only a Caddyfile root
+change.
 
 Do not replace the Caddy service, overwrite its global options, alter the
 MuMuLicense data directories, or expose credentials in deployment logs.
