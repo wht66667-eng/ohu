@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getNextClass, getScheduleRowsForDate } from '../lib/schedule-cache'
+import { isBackgroundSyncRunning } from '../lib/background-sync'
 import { loadLocalIdentity } from '../lib/local-identity'
 import { useSchool } from '../store/school'
 import styles from './SimpleHomePage.module.css'
@@ -47,6 +48,17 @@ export function SimpleHomePage() {
   }, [rows])
   const hero = next.name ? next : upcoming
   const identity = loadLocalIdentity()
+  const [syncing, setSyncing] = useState(() => isBackgroundSyncRunning())
+  useEffect(() => {
+    const update = () => setSyncing(isBackgroundSyncRunning())
+    update()
+    const timer = window.setInterval(update, 1200)
+    window.addEventListener('ohu-background-sync-done', update)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('ohu-background-sync-done', update)
+    }
+  }, [])
   const date = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date())
   const upcomingExams = exams
     .filter((exam) => Date.parse(exam.datetime.replace(' ', 'T')) > Date.now())
@@ -67,8 +79,8 @@ export function SimpleHomePage() {
     </header>
 
     {!rows.length ? <Link to="/study/oneclick" className={styles.card} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-      <span><b>课表、成绩、考试还没读取</b><small style={{ display: 'block', opacity: 0.65, fontSize: 12 }}>进 App 后会自动在后台同步；也可以点这里手动读取</small></span>
-      <span aria-hidden="true" style={{ color: 'var(--green-text,#1f8f5f)', fontWeight: 700 }}>去读取 ›</span>
+      <span><b>{syncing ? '正在后台读取课表、成绩、考试…' : '课表、成绩、考试还没读取'}</b><small style={{ display: 'block', opacity: 0.65, fontSize: 12 }}>{syncing ? '门禁已通过，读完会自动出现在首页，不用再点一次' : '进 App 后会自动在后台同步；也可以点这里手动读取'}</small></span>
+      <span aria-hidden="true" style={{ color: 'var(--green-text,#1f8f5f)', fontWeight: 700 }}>{syncing ? '读取中…' : '去读取 ›'}</span>
     </Link> : null}
 
     <section className={styles.hero} aria-labelledby="ohu-home-next-class">

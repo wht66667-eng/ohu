@@ -131,6 +131,12 @@ export function PhoneShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('ohu-open-menu', openMenu)
   }, [])
   useEffect(() => { refreshSchool() }, [auth.phase, qbankRevision])
+  /* 门禁后的后台同步会把缓存写进本机；完成后刷新一次 store，首页不用手动重进。 */
+  useEffect(() => {
+    const done = () => { refreshSchool() }
+    window.addEventListener('ohu-background-sync-done', done)
+    return () => window.removeEventListener('ohu-background-sync-done', done)
+  }, [])
   useEffect(() => {
     if (work || auth.phase === 'booting') return
     const sync = () => {

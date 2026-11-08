@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { CAMPUS_BRIDGE_AVAILABLE } from '../lib/campus-bridge'
 import { loadLocalIdentity } from '../lib/local-identity'
-import { startBackgroundSync, type GateCredentials } from '../lib/background-sync'
+import { startBackgroundSync, resumeBackgroundSync, type GateCredentials } from '../lib/background-sync'
 import { rememberCampusSession } from '../lib/campus-session'
 import { OneClickPage } from '../pages/study/OneClickPage'
 
@@ -47,7 +47,10 @@ export function CampusGate({ children }: { children: ReactNode }) {
         if (now) markCampusVerified(now.studentId)
         setReady(true)
         rememberCampusSession(credentials)
-        void startBackgroundSync(credentials)
+        /* 门禁页在挂载时暂停后台同步，通过后要显式恢复，并等它卸载再启动，
+           否则 startBackgroundSync 的第一个 stopped() 检查会直接返回。 */
+        resumeBackgroundSync()
+        window.setTimeout(() => { void startBackgroundSync(credentials) }, 350)
       } }} />
     </div>
 
