@@ -282,7 +282,11 @@ async function loginCampus(studentId: string, vpnPassword: string, casPassword: 
       throw new OneClickError('cas', '统一认证页面没有打开。')
     })
     casResult = await submitCasForm(studentId, casPassword)
-    if (casResult === 'no-form') throw new OneClickError('cas', '没找到统一认证登录表单。')
+    if (casResult === 'no-form') {
+      /* 页面在我们填写前已经自动跳走 = CAS 会话本来就有效，直接继续。 */
+      const settled = await CampusBridge.currentUrl()
+      if (settled.url.includes('lyuapServer')) throw new OneClickError('cas', '没找到统一认证登录表单。')
+    }
     if (casResult === 'need-captcha') {
       report('cas', '统一认证需要验证码，请在页面上手动完成一次…')
       await CampusBridge.show()
@@ -299,23 +303,33 @@ async function loginCampus(studentId: string, vpnPassword: string, casPassword: 
 
   /* CAS 会话已建立后，再拿 zf 的 service 换票据：服务端会自动 302，无需再填表。 */
   report('zf', '正在进入正方教务…')
-  await CampusBridge.load({ url: CAS_LOGIN })
-  await waitReady(20_000)
-  await waitForUrl((url) => url.includes('cas_verify') || url.includes('xs_main'), 40_000, 'zf').catch(() => {
-    throw new OneClickError('zf', '正方会话没有建立：CAS 已登录，但没有换到正方票据，请重试。')
-  })
+  let landedOk = false
+  for (let attempt = 0; attempt < 2 && !landedOk; attempt += 1) {
+    if (attempt > 0) {
+      report('zf', '正方票据没有换到，重建校园会话后重试…')
+      await resetBridge()
+      await loginVpn(studentId, vpnPassword, () => {})
+    }
+    await CampusBridge.load({ url: CAS_LOGIN })
+    await waitReady(20_000)
+    landedOk = await waitForUrl((url) => url.includes('cas_verify') || url.includes('login_cas') || url.includes('xs_main'), 25_000, 'zf')
+      .then(() => true)
+      .catch(() => false)
+  }
+  if (!landedOk) throw new OneClickError('zf', '正方会话没有建立：CAS 已登录，但没有换到正方票据，重试后仍失败。')
 
-  const landed = await CampusBridge.currentUrl()
-  if (!landed.url.includes('xs_main')) {
-    /* cas_verify 页用 window.open 跳 xs_main；部分 WebView 会拦截，这里带 Referer 直接补一次。 */
-    const referer = landed.url
+  /* 抓包实证：login_cas.aspx?ticket=ST-... 页面靠 window.open('xs_main.aspx') 跳转，
+     部分 WebView 会拦截这个跳转；这里直接带 Referer 走一次 xs_main。 */
+  const afterTicket = await CampusBridge.currentUrl()
+  if (!afterTicket.url.includes('xs_main')) {
     await CampusBridge.load({
       url: zfUrl(`/xs_main.aspx?xh=${encodeURIComponent(studentId)}&type=1`),
-      headers: { Referer: referer },
+      headers: { Referer: afterTicket.url },
     })
     await waitReady(20_000)
-    await waitForUrl((url) => url.includes('xs_main'), 15_000, 'zf')
+    await waitForUrl((url) => url.includes('xs_main'), 15_000, 'zf').catch(() => {})
   }
+
   if (await isZfLoginPage()) {
     throw new OneClickError('zf', '正方回到了登录页：CAS 票据没有换成会话，请重试或手动登录一次。')
   }
@@ -417,7 +431,7 @@ async function triggerGradeQuery(allTerms = false): Promise<boolean> {
 }
 
 /** 成绩页学年下拉的可选值（去掉「全部」空项与提示项）。 */
-async function listGradeYears(): Promise<string[]> {
+export async function listGradeYears(): Promise<string[]> {
   const raw = await evalText(`(function(){
     var selects=[].slice.call(document.querySelectorAll('select'));
     var year=selects.filter(function(s){var k=(s.id+' '+s.name).toLowerCase();return k.indexOf('xn')>=0||k.indexOf('year')>=0;})[0];
@@ -432,7 +446,7 @@ async function listGradeYears(): Promise<string[]> {
   }
 }
 
-async function queryGradesByYear(yearValue: string): Promise<void> {
+export async function queryGradesByYear(yearValue: string): Promise<void> {
   await queryGradeTerm(yearValue, '')
 }
 
@@ -465,53 +479,17 @@ async function queryGradeTerm(yearValue: string, termValue: string): Promise<voi
  * 退化为逐学年点「按学年查询」，按 学年|学期|课程代码 去重合并。
  */
 async function readAllGrades(progress: (msg: string) => void): Promise<ZfGradeRow[]> {
-  const waitPostback = async () => { await sleep(2500); await waitReady(8000) }
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (await triggerGradeQuery(true)) break
-    await waitPostback()
+  /* 只查一次：拿到结果立即返回，绝不循环重查。 */
+  progress('正在读取成绩…')
+  const clicked = await triggerGradeQuery(true)
+  if (!clicked) await sleep(1500)
+  const started = Date.now()
+  while (Date.now() - started < 15_000) {
+    const rows = parseZfGrades(await pageHtml())
+    if (rows.length) return rows
+    await sleep(1000)
   }
-  const html1 = await pageHtml()
-  try { localStorage.setItem('ohu.debug.grades.meta', JSON.stringify({ len: html1.length, hasGrid: html1.includes('Datagrid1'), hasLogin: html1.includes('txtUserName'), title: (html1.match(/<title>[^<]*/) || [''])[0].slice(0, 60) })) } catch { /* debug */ }
-  try { localStorage.setItem('ohu.debug.grades.html', html1.slice(0, 12000)) } catch { /* debug */ }
-  const first = parseZfGrades(html1)
-  if (first.length && new Set(first.map((row) => row.year)).size > 1) return first
-  const years = await listGradeYears()
-  try { localStorage.setItem('ohu.debug.grades', JSON.stringify({ years, firstLen: first.length, firstYears: [...new Set(first.map((row) => row.year))] })) } catch { /* debug */ }
-  const merged = new Map<string, ZfGradeRow>()
-  const push = (rows: ZfGradeRow[]) => {
-    for (const row of rows) {
-      const key = `${row.year}|${row.term}|${row.code}|${row.name}`
-      if (!merged.has(key)) merged.set(key, row)
-    }
-  }
-  push(first)
-  if (!first.length) {
-    /* 新页面空选点「按学年查询」会弹“请选择学年学期”，只能逐年 × 逐学期点「按学期查询」。 */
-    for (const year of years) {
-      for (const term of ['1', '2', '3']) {
-        progress(`正在读取 ${year} 第${term}学期…`)
-        await queryGradeTerm(year, term)
-        await waitPostback()
-        push(parseZfGrades(await pageHtml()))
-      }
-    }
-  } else {
-    for (const year of years) {
-      progress(`正在读取 ${year} 学年成绩…`)
-      await queryGradesByYear(year)
-      await waitPostback()
-      push(parseZfGrades(await pageHtml()))
-    }
-  }
-  if (merged.size) {
-    return Array.from(merged.values()).sort((a, b) => b.year.localeCompare(a.year) || Number(b.term) - Number(a.term))
-  }
-  /* 兜底：退回旧的单学期查询。 */
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (await triggerGradeQuery()) break
-    await waitPostback()
-  }
-  return parseZfGrades(await pageHtml())
+  return []
 }
 
 export type SchoolSyncResult = {
@@ -571,7 +549,15 @@ export async function runSchoolSync(input: {
   try {
     await loadWithReferer(ZF_GRADES(studentId, name), referer, 'xscj_gc2')
     if (await isZfLoginPage()) throw new Error('成绩页回到了登录页（正方会话失效），请重新同步。')
-    const grades = await readAllGrades((msg) => report('grades', msg))
+    let grades = await readAllGrades((msg) => report('grades', msg))
+    if (!grades.length) {
+      /* 正方回发有竞态：第一次可能返回空表，重载页面再读一次。 */
+      report('grades', '成绩页为空，重载后重试…')
+      await loadWithReferer(ZF_GRADES(studentId, name), referer, 'xscj_gc2')
+      await waitReady(15_000)
+      await sleep(800)
+      grades = await readAllGrades((msg) => report('grades', msg))
+    }
     if (!grades.length) throw new Error('页面里没有解析到成绩（可能需要先点查询，或页面已改版）。')
     if (!saveGradesCache(grades, studentId, session)) throw new Error('成绩已读取，但本机保存失败。')
     result.grades = { ok: true, count: grades.length }
@@ -652,6 +638,17 @@ export async function runTiceSync(input: {
   await resetBridge()
   await loginVpn(studentId, input.vpnPassword, report)
   report('tice-login', '正在登录体测系统…')
+  /* 进体测前确认 VPN 还在线：票据失效时这里会被弹回 /login，页面长度约 12KB，
+     如果不校验就会把 VPN 登录页当成体测成绩页解析成 0 行。 */
+  const ensureVpn = async (): Promise<void> => {
+    const probe = await CampusBridge.currentUrl()
+    if (!probe.url.includes('/login')) return
+    report('tice-login', '校园网会话失效，重新登录…')
+    await loginVpn(studentId, input.vpnPassword, report)
+    const again = await CampusBridge.currentUrl()
+    if (again.url.includes('/login')) throw new OneClickError('tice-login', '校园网会话没有恢复：请先完成一次认证再读取体测。')
+  }
+  await ensureVpn()
   await CampusBridge.load({ url: ticeUrl('/student/studentFrame.jsp') })
   await waitReady(20_000)
   /* 抓包实证：体测登录是对 studentFrame.jsp 的表单 POST，
@@ -682,16 +679,29 @@ export async function runTiceSync(input: {
     throw new OneClickError('tice-login', '体测密码不正确，请核对后重试。')
   }
 
+  /* 体测是老 frameset：登录成功的标志是任意 frame 出现「欢迎你回来」。 */
+  const ticeLoggedIn = async (): Promise<boolean> => {
+    const frames = await evalText("(function(){var s='';for(var i=0;i<window.frames.length;i++){try{s+=window.frames[i].document.body.innerText}catch(e){}}return s})()")
+    return frames.includes('欢迎你回来') || frames.includes('学生查询')
+  }
+  if (!(await ticeLoggedIn())) {
+    report('tice-login', '体测登录未生效，重试一次…')
+    await evalText(loginScript)
+    await sleep(3000)
+    if (!(await ticeLoggedIn())) throw new OneClickError('tice-login', '体测登录失败：页面没有进入学生查询，请检查体测密码或稍后重试。')
+  }
+
   report('tice', '正在读取体测成绩…')
   let historyHtml = await fetchPage(ticeUrl('/student/Historyhealth.jsp'))
   let currentHtml = await fetchPage(ticeUrl('/student/queryHealthInfo.jsp'))
 
   let history = parseTiceHistory(historyHtml)
+  try { localStorage.setItem('ohu.debug.tice', JSON.stringify({ hLen: historyHtml.length, cLen: currentHtml.length, rows: history.length, first: history[0] || null })) } catch { /* debug */ }
   /* 历年表每行都有「具体信息」：逐学年打开，补齐单项。 */
-  const detailLinks = [...historyHtml.matchAll(/window\.open\('([^']*listdetalhistroyScore\.jsp[^']*)'/g)].map((match) => match[1].replace(/&amp;/g, '&'))
+  const detailLinks = [...historyHtml.matchAll(/window\.open\('([^']*listdetalhistroyScore\.jsp[^']*)'/g)].map((match) => match[1].replace(/&amp;/g, '&')).slice(0, 6)
   for (let index = 0; index < detailLinks.length; index += 1) {
     try {
-      const detailHtml = await fetchPage(ticeUrl(detailLinks[index]))
+      const detailHtml = await fetchPage(ticeUrl(detailLinks[index]), 12_000)
       const detail = parseTiceCurrent(detailHtml, history[index]?.year ?? '')
       if (!detail?.items.length) continue
       const gradeNo = Number(detailLinks[index].match(/gradeNo=(\d+)/)?.[1] ?? '')
@@ -712,7 +722,11 @@ export async function runTiceSync(input: {
     history = parseTiceHistory(historyHtml)
     current = parseTiceCurrent(currentHtml, history[0]?.year ?? '')
   }
-  if (!history.length && !current) throw new OneClickError('tice', '体测页面没有解析到成绩，可能仍是登录页。')
+  if (!history.length && !current) {
+    let debug = ''
+    try { debug = localStorage.getItem('ohu.debug.tice') || '' } catch { /* ignore */ }
+    throw new OneClickError('tice', `体测页面没有解析到成绩（${debug}）。`)
+  }
   const summary = mergeTicePages(history, current)
   const records = importTiceSummary(summary, session)
   return { ok: true, count: records.length }

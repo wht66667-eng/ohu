@@ -1,21 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
 import { CAMPUS_BRIDGE_AVAILABLE } from '../../lib/campus-bridge'
 import {
   OneClickError,
   runChaoxingSsoSync,
-  runPocketUniSync,
   runQualitySync,
   runPublicElectiveSync,
   runSchoolSync,
-  runTiceSync,
-  closeCampusWebView,
   verifyCampusIdentity,
   type SchoolSyncResult,
   type SourceStatus,
 } from '../../lib/one-click'
-import type { GateCredentials } from '../../lib/background-sync'
+import { pauseBackgroundSync, resumeBackgroundSync, type GateCredentials } from '../../lib/background-sync'
+import { rememberCampusSession } from '../../lib/campus-session'
 import { ensureLocalIdentity, loadLocalIdentity } from '../../lib/local-identity'
 import { refreshAllReminders } from '../../lib/notify-setup'
 import {
@@ -26,7 +24,7 @@ import {
 } from '../../lib/oneclick-credentials'
 import styles from './one-click.module.css'
 
-type Busy = 'school' | 'tice' | 'pu' | 'chaoxing' | 'quality' | null
+type Busy = 'school' | 'chaoxing' | 'quality' | null
 
 const STAGE_TEXT: Record<string, string> = {
   vpn: '校园网登录',
@@ -35,10 +33,6 @@ const STAGE_TEXT: Record<string, string> = {
   grades: '成绩',
   timetable: '课表',
   exams: '考试',
-  'tice-login': '体测登录',
-  tice: '体测成绩',
-  'pu-login': '口袋校园登录',
-  pu: 'PU 学分',
   'chaoxing-login': '学习通登录',
   chaoxing: '学习通课程',
   quality: '校园档案',
@@ -51,16 +45,12 @@ function statusText(status: SourceStatus): string {
 
 export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCredentials) => void } } = {}) {
   const [creds, setCreds] = useState<OneClickCredentials>(() => readOneClickCredentials())
-  const [initials, setInitials] = useState('')
   const [busy, setBusy] = useState<Busy>(null)
   const [stage, setStage] = useState('')
   const [school, setSchool] = useState<SchoolSyncResult | null>(null)
-  const [tice, setTice] = useState<SourceStatus | null>(null)
-  const [pu, setPu] = useState<SourceStatus | null>(null)
   const [chaoxing, setChaoxing] = useState<SourceStatus | null>(null)
   const [quality, setQuality] = useState<SourceStatus | null>(null)
-  const [puAccount, setPuAccount] = useState('')
-  const [puPassword, setPuPassword] = useState('')
+  useEffect(() => { pauseBackgroundSync(); return () => resumeBackgroundSync() }, [])
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
@@ -124,72 +114,6 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
     }
   })
 
-  const ticeTask = () => run('tice', async () => {
-    if (!ensureInputs(false)) return
-    if (!creds.ticePassword) { setError('体测系统是独立账号，请填写体测密码（首次可试「姓名首字母大写_学号」）。'); return }
-    persist()
-    const result = await runTiceSync({
-      studentId: creds.stuid,
-      vpnPassword: creds.vpnPassword,
-      ticePassword: creds.ticePassword,
-      report: (next, message) => setStage(`${STAGE_TEXT[next] ?? next} · ${message}`),
-    })
-    setTice(result)
-    setStage('')
-    setNotice('体测成绩已写入本机；可在「体测成绩」页查看历年与本次明细。')
-  })
-
-  const puTask = () => run('pu', async () => {    if (!ensureIdentity()) return
-    const result = await runPocketUniSync({ report: (next, message) => setStage(`${STAGE_TEXT[next] ?? next} · ${message}`) })
-    setPu(result)
-    setStage('')
-    setNotice('PU 学分已保存；若总分为 4.85、分类明细正常，说明读取成功。')
-  })
-
-  const comboTask = () => run('tice', async () => {
-    if (!ensureInputs()) return
-    if (!creds.ticePassword) { setError('请填写体测密码（首次可试 姓名首字母_学号）。'); return }
-    if (!puAccount.trim() || !puPassword) { setError('请填写口袋校园（PU）账号和密码。'); return }
-    persist()
-    let ticeResult: SourceStatus
-    try {
-      ticeResult = await runTiceSync({
-        studentId: creds.stuid,
-        vpnPassword: creds.vpnPassword,
-        ticePassword: creds.ticePassword,
-        report: (_next, message) => setStage(`体测 · ${message}`),
-      })
-    } catch (error) {
-      ticeResult = { ok: false, message: error instanceof Error ? error.message : '体测读取失败' }
-    }
-    setTice(ticeResult)
-    setStage('体测完成，准备读取 PU…')
-    let puResult: SourceStatus
-    try {
-      puResult = await runPocketUniSync({
-        account: puAccount.trim(),
-        password: puPassword,
-        report: (_next, message) => setStage(`PU · ${message}`),
-      })
-    } catch (error) {
-      puResult = { ok: false, message: error instanceof Error ? error.message : 'PU 读取失败' }
-    }
-    setPu(puResult)
-    setStage('')
-    setNotice(`体测：${statusText(ticeResult)}；PU：${statusText(puResult)}`)
-  })
-
-  const puOnlyTask = () => run('pu', async () => {
-    const result = await runPocketUniSync({
-      account: puAccount.trim() || undefined,
-      password: puPassword || undefined,
-      report: (_next, message) => setStage(`PU · ${message}`),
-    })
-    setPu(result)
-    setStage('')
-    setNotice(`PU：${statusText(result)}`)
-  })
-
   const chaoxingTask = () => run('chaoxing', async () => {
     if (!ensureInputs()) return
     const result = await runChaoxingSsoSync({
@@ -231,14 +155,12 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
   const gateTask = () => run('school', async () => {
     if (!ensureInputs()) return
     await verifyCampusIdentity(creds.stuid.trim(), creds.vpnPassword, creds.casPassword, (next, message) => setStage(`${STAGE_TEXT[next] ?? next} · ${message}`))
+    rememberCampusSession({ studentId: creds.stuid.trim(), vpnPassword: creds.vpnPassword, casPassword: creds.casPassword })
     setStage('认证通过，正在进入…')
     gate?.onPass({
       studentId: creds.stuid.trim(),
       vpnPassword: creds.vpnPassword,
       casPassword: creds.casPassword,
-      ticePassword: creds.ticePassword,
-      puAccount,
-      puPassword,
     })
   })
 
@@ -249,7 +171,13 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
 
     const schoolResult = await runSchoolSync({ studentId: creds.stuid, vpnPassword: creds.vpnPassword, casPassword: creds.casPassword, report })
     setSchool(schoolResult)
+    rememberCampusSession({ studentId: creds.stuid.trim(), vpnPassword: creds.vpnPassword, casPassword: creds.casPassword })
     summary.push(`校园 ${schoolResult.grades.count ?? 0}/${schoolResult.timetable.count ?? 0}/${schoolResult.exams.count ?? 0}`)
+
+    try {
+      const publicResult = await runPublicElectiveSync({ studentId: creds.stuid, vpnPassword: creds.vpnPassword, casPassword: creds.casPassword, report })
+      summary.push(`公选 ${publicResult.count ?? 0} 门`)
+    } catch { summary.push('公选失败') }
 
     try {
       const quality = await runQualitySync({ studentId: creds.stuid, vpnPassword: creds.vpnPassword, casPassword: creds.casPassword, report })
@@ -263,38 +191,9 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
       summary.push(`学习通 ${chaoxing.count ?? 0} 门`)
     } catch { summary.push('学习通失败') }
 
-    if (creds.ticePassword.trim()) {
-      try {
-        const ticeResult = await runTiceSync({ studentId: creds.stuid, vpnPassword: creds.vpnPassword, ticePassword: creds.ticePassword, report })
-        setTice(ticeResult)
-        summary.push(`体测 ${ticeResult.count ?? 0} 条`)
-      } catch { summary.push('体测失败') }
-    } else {
-      summary.push('体测需密码')
-    }
-
-    if (puAccount.trim() && puPassword) {
-      try {
-        const puResult = await runPocketUniSync({ account: puAccount.trim(), password: puPassword, report })
-        setPu(puResult)
-        summary.push(`PU ${puResult.count ?? 0} 条`)
-      } catch { summary.push('PU 失败') }
-    } else {
-      summary.push('PU 需授权')
-    }
-
     setStage('')
-    setNotice(summary.join(' · '))
+    setNotice(`${summary.join(' · ')}；体测和 PU 请到各自页面登录更新。`)
   })
-
-
-  function fillTiceByInitials() {
-    const value = initials.trim().toUpperCase().replace(/[^A-Z]/g, '')
-    if (!value) { setError('先填写姓名首字母，例如 AAA。'); return }
-    if (!creds.stuid.trim()) { setError('请先填写学号。'); return }
-    update('ticePassword', `${value}_${creds.stuid.trim()}`)
-    setError('')
-  }
 
   const savedIdentity = loadLocalIdentity()
 
@@ -304,7 +203,7 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
       <section className={styles.hero}>
         <span className={styles.eyebrow}>设备内登录 · 不经过云端</span>
         <h2>一次输入，<br />把校园数据带回来</h2>
-        <p>学号 + 校园网密码 + 统一认证密码，直接读取课表、成绩、考试；学号就是本机身份，不需要手机号注册。体测、PU、学习通是各自独立的账号，登录一次后也能一键更新。</p>
+        <p>学号 + 校园网密码 + 统一认证密码，直接读取课表、成绩、考试；学号就是本机身份，不需要手机号注册。体测、PU、学习通是各自独立的账号，进入后到对应页面单独登录更新。</p>
         <div className={styles.badges}>
           <span>无需手机号</span><span>密码不写日志</span><span>默认不保存</span><span>只取本人数据</span>
         </div>
@@ -316,13 +215,11 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
 
       {savedIdentity ? <p className={styles.identity} role="status">本机身份：学号 {savedIdentity.studentId}（数据只保存在这台设备）</p> : null}
 
-      {(school || tice || pu || quality || chaoxing) ? <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 0 8px' }}>
+      {(school || quality || chaoxing) ? <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 0 8px' }}>
         {([
           ['成绩', school?.grades],
           ['课表', school?.timetable],
           ['考试', school?.exams],
-          ['体测', tice],
-          ['PU', pu],
           ['素质拓展', quality],
           ['学习通', chaoxing],
         ] as Array<[string, SourceStatus | undefined]>).filter(([, status]) => !!status).map(([label, status]) => (
@@ -345,25 +242,17 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
         <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>2023 级默认身份证后 8 位；2024 级起为身份证后 8 位 + @Jou</small>
         <label className={styles.field}>统一认证密码<input type="password" value={creds.casPassword} autoComplete="current-password" onChange={(event) => update('casPassword', event.target.value)} placeholder="8–20 位，含字母/数字/符号" /></label>
         <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>初始密码为 Jou@ + 身份证后 8 位；区分大小写</small>
-        <label className={styles.field}>体测密码（选填）
-          <input type="password" value={creds.ticePassword} autoComplete="off" onChange={(event) => update('ticePassword', event.target.value)} placeholder="不填则跳过体测" />
-        </label>
-        <small style={{ display: 'block', margin: '-6px 0 10px', fontSize: 11, opacity: 0.6 }}>初始为姓名首字母大写 + _ + 学号，例如 AAA_20231111</small>
-        <div className={styles.inlineRow}>
-          <input value={initials} onChange={(event) => setInitials(event.target.value)} placeholder="如 AAA" aria-label="姓名首字母" />
-          <button type="button" className={styles.mini} onClick={fillTiceByInitials}>填入 首字母_学号</button>
-        </div>
         <label className={styles.check}>
           <input type="checkbox" checked={creds.remember} onChange={(event) => update('remember', event.target.checked)} />
           在本机加密记住密码（默认关闭；关闭时每次同步都要重新输入）
         </label>
         <div className={styles.actions}>
           <button type="button" className={styles.primary} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void (gate ? gateTask() : allTask())}>
-            {busy === 'school' ? '正在更新…' : gate ? '认证并进入（同步全部数据）' : '更新数据'}
+            {busy === 'school' ? (gate ? '正在认证…' : '正在更新…') : gate ? '认证并进入' : '更新数据'}
           </button>
-          <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void schoolTask()}>
+          {!gate ? <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void schoolTask()}>
             只获取课表 · 成绩 · 考试
-          </button>
+          </button> : null}
         </div>
         {stage ? <p className={styles.stage} role="status">{stage}</p> : null}
         {school ? <div className={styles.results}>
@@ -374,41 +263,12 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
         {school?.name ? <p className={styles.muted}>正方姓名校验：{school.name}</p> : null}
       </section>
 
-      <section className={styles.card}>
-        <div className={styles.cardHead}><div><span className={styles.kicker}>体测 + PU</span><h3>一次输入，两个一起读</h3></div></div>
-        <p className={styles.muted}>体测和口袋校园是两套独立账号。体测密码用上方「体测密码（选填）」；填一次后点下面按钮，会在后台自动登录并读取。</p>
-        <label className={styles.field}>PU 账号<input value={puAccount} onChange={(event) => setPuAccount(event.target.value)} placeholder="口袋校园手机号 / 学号" autoComplete="username" /></label>
-        <label className={styles.field}>PU 密码<input type="password" value={puPassword} onChange={(event) => setPuPassword(event.target.value)} placeholder="口袋校园密码" autoComplete="current-password" /></label>
-        <div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void comboTask()}>
-            {busy === 'tice' ? '正在读取…' : '一键读取体测 + PU'}
-          </button>
-          <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void puOnlyTask()}>
-            {busy === 'pu' ? 'PU 读取中…' : '只更新 PU'}
-          </button>
-          {busy === 'tice' ? (
-            <button type="button" className={styles.outline} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>
-              取消读取
-            </button>
-          ) : null}
-        </div>
-        <p className={styles.muted}>体测一般 10–30 秒；PU 需要等页面渲染和登录，约 20–60 秒。超过 2 分钟还没结果，可点「取消读取」。</p>
-      </section>
+      {gate ? <p className={styles.muted}>体测和 PU（口袋校园）是独立账号，入口门禁不再要求这两套密码。进入后到「体测成绩」页、「PU 成绩」页各自点「登录并更新」即可。</p> : null}
 
-      <section className={styles.card}>
-        <div className={styles.cardHead}><div><span className={styles.kicker}>第 2 步</span><h3>需要单独授权的数据</h3></div></div>
+      {!gate ? <section className={styles.card}>
+        <div className={styles.cardHead}><div><span className={styles.kicker}>第 2 步</span><h3>需要单独更新的数据</h3></div></div>
         <p className={styles.muted}>下面三项各自是独立账号：第一次需要你在弹出的页面里登录，之后才能一键更新。可见页面右上角有「完成」按钮，可随时取消。</p>
         <div className={styles.sourceList}>
-          <div className={styles.sourceRow}>
-            <div><b>体测成绩</b><small>用上方「体测密码（选填）」自动登录 tice</small></div>
-            <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void ticeTask()}>{busy === 'tice' ? '读取中…' : '读取体测'}</button>
-          </div>
-          {tice ? <p className={tice.ok ? styles.okText : styles.badText}>体测：{statusText(tice)}</p> : null}
-          <div className={styles.sourceRow}>
-            <div><b>PU 二课</b><small>口袋校园登录一次，读成绩明细文字</small></div>
-            <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void puTask()}>{busy === 'pu' ? '等待登录…' : '授权并读取'}</button>
-          </div>
-          {pu ? <p className={pu.ok ? styles.okText : styles.badText}>PU：{statusText(pu)}</p> : null}
           <div className={styles.sourceRow}>
             <div><b>学习通</b><small>超星账号登录一次，缓存课程列表</small></div>
             <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void chaoxingTask()}>{busy === 'chaoxing' ? '等待登录…' : '授权并读取'}</button>
@@ -423,8 +283,16 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
             <button type="button" className={styles.outline} disabled={!CAMPUS_BRIDGE_AVAILABLE || busy !== null} onClick={() => void qualityTask()}>{busy === 'quality' ? '尝试中…' : '尝试读取'}</button>
           </div>
           {quality ? <p className={quality.ok ? styles.okText : styles.badText}>素质拓展：{quality.ok ? (quality.message || statusText(quality)) : statusText(quality)}</p> : null}
+          <div className={styles.sourceRow}>
+            <div><b>体测成绩</b><small>体测是独立账号，在该页面单独登录</small></div>
+            <Link className={styles.outline} to="/sports/results">去体测页</Link>
+          </div>
+          <div className={styles.sourceRow}>
+            <div><b>PU 二课</b><small>口袋校园是独立账号，在该页面单独登录</small></div>
+            <Link className={styles.outline} to="/study/pu">去 PU 页</Link>
+          </div>
         </div>
-      </section>
+      </section> : null}
 
       {notice ? <p className={styles.okText} role="status">{notice}</p> : null}
       {error ? <p className={styles.badText} role="alert">{error}</p> : null}
@@ -439,10 +307,6 @@ export function OneClickPage({ gate }: { gate?: { onPass: (credentials: GateCred
           <div>
             <dt>统一认证密码</dt>
             <dd>用于信息门户 / CAS 统一认证。初始密码为 Jou@身份证后八位。</dd>
-          </div>
-          <div>
-            <dt>体测密码</dt>
-            <dd>首次可尝试「姓名首字母大写_学号」，例如 AAA_20231111；若改过密码，请用新密码。</dd>
           </div>
         </dl>
         <p className={styles.muted}>以上为学校初始密码规则；若曾修改，请使用修改后的密码。忘记密码可在对应系统自助找回或咨询学校网络中心。</p>

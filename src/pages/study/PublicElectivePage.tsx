@@ -13,7 +13,7 @@ const passed = (score: string) => {
   return PASS.test(String(score).trim())
 }
 
-export function PublicElectivePage() {
+export function PublicElectivePage({ embedded = false }: { embedded?: boolean } = {}) {
   useQbankRevision()
   const grades = loadGradesCache()
   const offerings = readPublicElectives()
@@ -68,10 +68,8 @@ export function PublicElectivePage() {
     .map((row) => ({ code: row.code, name: row.name, credit: Number(row.credit) || 0, score: row.score, category: ({ H: '海洋知识类', R: '人文素养类', Z: '自然科学类', G: '公共艺术类' } as Record<string, string>)[String(row.code).toUpperCase().slice(0, 1)] ?? '其他' })), [grades])
   const filtered = courses.filter((course) => !query.trim() || `${course.name} ${course.code} ${course.teacher}`.toLowerCase().includes(query.trim().toLowerCase()))
 
-  return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
-    <PageHeader title="成绩" />
-    <main style={{ padding: '10px 14px 90px', display: 'grid', gap: 12 }}>
-      <GradeTabs active="/grades/public" />
+  const content = <main style={{ padding: embedded ? 0 : '10px 14px 90px', display: 'grid', gap: 12 }}>
+      {embedded ? null : <GradeTabs active="elective" />}
       <section style={{ borderRadius: 18, padding: 16, background: 'var(--card,#fff)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div><h2 style={{ margin: 0, fontSize: 22 }}>公选课毕业进度</h2></div>
@@ -123,5 +121,10 @@ export function PublicElectivePage() {
         <details style={{ marginTop: 8 }}><summary style={{ cursor: 'pointer', fontSize: 12 }}>查看结构化 JSON 样例</summary><pre style={{ overflowX: 'auto', fontSize: 11, background: 'rgba(0,0,0,.04)', padding: 8, borderRadius: 8 }}>{JSON.stringify(filtered.slice(0, 3), null, 2)}</pre></details>
       </section> : null}
     </main>
+
+  if (embedded) return content
+  return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
+    <PageHeader title="成绩" />
+    {content}
   </div>
 }

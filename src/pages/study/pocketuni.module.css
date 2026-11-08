@@ -60,6 +60,8 @@
 .success,.error { margin:0; padding:10px 12px; border-radius:12px; font-size:12px; line-height:1.6; }
 .success { background:var(--green-soft); color:var(--green-text); }
 .error { background:var(--danger-soft,#fff1ee); color:var(--danger,#a3321b); }
+.stageText { margin:0; color:var(--green-text); font-size:12px; line-height:1.6; }
+.actions>.primary:only-child { grid-column:1/-1; }
 
 .noteCard { display:grid; gap:5px; padding:14px 15px; border:1px solid var(--line); border-radius:18px; background:color-mix(in srgb,var(--page-mid) 70%,var(--card)); }
 .noteCard b { color:var(--green-text); font-size:13px; }

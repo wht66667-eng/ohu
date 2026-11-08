@@ -60,4 +60,15 @@
 .ticePreview li span:last-child { color:var(--text-3); }
 .gradePill { margin-left:7px; padding:2px 7px; border-radius:99px; background:var(--green-soft); color:var(--green-text); font-size:11px; font-style:normal; font-weight:700; vertical-align:middle; }
 .back { color:var(--green-text); }
+.syncCard { background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--green-soft) 55%,var(--card))); }
+.syncHead { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.syncHead h3 { margin:3px 0 0; font-size:19px; line-height:1.35; }
+.syncBadge { flex:none; padding:5px 10px; border-radius:99px; background:var(--card); color:var(--green-text); font-size:11px; font-weight:700; }
+.syncText { margin:0!important; color:var(--text-2); font-size:13px!important; line-height:1.7!important; }
+.syncFields { display:grid; gap:10px; }
+.syncActions { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:stretch; }
+.syncActions>.primary:only-child { grid-column:1/-1; }
+.syncStage { margin:0!important; color:var(--green-text); font-size:12px!important; }
+.check { display:flex; align-items:center; gap:8px; color:var(--text-2); font-size:12px; line-height:1.5; }
+.check input { width:18px; height:18px; margin:0; accent-color:var(--green); }
 @media (max-width:380px) { .card { padding:17px 14px; } .formGrid { grid-template-columns:1fr; } .formGrid .field:last-child { grid-column:auto; } .quickLinks { grid-template-columns:1fr; } }

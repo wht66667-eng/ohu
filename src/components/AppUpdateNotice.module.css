@@ -1,0 +1,11 @@
+.banner { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--green-soft, #ecf6ee); border-bottom: 1px solid var(--line, #d5e7d9); color: var(--text, #1d3029); }
+.copy { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.copy b { font-size: 13px; color: var(--green-text, #16735b); }
+.copy span { font-size: 12px; line-height: 1.45; color: var(--text-2, #4c6154); overflow-wrap: anywhere; }
+.copy small { font-size: 11px; color: var(--text-3, #74867a); }
+.actions { display: flex; align-items: center; gap: 6px; flex: none; }
+.cta { border: 0; border-radius: 999px; padding: 8px 14px; background: var(--green, #16735b); color: var(--on-green, #fff); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cta:focus-visible { outline: 2px solid var(--orange, #ed9a48); outline-offset: 2px; }
+.close { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--text-2, #4c6154); font-size: 20px; line-height: 1; cursor: pointer; }
+.close:hover { background: rgba(22, 115, 91, .1); }
+@media (max-width: 380px) { .banner { flex-wrap: wrap; } .actions { width: 100%; justify-content: flex-end; } }

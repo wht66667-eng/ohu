@@ -1,29 +1,46 @@
 /**
  * 门禁通过后的后台同步：不阻塞进入 App，逐项失败互不影响。
- * 失败的项保留旧缓存，用户可在「设置 → 更新数据」或一键获取页重试。
+ * 只同步教务 / 校园档案 / 学习通 / 公选；体测和 PU 是独立账号，
+ * 由「体测成绩」「PU 成绩」页各自的登录与更新按钮负责。
  */
 import {
   runChaoxingSsoSync,
-  runPocketUniSync,
   runPublicElectiveSync,
   runQualitySync,
   runSchoolSync,
-  runTiceSync,
 } from './one-click'
 
 export type GateCredentials = {
   studentId: string
   vpnPassword: string
   casPassword: string
-  ticePassword: string
-  puAccount: string
-  puPassword: string
 }
 
 let running = false
+let paused = false
+
+export function pauseBackgroundSync() { paused = true }
+export function resumeBackgroundSync() { paused = false }
 
 export function isBackgroundSyncRunning(): boolean {
   return running
+}
+
+/**
+ * 体测/PU 等页面级同步开始前调用：等后台教务同步跑完，避免两个流程抢同一个内置 WebView。
+ * 后台同步被暂停或超时也会返回，页面同步随后自己开始。
+ */
+export function waitForBackgroundSync(timeoutMs = 90_000): Promise<void> {
+  if (!running) return Promise.resolve()
+  return new Promise((resolve) => {
+    const finish = () => {
+      window.removeEventListener('ohu-background-sync-done', finish)
+      window.clearTimeout(timer)
+      resolve()
+    }
+    const timer = window.setTimeout(finish, timeoutMs)
+    window.addEventListener('ohu-background-sync-done', finish)
+  })
 }
 
 export async function startBackgroundSync(input: GateCredentials): Promise<void> {
@@ -31,16 +48,15 @@ export async function startBackgroundSync(input: GateCredentials): Promise<void>
   running = true
   const base = { studentId: input.studentId, vpnPassword: input.vpnPassword, casPassword: input.casPassword }
   const noop = () => {}
+  const stopped = () => paused
   try {
+    if (stopped()) return
     await runSchoolSync({ ...base, report: noop }).catch(noop)
+    if (stopped()) return
     await runQualitySync({ ...base, report: noop }).catch(noop)
+    if (stopped()) return
     await runChaoxingSsoSync({ ...base, report: noop }).catch(noop)
-    if (input.ticePassword.trim()) {
-      await runTiceSync({ ...base, ticePassword: input.ticePassword, report: noop }).catch(noop)
-    }
-    if (input.puAccount.trim() && input.puPassword) {
-      await runPocketUniSync({ account: input.puAccount.trim(), password: input.puPassword, report: noop }).catch(noop)
-    }
+    if (stopped()) return
     await runPublicElectiveSync({ ...base, report: noop }).catch(noop)
   } finally {
     running = false

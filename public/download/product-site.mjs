@@ -595,17 +595,42 @@ async function loadReleaseSummary() {
     const version = release.latestVersion || release.version || release.appVersion
     const build = release.latestBuild || release.build || release.buildNumber
     const notes = release.notes || release.releaseNotes
+    const size = release.assets?.androidArm64?.size || release.flavors?.user?.androidArm64?.size
     if (version) {
-      $('#releaseMeta').replaceChildren(Object.assign(document.createElement('span'), { className: 'release-dot' }), document.createTextNode(`当前版本 ${version}${build ? ` · 构建 ${build}` : ''}`))
+      const sizeText = Number.isFinite(size) && size > 0 ? ` · ${(size / 1024 / 1024).toFixed(1)} MB` : ''
+      $('#releaseMeta').replaceChildren(Object.assign(document.createElement('span'), { className: 'release-dot' }), document.createTextNode(`当前版本 ${version}${build ? ` · 构建 ${build}` : ''}${sizeText}`))
       $('#updateVersion').textContent = `哦狐 ${version}`
       if (build) $('#updateBuild').textContent = `BUILD ${build}`
+      const heroVersion = $('#heroVersion')
+      if (heroVersion) heroVersion.textContent = `版本 ${version}${build ? ` · ${build}` : ''}`
+      const announceVersion = $('#announceVersion')
+      if (announceVersion) announceVersion.textContent = String(version)
+      const announcement = $('#releaseAnnouncement')
+      if (announcement) {
+        announcement.dataset.build = String(build || 0)
+        let dismissedBuild = 0
+        try { dismissedBuild = Number(JSON.parse(localStorage.getItem('ohu.site.announce.v1') || 'null')?.build || 0) } catch { dismissedBuild = 0 }
+        if (Number(build || 0) > 0 && dismissedBuild >= Number(build)) announcement.hidden = true
+      }
       if (notes) $('#updateNotes').textContent = Array.isArray(notes) ? notes.join('；') : notes
     }
   } catch {
     $('#releaseMeta').textContent = '版本信息暂时无法读取，请以应用内更新页为准。'
+    const announcement = $('#releaseAnnouncement')
+    if (announcement) announcement.hidden = true
   }
 }
 void loadReleaseSummary()
+
+const announceClose = $('#announceClose')
+announceClose?.addEventListener('click', () => {
+  const announcement = $('#releaseAnnouncement')
+  if (!announcement) return
+  try {
+    localStorage.setItem('ohu.site.announce.v1', JSON.stringify({ build: Number(announcement.dataset.build || 0), at: Date.now() }))
+  } catch { /* private browsing */ }
+  announcement.hidden = true
+})
 
 const screenshot = $('#featureScreenshot')
 const lightbox = $('#screenshotLightbox')

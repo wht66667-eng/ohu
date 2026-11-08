@@ -2,7 +2,14 @@ import { useMemo, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { GradeTabs } from '../components/GradeTabs'
+import { ActionSheet } from '../components/ActionSheet'
 import { openExternalUrl } from '../lib/campus-links'
+import { CAMPUS_BRIDGE_AVAILABLE } from '../lib/campus-bridge'
+import { readCampusSession } from '../lib/campus-session'
+import { waitForBackgroundSync } from '../lib/background-sync'
+import { loadLocalIdentity } from '../lib/local-identity'
+import { closeCampusWebView, runTiceSync } from '../lib/one-click'
+import { readOneClickCredentials, saveOneClickCredentials } from '../lib/oneclick-credentials'
 import { captureQbankSession, getQbankRevision, subscribeQbank } from '../lib/qbank'
 import {
   importTiceSummary,
@@ -39,6 +46,140 @@ function parseEventLines(value: string): PhysicalTestEvent[] {
 
 function scoreText(value: number | null): string {
   return value === null ? '—' : String(Number(value.toFixed(2)))
+}
+
+const TICE_STAGE_TEXT: Record<string, string> = {
+  vpn: '校园网登录',
+  'tice-login': '体测登录',
+  tice: '体测成绩',
+}
+
+/** 体测独立登录/更新：不占入口门禁的密码；连接后折叠成一行状态，可随时断开。 */
+function TiceSyncCard({ onSynced }: { onSynced: () => void }) {
+  const [prefill] = useState(() => {
+    const saved = readOneClickCredentials()
+    const session = readCampusSession()
+    const studentId = saved.stuid || loadLocalIdentity()?.studentId || ''
+    const sessionUsable = !!session && (!studentId || session.studentId === studentId)
+    return {
+      studentId,
+      vpnPassword: saved.vpnPassword || (sessionUsable ? session.vpnPassword : ''),
+      ticePassword: saved.ticePassword,
+      remember: saved.remember && Boolean(saved.ticePassword),
+    }
+  })
+  const [studentId, setStudentId] = useState(prefill.studentId)
+  const [vpnPassword, setVpnPassword] = useState(prefill.vpnPassword)
+  const [ticePassword, setTicePassword] = useState(prefill.ticePassword)
+  const [remember, setRemember] = useState(true)
+  const [connected, setConnected] = useState(prefill.remember)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [stage, setStage] = useState('')
+  const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
+  const complete = Boolean(studentId.trim() && vpnPassword && ticePassword)
+
+  function openSheet() {
+    setSheetOpen(true)
+    setNotice('')
+    if (!studentId.trim()) setError('请填写学号。')
+    else if (!vpnPassword) setError('请填写校园网（VPN）密码。')
+    else if (!ticePassword) setError('体测是独立账号，请填写体测密码（首次可试「姓名首字母大写_学号」）。')
+    else setError('')
+  }
+
+  async function sync() {
+    if (busy) return
+    setError(''); setNotice(''); setStage('')
+    if (!CAMPUS_BRIDGE_AVAILABLE) { setError('体测取数只在 Android App 内可用；网页版请用下方粘贴导入。'); return }
+    if (!complete) { openSheet(); return }
+    setBusy(true)
+    let timer = 0
+    try {
+      setStage('正在完成后台同步…')
+      await waitForBackgroundSync()
+      setStage('')
+      const result = await Promise.race([
+        runTiceSync({
+          studentId: studentId.trim(),
+          vpnPassword,
+          ticePassword,
+          report: (next, message) => setStage(`${TICE_STAGE_TEXT[next] ?? next} · ${message}`),
+        }),
+        new Promise<never>((_, reject) => {
+          timer = window.setTimeout(() => reject(new Error('体测读取超过 2 分钟，已停止；请检查网络后重试。')), 120_000)
+        }),
+      ]).finally(() => window.clearTimeout(timer))
+      const saved = readOneClickCredentials()
+      if (remember) {
+        saveOneClickCredentials({ ...saved, stuid: studentId.trim(), vpnPassword, ticePassword, remember: true })
+        setConnected(true)
+      }
+      setSheetOpen(false)
+      onSynced()
+      setNotice(`已从学校系统更新 ${result.count ?? 0} 条体测记录。`)
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : '体测更新失败，请重试。')
+    } finally {
+      setBusy(false)
+      setStage('')
+    }
+  }
+
+  function disconnect() {
+    const saved = readOneClickCredentials()
+    saveOneClickCredentials({ ...saved, stuid: studentId.trim(), vpnPassword, casPassword: saved.casPassword, ticePassword: '', remember: saved.remember })
+    setTicePassword('')
+    setConnected(false)
+    setSheetOpen(false)
+    setError('')
+    setNotice('已断开体测系统连接；下次更新需要重新输入体测密码。')
+  }
+
+  return <>
+    <section className={`${styles.card} ${styles.syncCard}`}>
+      <div className={styles.syncHead}>
+        <div><span className={styles.kicker}>独立账号</span><h3>体测系统</h3></div>
+        <span className={styles.syncBadge}>{busy ? '正在更新' : connected ? '已连接' : '未连接'}</span>
+      </div>
+      <p className={styles.syncText}>{connected
+        ? '已在本机加密保存体测密码。点「更新体测成绩」直接读取，随时可以修改或断开。'
+        : '体测不占入口门禁的密码。连接一次后就能直接更新历年与本次成绩，密码按哦狐账号加密保存在本机。'}</p>
+      <div className={styles.syncActions}>
+        <button type="button" className={styles.primary} disabled={busy || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void (connected && complete ? sync() : openSheet())}>
+          {busy ? '正在登录…' : connected ? '更新体测成绩' : '连接体测系统'}
+        </button>
+        {connected && !busy ? <button type="button" className={styles.outlineButton} onClick={() => setSheetOpen(true)}>修改或断开</button> : null}
+        {busy ? <button type="button" className={styles.outlineButton} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>取消</button> : null}
+      </div>
+      {stage ? <p className={styles.syncStage} role="status">{stage}</p> : null}
+      {notice ? <p className={styles.success} role="status">{notice}</p> : null}
+      {error && !sheetOpen ? <p className={styles.error} role="alert">{error}</p> : null}
+      <small>首次体测密码一般是「姓名首字母大写_学号」。学号与校园网密码也可以在<Link to="/study/oneclick">一键获取</Link>里统一管理。</small>
+    </section>
+
+    <ActionSheet
+      open={sheetOpen}
+      title="连接体测系统"
+      subtitle="体测是独立账号，只需连接一次。密码按哦狐账号加密保存在本机，可随时断开。"
+      onClose={() => setSheetOpen(false)}
+      footer={<div className={styles.syncActions}>
+        <button type="button" className={styles.primary} disabled={busy || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void sync()}>
+          {busy ? '正在登录…' : '登录并读取成绩'}
+        </button>
+        {connected && !busy ? <button type="button" className={styles.outlineButton} onClick={disconnect}>断开连接</button> : null}
+      </div>}
+    >
+      <label className={styles.field}>学号<input value={studentId} inputMode="numeric" autoComplete="username" onChange={(event) => { setStudentId(event.target.value); setError(''); setNotice('') }} placeholder="20231111" /></label>
+      <label className={styles.field}>校园网密码<input type="password" value={vpnPassword} autoComplete="current-password" onChange={(event) => { setVpnPassword(event.target.value); setError(''); setNotice('') }} placeholder="8–20 位，区分大小写" /></label>
+      <label className={styles.field}>体测密码<input type="password" value={ticePassword} autoComplete="off" onChange={(event) => { setTicePassword(event.target.value); setError(''); setNotice('') }} placeholder="如 AAA_20231111" /></label>
+      <label className={styles.check}><input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} /> 保持连接（本机加密保存，下次免输入）</label>
+      {stage ? <p className={styles.syncStage} role="status">{stage}</p> : null}
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+      {notice ? <p className={styles.success} role="status">{notice}</p> : null}
+    </ActionSheet>
+  </>
 }
 
 function ResultsChart({ rows }: { rows: PhysicalTestRecord[] }) {
@@ -79,7 +220,7 @@ function TicePreview({ summary }: { summary: TiceSummary }) {
   </div>
 }
 
-function SportsResultsAccountPage() {
+function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState(() => listPhysicalTestResults())
   const [schoolYear, setSchoolYear] = useState(currentSchoolYear())
   const [testedAt, setTestedAt] = useState(localToday())
@@ -151,10 +292,7 @@ function SportsResultsAccountPage() {
     } catch (failure) { setError((failure as Error).message || '体测成绩保存失败，请重试。') }
   }
 
-  return <div className={styles.page}>
-    <PageHeader title="体测成绩" />
-    <div style={{ padding: '0 16px' }}><GradeTabs active="/sports/results" /></div>
-    <div className={styles.content}>
+  const content = <div className={styles.content}>
       <section style={{ padding: '22px 20px', borderRadius: 24, background: 'var(--green-soft)', color: 'var(--green-text)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <small style={{ opacity: 0.8 }}>最近一次体测</small>
@@ -167,9 +305,11 @@ function SportsResultsAccountPage() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, opacity: 0.9 }}>
           <span>最好 {best ? `${scoreText(best.totalScore)} 分 · ${best.academicYear}` : '—'}</span>
-          <Link to="/study/oneclick" style={{ color: 'inherit', textDecoration: 'underline' }}>更新成绩</Link>
+          <button type="button" onClick={() => document.getElementById('tice-sync')?.scrollIntoView({ block: 'center', behavior: 'smooth' })} style={{ border: 0, padding: 0, background: 'transparent', color: 'inherit', font: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>登录体测系统</button>
         </div>
       </section>
+
+      <div id="tice-sync"><TiceSyncCard onSynced={() => setRows(listPhysicalTestResults())} /></div>
 
       <section className={`${styles.card} ${styles.recordCard}`}>
         <label className={styles.field}>粘贴成绩页文字<textarea value={ticeText} onChange={event => { setTiceText(event.target.value); setTiceError(''); setTiceMessage('') }} rows={4} maxLength={60000} placeholder="粘贴体测成绩页文字" /></label>
@@ -234,14 +374,20 @@ function SportsResultsAccountPage() {
       </section>
       <Link className={styles.back} to="/sports">返回运动中心</Link>
     </div>
+
+  if (embedded) return content
+  return <div className={styles.page}>
+    <PageHeader title="体测成绩" />
+    <div style={{ padding: '0 16px' }}><GradeTabs active="tice" /></div>
+    {content}
   </div>
 }
 
-export function SportsResultsPage() {
+export function SportsResultsPage({ embedded = false }: { embedded?: boolean } = {}) {
   const scope = useSyncExternalStore(
     subscribeQbank,
     () => `${getQbankRevision()}:${captureQbankSession().uid}`,
     () => 'server:guest',
   )
-  return <SportsResultsAccountPage key={scope} />
+  return <SportsResultsAccountPage key={scope} embedded={embedded} />
 }

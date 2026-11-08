@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
-import { GradeTabs } from '../../components/GradeTabs'
 import { useQbankRevision } from '../../lib/useQbankRevision'
 import { readQuality } from '../../lib/quality-store'
 
@@ -20,7 +19,7 @@ export function QualityPage() {
 
   return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
     <PageHeader title="校园档案 · 素质拓展" />
-    <div style={{ padding: '0 14px' }}><GradeTabs active="/study/quality" /></div>
+    <div style={{ padding: '0 14px' }}><Link to="/grades" style={{ fontSize: 13, color: 'var(--green-text,#1f8f5f)', textDecoration: 'none' }}>‹ 返回成绩中心</Link></div>
     <main style={{ padding: '12px 14px 90px', display: 'grid', gap: 12 }}>
       {summary ? <>
         <section style={{ borderRadius: 18, padding: '18px 16px', background: 'var(--green,#1f8f5f)', color: '#fff' }}>

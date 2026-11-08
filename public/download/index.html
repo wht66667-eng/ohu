@@ -17,6 +17,15 @@
   <link rel="stylesheet" href="share.css">
 </head>
 <body>
+  <div class="release-announcement" id="releaseAnnouncement" role="region" aria-label="版本更新公告">
+    <span class="release-announcement-dot" aria-hidden="true"></span>
+    <div class="release-announcement-copy">
+      <b>新版本 <span id="announceVersion">正在读取</span> 已发布</b>
+      <span>体测/PU 改为独立账号连接；成绩中心合并课程、公选、体测、PU。旧版本请到官网下载新安装包。</span>
+    </div>
+    <a class="release-announcement-link" href="/download/student.html">去官网更新 <span aria-hidden="true">↗</span></a>
+    <button class="release-announcement-close" id="announceClose" type="button" aria-label="关闭更新公告">×</button>
+  </div>
   <div class="wechat-bar" id="wxBar" role="region" aria-label="在外部浏览器中打开哦狐" aria-live="polite"><span class="in-app-browser-copy"><b id="inAppBrowserTitle">在微信／QQ中打开哦狐</b><span id="inAppBrowserHelp">点右上角「···」，选择“在浏览器打开”。内置浏览器不允许网页强制切换。</span></span><button type="button" class="in-app-browser-open" id="wxOpenBrowser">复制链接</button><button type="button" id="wxClose" aria-label="关闭浏览器打开提示">×</button></div>
   <header class="site-header">
     <div class="reading-progress" aria-hidden="true"><span id="readingProgress"></span></div>
@@ -34,7 +43,7 @@
     <div class="hero-world">
     <section class="hero site-wrap" id="home" aria-labelledby="heroTitle">
       <div class="hero-copy reveal">
-        <p class="eyebrow"><span class="eyebrow-dot"></span>校园生活助手 · 版本 1.2.146</p>
+        <p class="eyebrow"><span class="eyebrow-dot"></span>校园生活助手 · <span id="heroVersion">版本读取中</span></p>
         <h1 id="heroTitle">让校园生活，<br><em>简单一点。</em></h1>
         <p class="hero-intro">课表、待办、校园服务和同学活动，放进一个随手打开的校园工作台。今天要做的事，一眼就能理清。</p>
         <div class="hero-actions">
@@ -221,7 +230,7 @@
 
     <section class="download-section" id="download" aria-labelledby="downloadTitle"><div class="site-wrap download-layout"><div class="download-copy reveal"><p class="eyebrow">准备好就出发</p><h2 id="downloadTitle">把哦狐装进口袋，<br><em>从今天开始。</em></h2><p>Android 下载学生端安装包。iPhone 可以先添加网页 App 到主屏幕，也可查看其他安装方式。</p><div class="download-meta" id="releaseMeta" aria-live="polite"><span class="release-dot"></span>正在读取最新版本…</div><div class="download-buttons"><button class="button button-orange" type="button" data-platform="android">下载安卓 App <span>↗</span></button><button class="button button-outline" type="button" data-platform="ios">iPhone 安装方式 <span>→</span></button></div><p class="download-help"><a href="/download/student.html">安卓安装说明</a><span>·</span><a href="/download/pwa-guide.html">iPhone PWA 教程</a><span>·</span><a href="/download/ios-guide.html">其他 iPhone 安装方式</a></p><p class="download-status" id="downloadStatus" role="status" aria-live="polite"></p></div><div class="download-art reveal"><div class="download-circle"></div><img src="assets/fox-happy.png" alt="举爪欢迎你的阿狐" width="384" height="384"><div class="download-sticker">和哦狐一起<br><b>开启校园新日常</b></div></div></div></section>
 
-    <section class="updates-section site-wrap section-pad" id="updates" aria-labelledby="updatesTitle"><div class="section-heading reveal"><p class="eyebrow">每次小更新，慢慢成长</p><h2 id="updatesTitle">哦狐在慢慢长大。</h2><p>版本与更新说明来自哦狐当前发布清单，不展示没有确认的发布日期。</p></div><div class="update-timeline reveal" id="updateTimeline"><article class="update-entry current"><span class="timeline-dot"></span><div class="update-version"><b id="updateVersion">哦狐 1.2.146</b><span id="updateBuild">BUILD 146</span><i>当前版本</i></div><p id="updateNotes">新增插件商城与逐项启停，完善账号隔离、个人介绍和广场滚动；修复原生提醒并提供同版 APK/IPA，官网新增苹果免签名桌面版教程。</p></article><div class="update-footnote">记录整理自版本日志、热更新清单、发布验收文件与当前 GitHub 可读取提交。<a class="full-history-link" href="/download/iterations.html">查看完整迭代时间线 <span aria-hidden="true">→</span></a></div></div></section>
+    <section class="updates-section site-wrap section-pad" id="updates" aria-labelledby="updatesTitle"><div class="section-heading reveal"><p class="eyebrow">每次小更新，慢慢成长</p><h2 id="updatesTitle">哦狐在慢慢长大。</h2><p>版本与更新说明来自哦狐当前发布清单，不展示没有确认的发布日期。</p></div><div class="update-timeline reveal" id="updateTimeline"><article class="update-entry current"><span class="timeline-dot"></span><div class="update-version"><b id="updateVersion">哦狐</b><span id="updateBuild">BUILD —</span><i>当前版本</i></div><p id="updateNotes">正在读取最新发布说明…</p></article><div class="update-footnote">记录整理自版本日志、热更新清单、发布验收文件与当前 GitHub 可读取提交。<a class="full-history-link" href="/download/iterations.html">查看完整迭代时间线 <span aria-hidden="true">→</span></a></div></div></section>
 
     <section class="community-section" id="community" aria-labelledby="communityTitle">
       <div class="site-wrap community-layout">

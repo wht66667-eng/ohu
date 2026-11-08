@@ -33,11 +33,8 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/profile', () => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage }))],
   ['/study/focus', () => import('./pages/study/StudyFocusPage').then((module) => ({ default: module.StudyFocusPage }))],
   ['/study/chaoxing', () => import('./pages/study/ChaoxingBridgePage').then((module) => ({ default: module.ChaoxingBridgePage }))],
-  ['/study/pu', () => import('./pages/study/PocketUniPage').then((module) => ({ default: module.PocketUniPage }))],
   ['/study/quality', () => import('./pages/study/QualityPage').then((module) => ({ default: module.QualityPage }))],
   ['/grades', () => import('./pages/GradesHubPage').then((module) => ({ default: module.GradesHubPage }))],
-  ['/grades/public', () => import('./pages/study/PublicElectivePage').then((module) => ({ default: module.PublicElectivePage }))],
-  ['/grades/courses', () => import('./pages/study/CourseGradesPage').then((module) => ({ default: module.CourseGradesPage }))],
   ['/study/oneclick', () => import('./pages/study/OneClickPage').then((module) => ({ default: module.OneClickPage }))],
   ['/study/goals', () => import('./pages/study/EnergyGoalsPage').then((module) => ({ default: module.EnergyGoalsPage }))],
   ['/study/plan', () => import('./pages/study/StudyGoalsPage').then((module) => ({ default: module.StudyGoalsPage }))],
@@ -62,7 +59,6 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/campus-map', () => import('./pages/CampusMapPage').then((module) => ({ default: module.CampusMapPage }))],
   ['/sports/teams', () => import('./pages/MorningTeamsPage').then((module) => ({ default: module.MorningTeamsPage }))],
   ['/sports', () => import('./pages/SportsPage').then((module) => ({ default: module.SportsPage }))],
-  ['/sports/results', () => import('./pages/SportsResultsPage').then((module) => ({ default: module.SportsResultsPage }))],
   ['/todo', () => import('./pages/TodoPage').then((module) => ({ default: module.TodoPage }))],
   ['/contact', () => import('./pages/ContactPage').then((module) => ({ default: module.ContactPage }))],
   ['/messages', () => import('./pages/MessagesPage').then((module) => ({ default: module.MessagesPage }))],
@@ -175,6 +171,11 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ShellHome />} />
             <Route path="/admin" element={<Navigate to="/admin/content" replace />} />
+            {/* 旧入口统一落到成绩中心的对应子页，避免侧边栏/首页/深链出现两套页面 */}
+            <Route path="/grades/courses" element={<Navigate to="/grades?tab=courses" replace />} />
+            <Route path="/grades/public" element={<Navigate to="/grades?tab=elective" replace />} />
+            <Route path="/sports/results" element={<Navigate to="/grades?tab=tice" replace />} />
+            <Route path="/study/pu" element={<Navigate to="/grades?tab=pu" replace />} />
             {SECONDARY_ROUTES.map(([path, load]) => <Route key={path} path={path} element={<DeferredPage key={path} load={load} />} />)}
             {SECONDARY_ROUTES.filter(([path]) => !isAdminWorkspacePath(path) && !['/messages', '/notify', '/settings'].includes(path)).map(([path, load]) => <Route key={`admin${path}`} path={`/admin${path}`} element={<DeferredPage key={`admin${path}`} load={load} />} />)}
             {/* 游戏 / 宠物模块已归档，旧链接统一回落首页 */}

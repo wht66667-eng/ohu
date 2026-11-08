@@ -40,6 +40,7 @@ import { useQbankRevision } from '../lib/useQbankRevision'
 import { refreshScheduleWidgets } from '../lib/schedule-widget'
 import { StudentLoginSheet } from './StudentLoginSheet'
 import { AppSidebar } from './AppSidebar'
+import { AppUpdateNotice } from './AppUpdateNotice'
 import { PageTransition } from './PageTransition'
 import { refreshSchool } from '../store/school'
 
@@ -256,6 +257,7 @@ export function PhoneShell({ children }: { children: ReactNode }) {
           <FocusTimerProvider>
           <div className={styles.body} data-app-body="" data-student-shell={!work ? 'true' : undefined}>
             <a className="skip-link" href="#main-content">跳到主要内容</a>
+            {gateOk ? <AppUpdateNotice /> : null}
             {gateOk ? <FocusTimerBar /> : null}
             {IS_NATIVE && gateOk ? (
               <div

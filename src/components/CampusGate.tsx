@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { CAMPUS_BRIDGE_AVAILABLE } from '../lib/campus-bridge'
 import { loadLocalIdentity } from '../lib/local-identity'
 import { startBackgroundSync, type GateCredentials } from '../lib/background-sync'
+import { rememberCampusSession } from '../lib/campus-session'
 import { OneClickPage } from '../pages/study/OneClickPage'
 
 const GATE_KEY = 'ohu.campus-gate.v1'
@@ -45,6 +46,7 @@ export function CampusGate({ children }: { children: ReactNode }) {
         const now = loadLocalIdentity()
         if (now) markCampusVerified(now.studentId)
         setReady(true)
+        rememberCampusSession(credentials)
         void startBackgroundSync(credentials)
       } }} />
     </div>

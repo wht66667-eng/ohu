@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
 import { GradeTabs } from '../../components/GradeTabs'
 import { openExternalUrl } from '../../lib/campus-links'
+import { CAMPUS_BRIDGE_AVAILABLE } from '../../lib/campus-bridge'
+import { waitForBackgroundSync } from '../../lib/background-sync'
 import { captureQbankSession } from '../../lib/qbank'
 import { useQbankRevision } from '../../lib/useQbankRevision'
 import {
@@ -23,9 +25,16 @@ import {
   readPocketUni,
   savePocketUni,
 } from '../../lib/pocketuni-store'
-import { clearPocketUniAuth } from '../../lib/one-click'
+import { clearPocketUniAuth, closeCampusWebView, runPocketUniSync } from '../../lib/one-click'
+import { clearPuCredentials, readPuCredentials, savePuCredentials } from '../../lib/pocketuni-credentials'
 import { readQuality } from '../../lib/quality-store'
+import { ActionSheet } from '../../components/ActionSheet'
 import styles from './pocketuni.module.css'
+
+const PU_STAGE_TEXT: Record<string, string> = {
+  'pu-login': '口袋校园登录',
+  pu: 'PU 学分',
+}
 
 function creditText(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return '—'
@@ -38,13 +47,13 @@ function stampText(stamp: number): string {
   return Number.isFinite(date.getTime()) ? date.toLocaleString('zh-CN', { hour12: false }) : '时间未知'
 }
 
-export function PocketUniPage() {
+export function PocketUniPage({ embedded = false }: { embedded?: boolean } = {}) {
   useQbankRevision()
   const session = captureQbankSession()
-  return <PocketUniContent key={`${session.uid}:${session.revision}`} />
+  return <PocketUniContent key={`${session.uid}:${session.revision}`} embedded={embedded} />
 }
 
-function PocketUniContent() {
+function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
   const [summary, setSummary] = useState<PuSummary | null>(() => readPocketUni())
   const [draft, setDraft] = useState('')
   const [preview, setPreview] = useState<PuSummary | null>(null)
@@ -52,6 +61,15 @@ function PocketUniContent() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [account, setAccount] = useState(() => readPuCredentials().account)
+  const [password, setPassword] = useState(() => readPuCredentials().password)
+  const [remember, setRemember] = useState(true)
+  const [connected, setConnected] = useState(() => Boolean(readPuCredentials().password))
+  const [syncing, setSyncing] = useState(false)
+  const [stage, setStage] = useState('')
+  const [syncNotice, setSyncNotice] = useState('')
+  const [syncError, setSyncError] = useState('')
   const guest = !captureQbankSession().uid
   const quality = readQuality()
 
@@ -98,11 +116,58 @@ function PocketUniContent() {
     setSummary(null); setPreview(null); setMessage('本机 PU 缓存已清除。')
   }
 
-  return <div className={styles.page}>
-    <PageHeader title="PU 成绩" />
-    <div className={styles.content}>
-      <GradeTabs active="/study/pu" />
+  function openLogin() {
+    setSheetOpen(true)
+    setSyncError('')
+    setSyncNotice('')
+  }
 
+  async function syncPu() {
+    if (syncing) return
+    setSyncError(''); setSyncNotice(''); setStage('')
+    if (!CAMPUS_BRIDGE_AVAILABLE) { setSyncError('PU 取数只在 Android App 内可用；可以先用下方「粘贴成绩明细」导入。'); return }
+    setSyncing(true)
+    try {
+      setStage('正在完成后台同步…')
+      await waitForBackgroundSync()
+      setStage('')
+      const result = await runPocketUniSync({
+        account: account.trim() || undefined,
+        password: password || undefined,
+        report: (next, text) => setStage(`${PU_STAGE_TEXT[next] ?? next} · ${text}`),
+      })
+      const saved = readPocketUni()
+      setSummary(saved)
+      if (remember && account.trim() && password) {
+        savePuCredentials({ account, password, remember: true })
+        setConnected(true)
+      }
+      if (result.ok) {
+        setSheetOpen(false)
+        setSyncNotice(`已更新 PU 学分${saved ? `：总学分 ${creditText(puDisplayTotal(saved))}` : ''}。`)
+      } else {
+        setSyncError(result.message || 'PU 更新失败，请重试。')
+      }
+    } catch (failure) {
+      setSyncError(failure instanceof Error ? failure.message : 'PU 更新失败，请重试。')
+    } finally {
+      setSyncing(false)
+      setStage('')
+    }
+  }
+
+  function disconnect() {
+    clearPuCredentials()
+    setAccount('')
+    setPassword('')
+    setConnected(false)
+    setSheetOpen(false)
+    setSyncNotice('已断开口袋校园连接；下次更新需要重新登录。')
+    void clearPocketUniAuth().catch(() => undefined)
+  }
+
+  const content = <div className={styles.content}>
+      {embedded ? null : <GradeTabs active="pu" />}
 
       {quality ? <section style={{ marginBottom: 12, padding: 16, borderRadius: 18, background: 'var(--card,#fff)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -124,7 +189,7 @@ function PocketUniContent() {
             </div>
           })}
         </div>
-        <Link to="/study/oneclick" style={{ display: 'inline-block', marginTop: 8, fontSize: 13 }}>连接 PU ›</Link>
+        <button type="button" onClick={openLogin} style={{ display: 'inline-block', marginTop: 8, padding: 0, border: 0, background: 'transparent', color: 'var(--green-text)', font: 'inherit', fontSize: 13, fontWeight: 700, textAlign: 'left', cursor: 'pointer' }}>登录 PU ›</button>
       </section> : null}
 
       <section className={styles.hero}>
@@ -137,14 +202,58 @@ function PocketUniContent() {
           <div><small>活动类</small><b>{creditText(summary?.activityCredit ?? null)}</b></div>
           <div><small>成果类</small><b>{creditText(summary?.applyCredit ?? null)}</b></div>
         </div>
-        <button type="button" className={styles.primary} onClick={() => openExternalUrl(PU_HOME_URL)}>
-          打开口袋校园 ↗
+        <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void syncPu()}>
+          {syncing ? '正在读取…' : '更新 PU 学分'}
         </button>
-        <Link className={styles.outline} to="/study/oneclick">更新 PU · 回一键获取</Link>
+        <button type="button" className={styles.outline} disabled={syncing} onClick={() => openExternalUrl(PU_HOME_URL)}>打开口袋校园 ↗</button>
         <small className={styles.heroNote}>
           更新于 {stampText(summary?.syncedAt || 0)} · PU 是口袋校园的独立账号体系，和校园档案 7058 不是同一口径，两边学分不混算。
         </small>
       </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <div><span className={styles.kicker}>独立账号</span><h3>口袋校园</h3></div>
+          <span className={styles.sourcePill}>{syncing ? '正在更新' : connected ? '已连接' : '未连接'}</span>
+        </div>
+        <p className={styles.muted}>{connected
+          ? '已在本机加密保存 PU 账号。点「更新 PU 学分」直接读取，随时可以修改或断开。'
+          : 'PU 不占入口门禁的密码。连接一次后就能直接读取官方学分；也可以打开口袋校园页面手动登录一次。'}</p>
+        <div className={styles.actions}>
+          <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void (connected ? syncPu() : openLogin())}>
+            {syncing ? '正在读取…' : connected ? '更新 PU 学分' : '连接口袋校园'}
+          </button>
+          {connected && !syncing ? <button type="button" className={styles.outline} onClick={() => setSheetOpen(true)}>修改或断开</button> : null}
+          {syncing ? <button type="button" className={styles.outline} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>取消</button> : null}
+        </div>
+        {stage ? <p className={styles.stageText} role="status">{stage}</p> : null}
+        {syncNotice ? <p className={styles.success} role="status">{syncNotice}</p> : null}
+        {syncError && !sheetOpen ? <p className={styles.error} role="alert">{syncError}</p> : null}
+        <small className={styles.muted}>不填账号也可以：点「打开口袋校园 ↗」在页面里登录一次，回来点更新会复用这次登录。</small>
+      </section>
+
+      <ActionSheet
+        open={sheetOpen}
+        title="连接口袋校园"
+        subtitle="PU 是独立账号，只需连接一次。账号密码按哦狐账号加密保存在本机，可随时断开。"
+        onClose={() => setSheetOpen(false)}
+        footer={<div className={styles.actions}>
+          <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void syncPu()}>
+            {syncing ? '正在读取…' : '登录并读取学分'}
+          </button>
+          {connected && !syncing ? <button type="button" className={styles.outline} onClick={disconnect}>断开连接</button> : null}
+        </div>}
+      >
+        <label className={styles.field}>PU 账号<input value={account} autoComplete="username" onChange={(event) => { setAccount(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园手机号 / 学号" /></label>
+        <label className={styles.field}>PU 密码<input type="password" value={password} autoComplete="current-password" onChange={(event) => { setPassword(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园密码" /></label>
+        <label className={styles.muted} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} style={{ width: 18, height: 18 }} />
+          保持连接（本机加密保存，下次免输入）
+        </label>
+        {stage ? <p className={styles.stageText} role="status">{stage}</p> : null}
+        {syncNotice ? <p className={styles.success} role="status">{syncNotice}</p> : null}
+        {syncError ? <p className={styles.error} role="alert">{syncError}</p> : null}
+      </ActionSheet>
 
 
       {guest ? <p className={styles.notice} role="status">当前未登录哦狐，PU 数据保存在本机访客区；登录后会按账号隔离。</p> : null}
@@ -178,7 +287,7 @@ function PocketUniContent() {
         </div>
       </section> : <section className={styles.card}>
         <h3>还没有 PU 记录</h3>
-        <Link className={styles.primary} to="/study/oneclick" style={{ textDecoration: 'none' }}>去一键获取 · 填 PU 账号密码自动读</Link>
+        <button type="button" className={styles.primary} onClick={openLogin}>登录口袋校园并读取</button>
         <button type="button" className={styles.outline} onClick={() => openExternalUrl(PU_SCORE_DETAIL_URL)}>手动粘贴 · 打开成绩明细 ↗</button>
       </section>}
 
@@ -215,5 +324,10 @@ function PocketUniContent() {
         <Link className={styles.back} to="/study?tab=grades">返回成绩 ›</Link>
       </section>
     </div>
+
+  if (embedded) return content
+  return <div className={styles.page}>
+    <PageHeader title="PU 成绩" />
+    {content}
   </div>
 }

@@ -31,7 +31,7 @@ const config: CapacitorConfig = {
       // 大包下载时拉长空闲超时，减少「下载失败」
       responseTimeout: 120,
       // 内置包版本标签（与 APK versionName 对齐；热更包用 manifest.version）
-      version: '1.2.150',
+      version: '1.2.155',
     },
   },
 }

@@ -66,6 +66,11 @@ export function SimpleHomePage() {
       </div>
     </header>
 
+    {!rows.length ? <Link to="/study/oneclick" className={styles.card} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+      <span><b>课表、成绩、考试还没读取</b><small style={{ display: 'block', opacity: 0.65, fontSize: 12 }}>进 App 后会自动在后台同步；也可以点这里手动读取</small></span>
+      <span aria-hidden="true" style={{ color: 'var(--green-text,#1f8f5f)', fontWeight: 700 }}>去读取 ›</span>
+    </Link> : null}
+
     <section className={styles.hero} aria-labelledby="ohu-home-next-class">
       <div className={styles.heroCopy}>
         <span className={styles.eyebrow}>{next.status === 'now' ? '正在上课' : '下节课'} <span aria-hidden="true">✦</span></span>
@@ -82,34 +87,10 @@ export function SimpleHomePage() {
       </div>
     </section>
 
-    <section className={styles.card} aria-labelledby="ohu-home-nearest">
-      <div className={styles.cardHead}>
-        <span className={styles.cardIcon} aria-hidden="true">课</span>
-        <b id="ohu-home-nearest">最近课程</b>
-        <Link to="/schedule">全部</Link>
-      </div>
-      {nearest.length ? <ul className={styles.rowList}>
-        {nearest.map((item) => <li className={styles.infoRow} key={item.key}>
-          <span className={styles.sectionBadge}>{item.label}<br />{item.sections[0]}-{item.sections[item.sections.length - 1]}节</span>
-          <span className={styles.rowMain}><b>{item.name}</b><small>{item.teacher || '教师待定'}</small></span>
-          <span className={styles.dueText}>{item.room}</span>
-        </li>)}
-      </ul> : <p className={styles.emptyText}>{rows.length ? '本周没有课' : '去课表同步后显示最近课程'}</p>}
-    </section>
-
-    <Link className={styles.card} to="/grades" aria-label="进入学业中心" style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div className={styles.cardHead}>
-        <span className={styles.cardIcon} aria-hidden="true">绩</span>
-        <b>学业中心</b>
-        <span aria-hidden="true" style={{ opacity: 0.35 }}>›</span>
-      </div>
-      <p className={styles.emptyText}>成绩 · 考试 · 公选 · 体测 · PU · 学习通</p>
-    </Link>
-
     <section className={styles.card} aria-labelledby="ohu-home-exams">
       <div className={styles.cardHead}>
         <span className={styles.cardIcon} aria-hidden="true">考</span>
-        <b id="ohu-home-exams">考试通知</b>
+        <b id="ohu-home-exams">最近考试</b>
         <Link to="/study?tab=exams">全部</Link>
       </div>
       {upcomingExams.length ? <ul className={styles.rowList}>
@@ -130,6 +111,21 @@ export function SimpleHomePage() {
           </li>
         })}
       </ul> : <p className={styles.emptyText}>暂无近期考试</p>}
+    </section>
+
+    <section className={styles.card} aria-labelledby="ohu-home-nearest">
+      <div className={styles.cardHead}>
+        <span className={styles.cardIcon} aria-hidden="true">课</span>
+        <b id="ohu-home-nearest">最近课程</b>
+        <Link to="/schedule">全部</Link>
+      </div>
+      {nearest.length ? <ul className={styles.rowList}>
+        {nearest.map((item) => <li className={styles.infoRow} key={item.key}>
+          <span className={styles.sectionBadge}>{item.label}<br />{item.sections[0]}-{item.sections[item.sections.length - 1]}节</span>
+          <span className={styles.rowMain}><b>{item.name}</b><small>{item.teacher || '教师待定'}</small></span>
+          <span className={styles.dueText}>{item.room}</span>
+        </li>)}
+      </ul> : <p className={styles.emptyText}>{rows.length ? '本周没有课' : '去课表同步后显示最近课程'}</p>}
     </section>
 
     <section className={styles.card} aria-labelledby="ohu-home-todo">

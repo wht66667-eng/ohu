@@ -10,7 +10,7 @@ const num = (value: string) => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-export function CourseGradesPage() {
+export function CourseGradesPage({ embedded = false }: { embedded?: boolean } = {}) {
   useQbankRevision()
   const rows = loadGradesCache()
   const [query, setQuery] = useState('')
@@ -26,10 +26,8 @@ export function CourseGradesPage() {
   const average = numeric.length ? numeric.reduce((sum, value) => sum + value, 0) / numeric.length : null
   const credits = rows.reduce((sum, row) => sum + (num(row.credit) ?? 0), 0)
 
-  return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
-    <PageHeader title="成绩" />
-    <main style={{ padding: '10px 14px 90px', display: 'grid', gap: 12 }}>
-      <GradeTabs active="/grades/courses" />
+  const content = <main style={{ padding: embedded ? 0 : '10px 14px 90px', display: 'grid', gap: 12 }}>
+      {embedded ? null : <GradeTabs active="courses" />}
       <section style={{ borderRadius: 18, padding: 16, background: 'var(--card,#fff)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <h2 style={{ margin: 0, fontSize: 22 }}>课程成绩</h2>
@@ -72,5 +70,10 @@ export function CourseGradesPage() {
         <Link to="/study/oneclick" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none' }}>去一键获取</Link>
       </section>}
     </main>
+
+  if (embedded) return content
+  return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
+    <PageHeader title="成绩" />
+    {content}
   </div>
 }
