@@ -2,8 +2,8 @@ import { App } from '@capacitor/app'
 import { IS_NATIVE } from './platform'
 
 /** Metadata of the JavaScript bundle being executed, including OTA bundles. */
-export const WEB_VERSION = '1.2.155'
-export const WEB_BUILD = 155
+export const WEB_VERSION = '1.2.156'
+export const WEB_BUILD = 156
 
 export type NativeAppVersion = {
   appId: string

@@ -1,8 +1,12 @@
 import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * 底部弹层：体测/PU 这类「独立账号连接」用它收一次密码，
  * 连接成功后折叠成页面里的一行状态，不再长期占版面。
+ *
+ * 注意：页面外壳（PageTransition）带 transform + overflow:hidden，
+ * 弹层必须 portal 到 document.body，否则 position:fixed 会被裁在页面里。
  */
 export function ActionSheet({ open, title, subtitle, onClose, children, footer }: {
   open: boolean
@@ -16,10 +20,15 @@ export function ActionSheet({ open, title, subtitle, onClose, children, footer }
     if (!open) return
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previous
+    }
   }, [open, onClose])
-  if (!open) return null
-  return <div role="presentation" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(0,0,0,.38)', display: 'flex', alignItems: 'flex-end' }}>
+  if (!open || typeof document === 'undefined') return null
+  return createPortal(<div role="presentation" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(0,0,0,.38)', display: 'flex', alignItems: 'flex-end' }}>
     <style>{'@keyframes ohu-sheet-up{from{transform:translateY(26px);opacity:.5}to{transform:translateY(0);opacity:1}}'}</style>
     <section
       role="dialog"
@@ -42,5 +51,5 @@ export function ActionSheet({ open, title, subtitle, onClose, children, footer }
       {children}
       {footer}
     </section>
-  </div>
+  </div>, document.body)
 }

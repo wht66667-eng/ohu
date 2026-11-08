@@ -2,13 +2,13 @@
   "app": "哦狐",
   "platform": "ios",
   "shell": "user",
-  "status": "available",
-  "message": "iPhone 安装包已完成构建；需要使用自签工具签名后安装。",
+  "status": "pending",
+  "message": "1.2.156 的 iPhone 安装包正在构建；安卓用户可以正常下载，iPhone 可以先用网页版添加到主屏幕。",
   "signed": false,
-  "version": "1.2.155",
-  "build": 155,
-  "filename": "Ohhu-user-1.2.155-155-unsigned.ipa",
-  "url": "/download/Ohhu-user-1.2.155-155-unsigned.ipa",
-  "size": 35618004,
-  "sha256": "6603fdace88192efaff44ad273989de3268b6a3612945084910e8b399411d04e"
+  "version": "1.2.156",
+  "build": 156,
+  "filename": "Ohhu-user-1.2.156-156-unsigned.ipa",
+  "url": "/download/Ohhu-user-1.2.156-156-unsigned.ipa",
+  "size": 1,
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
 }

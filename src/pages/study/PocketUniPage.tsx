@@ -28,7 +28,7 @@ import {
 import { clearPocketUniAuth, closeCampusWebView, runPocketUniSync } from '../../lib/one-click'
 import { clearPuCredentials, readPuCredentials, savePuCredentials } from '../../lib/pocketuni-credentials'
 import { readQuality } from '../../lib/quality-store'
-import { ActionSheet } from '../../components/ActionSheet'
+import { CollapsibleCard } from '../../components/CollapsibleCard'
 import styles from './pocketuni.module.css'
 
 const PU_STAGE_TEXT: Record<string, string> = {
@@ -61,7 +61,6 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
-  const [sheetOpen, setSheetOpen] = useState(false)
   const [account, setAccount] = useState(() => readPuCredentials().account)
   const [password, setPassword] = useState(() => readPuCredentials().password)
   const [remember, setRemember] = useState(true)
@@ -117,15 +116,17 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
   }
 
   function openLogin() {
-    setSheetOpen(true)
-    setSyncError('')
-    setSyncNotice('')
+    document.getElementById('pu-connect')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }
 
   async function syncPu() {
     if (syncing) return
     setSyncError(''); setSyncNotice(''); setStage('')
     if (!CAMPUS_BRIDGE_AVAILABLE) { setSyncError('PU 取数只在 Android App 内可用；可以先用下方「粘贴成绩明细」导入。'); return }
+    if (!connected && (!account.trim() || !password)) {
+      setSyncError('请先填写口袋校园账号和密码；也可以点「去页面手动登录」。')
+      return
+    }
     setSyncing(true)
     try {
       setStage('正在完成后台同步…')
@@ -143,8 +144,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
         setConnected(true)
       }
       if (result.ok) {
-        setSheetOpen(false)
-        setSyncNotice(`已更新 PU 学分${saved ? `：总学分 ${creditText(puDisplayTotal(saved))}` : ''}。`)
+          setSyncNotice(`已更新 PU 学分${saved ? `：总学分 ${creditText(puDisplayTotal(saved))}` : ''}。`)
       } else {
         setSyncError(result.message || 'PU 更新失败，请重试。')
       }
@@ -161,7 +161,6 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
     setAccount('')
     setPassword('')
     setConnected(false)
-    setSheetOpen(false)
     setSyncNotice('已断开口袋校园连接；下次更新需要重新登录。')
     void clearPocketUniAuth().catch(() => undefined)
   }
@@ -202,58 +201,14 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
           <div><small>活动类</small><b>{creditText(summary?.activityCredit ?? null)}</b></div>
           <div><small>成果类</small><b>{creditText(summary?.applyCredit ?? null)}</b></div>
         </div>
-        <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void syncPu()}>
-          {syncing ? '正在读取…' : '更新 PU 学分'}
+        <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void (connected ? syncPu() : openLogin())}>
+          {syncing ? '正在读取…' : connected ? '更新 PU 学分' : '连接口袋校园'}
         </button>
         <button type="button" className={styles.outline} disabled={syncing} onClick={() => openExternalUrl(PU_HOME_URL)}>打开口袋校园 ↗</button>
         <small className={styles.heroNote}>
           更新于 {stampText(summary?.syncedAt || 0)} · PU 是口袋校园的独立账号体系，和校园档案 7058 不是同一口径，两边学分不混算。
         </small>
       </section>
-
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <div><span className={styles.kicker}>独立账号</span><h3>口袋校园</h3></div>
-          <span className={styles.sourcePill}>{syncing ? '正在更新' : connected ? '已连接' : '未连接'}</span>
-        </div>
-        <p className={styles.muted}>{connected
-          ? '已在本机加密保存 PU 账号。点「更新 PU 学分」直接读取，随时可以修改或断开。'
-          : 'PU 不占入口门禁的密码。连接一次后就能直接读取官方学分；也可以打开口袋校园页面手动登录一次。'}</p>
-        <div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void (connected ? syncPu() : openLogin())}>
-            {syncing ? '正在读取…' : connected ? '更新 PU 学分' : '连接口袋校园'}
-          </button>
-          {connected && !syncing ? <button type="button" className={styles.outline} onClick={() => setSheetOpen(true)}>修改或断开</button> : null}
-          {syncing ? <button type="button" className={styles.outline} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>取消</button> : null}
-        </div>
-        {stage ? <p className={styles.stageText} role="status">{stage}</p> : null}
-        {syncNotice ? <p className={styles.success} role="status">{syncNotice}</p> : null}
-        {syncError && !sheetOpen ? <p className={styles.error} role="alert">{syncError}</p> : null}
-        <small className={styles.muted}>不填账号也可以：点「打开口袋校园 ↗」在页面里登录一次，回来点更新会复用这次登录。</small>
-      </section>
-
-      <ActionSheet
-        open={sheetOpen}
-        title="连接口袋校园"
-        subtitle="PU 是独立账号，只需连接一次。账号密码按哦狐账号加密保存在本机，可随时断开。"
-        onClose={() => setSheetOpen(false)}
-        footer={<div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void syncPu()}>
-            {syncing ? '正在读取…' : '登录并读取学分'}
-          </button>
-          {connected && !syncing ? <button type="button" className={styles.outline} onClick={disconnect}>断开连接</button> : null}
-        </div>}
-      >
-        <label className={styles.field}>PU 账号<input value={account} autoComplete="username" onChange={(event) => { setAccount(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园手机号 / 学号" /></label>
-        <label className={styles.field}>PU 密码<input type="password" value={password} autoComplete="current-password" onChange={(event) => { setPassword(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园密码" /></label>
-        <label className={styles.muted} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} style={{ width: 18, height: 18 }} />
-          保持连接（本机加密保存，下次免输入）
-        </label>
-        {stage ? <p className={styles.stageText} role="status">{stage}</p> : null}
-        {syncNotice ? <p className={styles.success} role="status">{syncNotice}</p> : null}
-        {syncError ? <p className={styles.error} role="alert">{syncError}</p> : null}
-      </ActionSheet>
 
 
       {guest ? <p className={styles.notice} role="status">当前未登录哦狐，PU 数据保存在本机访客区；登录后会按账号隔离。</p> : null}
@@ -291,8 +246,37 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
         <button type="button" className={styles.outline} onClick={() => openExternalUrl(PU_SCORE_DETAIL_URL)}>手动粘贴 · 打开成绩明细 ↗</button>
       </section>}
 
-      <section className={styles.card}>
-        <div className={styles.cardHead}><div><span className={styles.kicker}>导入</span><h3>粘贴成绩明细或接口 JSON</h3></div></div>
+      <div id="pu-connect">
+        <CollapsibleCard
+          title="口袋校园 · 连接与更新"
+          meta={connected ? '已保存 PU 账号，可直接更新' : '独立账号，连接一次后免输入'}
+          status={syncing ? '正在更新' : connected ? '已连接' : '未连接'}
+          tone={connected ? 'ok' : 'neutral'}
+        >
+          <p className={styles.muted}>{connected
+            ? '已在本机加密保存 PU 账号。点「更新 PU 学分」直接读取官方学分，随时可以断开。'
+            : '输入口袋校园账号密码后，App 会在后台自动登录并读取官方学分，不用跳到官网。也可以打开口袋校园页面手动登录一次。'}</p>
+          <label className={styles.field}>PU 账号<input value={account} autoComplete="username" onChange={(event) => { setAccount(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园手机号 / 学号" /></label>
+          <label className={styles.field}>PU 密码<input type="password" value={password} autoComplete="current-password" onChange={(event) => { setPassword(event.target.value); setSyncError(''); setSyncNotice('') }} placeholder="口袋校园密码" /></label>
+          <label className={styles.muted} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} style={{ width: 18, height: 18 }} />
+            保持连接（本机加密保存，下次免输入）
+          </label>
+          <div className={styles.actions}>
+            <button type="button" className={styles.primary} disabled={syncing || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void syncPu()}>
+              {syncing ? '正在读取…' : connected ? '更新 PU 学分' : '登录并读取学分'}
+            </button>
+            {connected && !syncing ? <button type="button" className={styles.outline} onClick={disconnect}>断开连接</button> : null}
+            {!connected && !syncing ? <button type="button" className={styles.outline} onClick={() => { setStage('请在打开的页面登录口袋校园'); void runPocketUniSync({ report: (next, text) => setStage(`${PU_STAGE_TEXT[next] ?? next} · ${text}`) }).then(() => { const next = readPocketUni(); setSummary(next); setSyncNotice('已更新 PU 学分。') }).catch((failure) => setSyncError(failure instanceof Error ? failure.message : 'PU 更新失败，请重试。')).finally(() => setStage('')) }}>去页面手动登录</button> : null}
+            {syncing ? <button type="button" className={styles.outline} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>取消</button> : null}
+          </div>
+          {stage ? <p className={styles.stageText} role="status">{stage}</p> : null}
+          {syncNotice ? <p className={styles.success} role="status">{syncNotice}</p> : null}
+          {syncError ? <p className={styles.error} role="alert">{syncError}</p> : null}
+        </CollapsibleCard>
+      </div>
+
+      <CollapsibleCard title="粘贴成绩明细导入" meta="从口袋校园复制成绩明细文字或接口 JSON">
         <label className={styles.field}>粘贴内容
           <textarea
             value={draft}
@@ -314,7 +298,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
         {message ? <p className={styles.success} role="status">{message}</p> : null}
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
         <small className={styles.muted}>识别只在本机进行；不会把粘贴内容发送到服务器。保存时只保留学分数字与分类名。</small>
-      </section>
+      </CollapsibleCard>
 
       <section className={styles.noteCard}>
         <b>口径说明</b>

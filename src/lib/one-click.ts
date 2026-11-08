@@ -778,10 +778,17 @@ export async function runPocketUniSync(input: { account?: string; password?: str
     await sleep(600)
     const hasPassword = async () =>
       (await evalText("(function(){var list=[].slice.call(document.querySelectorAll('input[type=password]')).filter(function(i){return !!(i.offsetWidth||i.offsetHeight)});return list.length?'1':'0'})()")) === '1'
-    /* 有的学校/浏览器会记住上次学校，此时登录框直接可见，不再打开选择弹层。 */
-    if (!await hasPassword()) {
+    const clickVisibleText = async (value: string) =>
+      (await evalText(`(function(){var list=[].slice.call(document.querySelectorAll('div,span,a,button,li,p'));var hits=list.filter(function(n){return (n.innerText||'').trim()===${JSON.stringify(value)}&&!!(n.offsetWidth||n.offsetHeight)});if(!hits.length)return 'none';hits[hits.length-1].click();return 'clicked'})()`)).trim()
+    /* 登录请求带的是 localStorage.sid；没有学校时服务端会统一报“用户名或密码错误”。
+       有的浏览器会记住上次学校，此时登录框直接可见；否则先走一次选择学校。 */
+    const schoolReady = async () => {
+      const raw = await evalText("(function(){try{var s=localStorage.getItem('sid');return s?String(s):''}catch(e){return ''}})()")
+      return raw.trim() !== '' && raw.trim() !== '0'
+    }
+    if (!(await hasPassword()) || !(await schoolReady())) {
       report('pu-login', '正在选择江苏海洋大学…')
-      await evalText("(function(){var b=[].slice.call(document.querySelectorAll('button')).filter(function(n){return (n.innerText||'').indexOf('选择学校')>=0})[0];if(b){b.click();return 'clicked'}return 'none'})()")
+      await clickVisibleText('选择学校')
       const schoolStart = Date.now()
       let typed = 'no-search'
       while (Date.now() - schoolStart < 10_000) {
@@ -798,7 +805,7 @@ export async function runPocketUniSync(input: { account?: string; password?: str
         await sleep(500)
       }
       await sleep(800)
-      await evalText("(function(){var b=[].slice.call(document.querySelectorAll('button')).filter(function(n){return (n.innerText||'').trim()==='下一步'})[0];if(b){b.click();return 'next'}return 'none'})()")
+      await clickVisibleText('下一步')
       const backStart = Date.now()
       while (Date.now() - backStart < 10_000) {
         if (await hasPassword()) break
@@ -840,6 +847,9 @@ export async function runPocketUniSync(input: { account?: string; password?: str
     let loggedIn = false
     while (Date.now() - started < 30_000) {
       const text = await evalText('document.body ? document.body.innerText : ""')
+      if (/用户名或者密码错误|账号或密码错误|登录失败/.test(text)) {
+        throw new OneClickError('pu-login', '口袋校园账号或密码不正确（只尝试了 1 次，避免锁号）。请核对密码；如果确认无误，可先到口袋校园网页选择「江苏海洋大学」登录一次再回来。')
+      }
       if (text.includes('我的成绩') || text.includes('成绩明细') || text.includes('总成绩')) { loggedIn = true; break }
       const visiblePassword = await evalText("(function(){var list=[].slice.call(document.querySelectorAll('input[type=password]')).filter(function(i){return !!(i.offsetWidth||i.offsetHeight)});return list.length ? '1' : '0'})()")
       const current = (await CampusBridge.currentUrl()).url

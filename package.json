@@ -2,7 +2,7 @@
   "name": "sunshine-campus",
   "private": true,
   "license": "MIT",
-  "version": "1.2.155",
+  "version": "1.2.156",
   "type": "module",
   "scripts": {
     "dev": "vite",
