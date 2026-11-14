@@ -27,9 +27,9 @@ import { markBootReady } from './boot'
 import { resetLauncherMoodForAccountChange } from './app-icon'
 import { toast } from './toast'
 import { getAppShell } from './app-shell'
-import { clearLocalIdentity, loadLocalIdentity } from './local-identity'
+import { LOCAL_IDENTITY_EVENT, clearLocalIdentity, loadLocalIdentity } from './local-identity'
 import { readLocalProfile, saveLocalProfile } from './local-profile'
-import { cloudIdentityUid, ensureCloudIdentity } from './cloud-identity'
+import { clearCloudIdentity, cloudIdentityStudentId, cloudIdentityUid, ensureCloudIdentity } from './cloud-identity'
 
 export type AuthPhase = 'booting' | 'guest' | 'anon' | 'signed'
 
@@ -96,7 +96,7 @@ export interface AuthApi {
   openLogin: (reason?: string) => void
   closeLogin: () => void
   /** 学生端学号登录成功后调用：刷新本机身份并放行等待中的操作 */
-  completeStudentLogin: () => void
+  completeStudentLogin: () => Promise<void>
   loginWithPassword: (account: string, password: string) => Promise<string | null>
   sendPhoneCode: (phone: string) => Promise<string | null>
   submitPhoneCode: (code: string) => Promise<string | null>
@@ -328,10 +328,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
       setQbankUid(identity.uid)
+      if (cloudIdentityStudentId() !== identity.studentId) clearCloudIdentity()
       selectImSession(cloudIdentityUid() || null)
       setUser(localAuthUser(identity.studentId, identity.uid))
       setProfile(readLocalProfile(identity.uid, identity.studentId))
       setPhase('signed')
+      if (!cloudIdentityUid()) {
+        // 云身份缺失（首次登录/旧明文身份作废/换取失败）时后台补换身份码，不阻塞本机功能
+        void ensureCloudIdentity(identity.studentId).then((ok) => {
+          if (!ok) return
+          const cur = loadLocalIdentity()
+          if (cur?.studentId === identity.studentId) void refresh()
+        })
+      }
       return
     }
     const ticket = sessionRead.current.begin()
@@ -441,7 +450,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPhase((p) => (p === 'booting' ? 'guest' : p))
         markBootReady('auth')
       })
-      return
+      /* 学生壳无云端会话变化可言：本机身份写入（门禁认证通过 / 一键获取补做）与
+         清除时监听广播，把游客态即时刷新成已登录，避免「首页已认证、我的页要求重新登录」的分裂。 */
+      const onIdentityChange = () => { void refresh() }
+      window.addEventListener(LOCAL_IDENTITY_EVENT, onIdentityChange)
+      return () => { window.removeEventListener(LOCAL_IDENTITY_EVENT, onIdentityChange) }
     }
     void (async () => {
       await refresh()
@@ -468,9 +481,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /** 游客浏览：无会话时静默匿名登录（anon role 只读公开视图，安全） */
+  /** 无云端会话时恢复游客会话，具体权限由各业务接口判定。 */
   const ensureGuest = useCallback(async () => {
-    if (phase === 'signed' || phase === 'anon') return
     if (guestBusy.current) return guestBusy.current
     guestBusy.current = (async () => {
       try {
@@ -492,7 +504,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     return guestBusy.current
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, refresh])
+  }, [refresh])
 
   const finishLogin = useCallback(() => {
     otpRef.current = null
@@ -582,9 +594,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [phase, user, localOnly],
   )
 
-  const completeStudentLogin = useCallback(() => {
+  const completeStudentLogin = useCallback(async () => {
     if (!localOnly) return
-    void refresh()
+    const identity = loadLocalIdentity()
+    if (identity?.studentId && cloudIdentityStudentId() !== identity.studentId) {
+      clearCloudIdentity()
+      await ensureCloudIdentity(identity.studentId)
+    }
+    await refresh()
     loginPending.current?.(true)
     loginPending.current = null
     setLoginOpen(false)
@@ -695,12 +712,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     if (localOnly) {
       clearLocalIdentity()
+      clearCloudIdentity()
       setQbankUid(null)
       selectImSession(null)
       setProfile(null)
       setUser(null)
       setCredOpen(false)
       setPhase('guest')
+      try { await cbAuth().signOut() } catch { /* Session remains cleared locally. */ }
       return
     }
     const reminderOwner = sessionRead.current.uid
@@ -718,6 +737,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     setCredOpen(false)
     setPhase('guest')
+    clearCloudIdentity()
     try { await cbAuth().signOut() } catch { /* Session remains cleared locally. */ }
   }, [])
 

@@ -20,7 +20,6 @@ import {
 } from '../../lib/pocketuni-parse'
 import {
   PU_HOME_URL,
-  PU_SCORE_DETAIL_URL,
   clearPocketUni,
   readPocketUni,
   savePocketUni,
@@ -170,7 +169,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
 
       {quality ? <section style={{ marginBottom: 12, padding: 16, borderRadius: 18, background: 'var(--card,#fff)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div><h2 style={{ margin: 0, fontSize: 22 }}>我的 PU 学分</h2><small style={{ opacity: 0.65 }}>校园档案 · 最近获取 {new Date(quality.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</small></div>
+          <div><h2 style={{ margin: 0, fontSize: 22 }}>校园档案学分</h2><small style={{ opacity: 0.65 }}>校园档案 · 最近获取 {new Date(quality.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</small></div>
           <b style={{ fontSize: 26 }}>{quality.totalCredit}</b>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 10 }}>
@@ -188,7 +187,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
             </div>
           })}
         </div>
-        <button type="button" onClick={openLogin} style={{ display: 'inline-block', marginTop: 8, padding: 0, border: 0, background: 'transparent', color: 'var(--green-text)', font: 'inherit', fontSize: 13, fontWeight: 700, textAlign: 'left', cursor: 'pointer' }}>登录 PU ›</button>
+        <Link to="/study/quality" style={{ display: 'inline-block', marginTop: 8, color: 'var(--green-text)', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>查看校园档案 ›</Link>
       </section> : null}
 
       <section className={styles.hero}>
@@ -243,7 +242,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
       </section> : <section className={styles.card}>
         <h3>还没有 PU 记录</h3>
         <button type="button" className={styles.primary} onClick={openLogin}>登录口袋校园并读取</button>
-        <button type="button" className={styles.outline} onClick={() => openExternalUrl(PU_SCORE_DETAIL_URL)}>手动粘贴 · 打开成绩明细 ↗</button>
+        <button type="button" className={styles.outline} onClick={() => openExternalUrl(PU_HOME_URL)}>打开口袋校园网页 ↗</button>
       </section>}
 
       <div id="pu-connect">
@@ -276,7 +275,7 @@ function PocketUniContent({ embedded = false }: { embedded?: boolean } = {}) {
         </CollapsibleCard>
       </div>
 
-      <CollapsibleCard title="粘贴成绩明细导入" meta="从口袋校园复制成绩明细文字或接口 JSON">
+      <CollapsibleCard title="粘贴成绩明细导入" meta="在口袋校园打开成绩明细，复制文字后回到这里">
         <label className={styles.field}>粘贴内容
           <textarea
             value={draft}

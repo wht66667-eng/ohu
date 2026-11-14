@@ -41,6 +41,11 @@ function fixture({ allowProfileWrites = false } = {}) {
     './cb': { cbAuth: () => auth, cbRdb: () => ({ from: () => query }) }, './auth-session': session,
     './qbank': { captureQbankSession: () => ({ uid, revision }), isQbankSessionCurrent: captured => captured.uid === uid && captured.revision === revision, setQbankUid: next => { if ((next || '') !== uid) { uid = next || ''; revision++ } } },
     './password-setup': password, './im-session': { selectImSession: () => {} }, './boot': { markBootReady: () => {} }, './app-icon': { resetLauncherMoodForAccountChange: async () => {} }, './toast': { toast: { err() {}, warn() {} } },
+    /* 学号本机身份改造引入的依赖：本测试走云端（admin 壳）路径，全部给只读桩 */
+    './app-shell': { getAppShell: () => 'admin' },
+    './local-identity': { LOCAL_IDENTITY_EVENT: 'ohu.local-identity.v1', loadLocalIdentity: () => null, clearLocalIdentity: () => {} },
+    './local-profile': { readLocalProfile: () => null, saveLocalProfile: () => false },
+    './cloud-identity': { clearCloudIdentity: () => {}, cloudIdentityStudentId: () => '', cloudIdentityUid: () => '', ensureCloudIdentity: async () => false },
   }, { window: { dispatchEvent() {} }, Event: class {}, CustomEvent: class {}, setTimeout })
   const render = () => { cursor = 0; return api.AuthProvider({ children: null }).props.value }
   return { render, calls, setVerify: fn => { verify = fn }, switch: next => { uid = next; revision++ } }

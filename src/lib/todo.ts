@@ -8,15 +8,21 @@ import { mutateRows, type QueryRes, type MutateRes } from './market'
 import { DEFAULT_LOAD, normLoad, type LoadValue } from './todo-energy'
 import { captureQbankSession, isQbankSessionCurrent } from './qbank'
 import { notifyTodoDataChanged } from './todo-data-events'
-import { createLocalTodo, deleteLocalTodo, listLocalTodos, updateLocalTodo } from './local-todos'
+import { createLocalTodo, deleteLocalTodo, findLocalImportedTodo, listLocalTodos, updateLocalTodo } from './local-todos'
+import { importContractTasks, listImportRecords, markImportCreated, markImportFailed, TODO_IMPORT_PREFIX, type ImportOutcome } from './todo-import'
+import { validateContract, type CoachTask, type TaskContract } from '../services/coach/contract'
 
-function localOpen(limit = 200): TodoRow[] {
-  return listLocalTodos().filter((row) => !row.done).slice(0, limit)
+function compareOpenTodos(a: TodoRow, b: TodoRow): number {
+  const deadline = (row: TodoRow) => row.due_at ? Date.parse(row.due_at) : NaN
+  const aDue = deadline(a)
+  const bDue = deadline(b)
+  if (Number.isFinite(aDue) && Number.isFinite(bDue) && aDue !== bDue) return aDue - bDue
+  if (Number.isFinite(aDue) !== Number.isFinite(bDue)) return Number.isFinite(aDue) ? -1 : 1
+  return b.id - a.id
 }
 
-function localPage(): TodoPageRes {
-  const rows = listLocalTodos()
-  return { rows, error: null, has_more: false, next_cursor: null }
+function localOpen(): TodoRow[] {
+  return listLocalTodos().filter((row) => !row.done)
 }
 
 type Any = any
@@ -85,6 +91,13 @@ export async function fetchTodos(): Promise<QueryRes<TodoRow>> {
 export async function fetchOpenTodosForHome(limit = 200): Promise<HomeTodoRes> {
   const size = Math.max(1, Math.min(200, Math.floor(limit) || 200))
   const empty: HomeTodoRes = { rows: [], error: null, hasMore: false }
+  const session = captureQbankSession()
+  const stale = { ...empty, error: '账号已切换，请刷新待办' }
+  const fallback = (error: string): HomeTodoRes => {
+    if (!isQbankSessionCurrent(session)) return stale
+    const local = localOpen().sort(compareOpenTodos)
+    return { rows: local.slice(0, size), error: local.length ? null : error, hasMore: local.length > size }
+  }
   try {
     const result = await (cbRdb().from('todos') as Any)
       .select('*')
@@ -92,25 +105,22 @@ export async function fetchOpenTodosForHome(limit = 200): Promise<HomeTodoRes> {
       .order('due_at', { ascending: true })
       .order('id', { ascending: false })
       .limit(size + 1)
+    if (!isQbankSessionCurrent(session)) return stale
     const error = readError(result?.error)
-    if (error) return { rows: localOpen(size), error: null, hasMore: false }
+    if (error) return fallback(error)
     const raw = Array.isArray(result?.data) ? result.data as Any[] : []
     const cloudRows = raw.slice(0, size).map((row) => ({
       ...row,
       load: normLoad(row?.load ?? DEFAULT_LOAD),
     })) as TodoRow[]
-    if (!cloudRows.length) {
-      const local = localOpen(size)
-      if (local.length) return { rows: local, error: null, hasMore: false }
-    }
+    const combined = [...cloudRows, ...localOpen()].sort(compareOpenTodos)
     return {
-      rows: cloudRows,
+      rows: combined.slice(0, size),
       error: null,
-      hasMore: raw.length > size,
+      hasMore: raw.length > size || combined.length > size,
     }
   } catch (error) {
-    const local = localOpen(size)
-    return local.length ? { rows: local, error: null, hasMore: false } : { ...empty, error: errText(error) }
+    return fallback(errText(error))
   }
 }
 
@@ -157,13 +167,21 @@ export async function fetchTodosPage(beforeId: number | null = null, pageSize = 
   if (beforeId != null && (!Number.isSafeInteger(beforeId) || beforeId <= 0)) {
     return { ...empty, error: '待办位置无效，请刷新后重试' }
   }
+  const session = captureQbankSession()
+  const stale = { ...empty, error: '账号已切换，请刷新待办' }
+  const fallback = (error: string): TodoPageRes => {
+    if (!isQbankSessionCurrent(session)) return stale
+    const local = beforeId == null ? listLocalTodos() : []
+    return local.length ? { ...empty, rows: local } : { ...empty, error }
+  }
   try {
     let query: Any = (cbRdb().from('todos') as Any).select('*')
     if (beforeId != null) query = query.lt('id', beforeId)
     query = query.order('id', { ascending: false }).limit(size + 1)
     const result = await query
+    if (!isQbankSessionCurrent(session)) return stale
     const error = readError(result?.error)
-    if (error) return localPage()
+    if (error) return fallback(error)
     const raw = Array.isArray(result?.data) ? result.data as Any[] : []
     const hasMore = raw.length > size
     const rows = raw.slice(0, size).map((row) => ({
@@ -171,19 +189,15 @@ export async function fetchTodosPage(beforeId: number | null = null, pageSize = 
       // load 列可能还没上线（SQL 未执行 / 老包），兜成默认档而不是让 UI 出现 NaN
       load: normLoad(row?.load ?? DEFAULT_LOAD),
     })) as TodoRow[]
-    if (!rows.length) {
-      const local = listLocalTodos()
-      if (local.length) return { ...localPage(), rows: local.slice(0, size) }
-    }
     return {
-      rows,
+      // 本机记录只随首屏返回，云端游标始终取自云端窗口。
+      rows: beforeId == null ? [...listLocalTodos(), ...rows] : rows,
       error: null,
       has_more: hasMore,
       next_cursor: hasMore && rows.length ? rows[rows.length - 1].id : null,
     }
   } catch (error) {
-    const local = listLocalTodos()
-    return local.length ? { ...localPage(), rows: local.slice(0, size) } : { ...empty, error: errText(error) }
+    return fallback(errText(error))
   }
 }
 
@@ -241,6 +255,7 @@ export async function deleteTodoConfirmed(
 ): Promise<MutateRes> {
   const session = expectedSession
   if (id < 0) {
+    if (!isQbankSessionCurrent(session)) return { error: '账号已切换，请刷新待办' }
     if (!deleteLocalTodo(id)) return { error: '本机待办不存在，请刷新后重试' }
     notifyTodoDataChanged()
     return { error: null }
@@ -317,7 +332,14 @@ async function updateTodoConfirmed(
   session: ReturnType<typeof captureQbankSession>,
 ): Promise<MutateRes> {
   if (id < 0) {
-    const ok = updateLocalTodo(id, { title: body.title as string | undefined, note: body.note as string | undefined, due_at: body.due_at as string | null | undefined, done: body.done as boolean | undefined })
+    if (!isQbankSessionCurrent(session)) return { error: '账号已切换，请刷新待办' }
+    const ok = updateLocalTodo(id, {
+      title: body.title as string | undefined,
+      note: body.note as string | undefined,
+      due_at: body.due_at as string | null | undefined,
+      done: body.done as boolean | undefined,
+      load: body.load as LoadValue | undefined,
+    })
     if (ok) notifyTodoDataChanged()
     return ok ? { error: null } : { error: '本机待办不存在，请刷新后重试' }
   }
@@ -372,7 +394,7 @@ async function updateTodoConfirmed(
 }
 
 export function deleteTodo(id: number): Promise<MutateRes> {
-  return mutateAndNotify('delete', undefined, id)
+  return id < 0 ? deleteTodoConfirmed(id) : mutateAndNotify('delete', undefined, id)
 }
 
 async function mutateAndNotify(kind: 'insert' | 'update' | 'delete', body?: Record<string, unknown>, id?: number, notify = true): Promise<MutateRes> {
@@ -421,4 +443,42 @@ export async function todoRemindScan(): Promise<{ data: TodoScanRes | null; erro
   } catch (e) {
     return { data: null, error: errText(e) }
   }
+}
+
+export async function importCoachTasksLocally(
+  contract: TaskContract,
+  tasks: CoachTask[],
+  session = captureQbankSession(),
+): Promise<ImportOutcome> {
+  const validated = validateContract(contract)
+  if (!validated.ok) throw new Error('请先修正契约校验问题')
+  const selectedIds = new Set(tasks.map(task => task.id))
+  const selected = validated.contract.tasks.filter(task => selectedIds.has(task.id) && !task.done)
+  const outcome = await importContractTasks(validated.contract, selected, {
+    uid: session.uid || 'guest',
+    sessionChanged: () => !isQbankSessionCurrent(session),
+    write: async (task, importKey) => {
+      const row = createLocalTodo({
+        title: task.title,
+        note: `计划日期 ${task.date} · ${task.category} · ${task.minutes} 分钟${task.note ? ` · ${task.note}` : ''}`,
+        due_at: '',
+      }, { uid: session.uid || 'guest', importKey })
+      return { id: row.id, inserted: true, error: null }
+    },
+  })
+  if (outcome.created > 0 && isQbankSessionCurrent(session)) notifyTodoDataChanged()
+  return outcome
+}
+
+export async function reconcileCoachLocalImports(session = captureQbankSession()): Promise<void> {
+  if (!globalThis.navigator?.locks) throw new Error('当前环境不支持安全导入锁')
+  const uid = session.uid || 'guest'
+  await navigator.locks.request(`${TODO_IMPORT_PREFIX}${uid}`, async () => {
+    if (!isQbankSessionCurrent(session)) throw new Error('账号已切换，请回原账号核对')
+    for (const record of listImportRecords(uid).filter(row => row.status === 'pending')) {
+      const found = findLocalImportedTodo(record.key, uid)
+      if (found) markImportCreated(record.key, found.id, uid)
+      else markImportFailed(record.key, '已核对本机记录：未写入，可重新确认', uid)
+    }
+  })
 }

@@ -1,0 +1,72 @@
+.sheet { padding: 18px 20px max(24px, var(--safe-bottom, env(safe-area-inset-bottom, 0px))); background: var(--card); color: var(--text); }
+.head h2 { margin: 0; color: var(--green-text); font-size: 21px; font-weight: 850; letter-spacing: -.02em; }
+.head p { margin: 6px 0 0; color: var(--text-3); font-size: 12px; line-height: 1.6; }
+.kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 16px 0; }
+.kinds button { min-height: 44px; padding: 8px 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+.kinds button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: var(--green-text); font-weight: 700; }
+.body { display: grid; gap: 14px; }
+.field { display: grid; gap: 8px; }
+.field label { color: var(--text-2); font-size: 13px; font-weight: 600; }
+.field input, .field select, .field textarea { width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); font: inherit; font-size: 15px; }
+.field textarea { resize: vertical; line-height: 1.6; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.presets button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+.presets button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: var(--green-text); font-weight: 700; }
+.error { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--danger-soft, #fdecec); color: var(--danger, #c0392b); font-size: 13px; line-height: 1.5; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.actions button { min-height: 44px; padding: 10px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 15px; cursor: pointer; }
+.actions button[type="submit"] { border-color: var(--green); background: var(--green); color: var(--on-primary, #fff); font-weight: 700; }
+.actions button:disabled { opacity: .6; cursor: default; }
+.dayPick { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
+.dayPick label { flex: none; color: var(--text-2); font-size: 13px; font-weight: 600; }
+.dayPick input { flex: 1; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); font: inherit; font-size: 14px; }
+.views { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 16px 0 0; }
+.views button { min-height: 44px; padding: 8px 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+.views button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: var(--green-text); font-weight: 700; }
+.today { display: grid; gap: 12px; margin-top: 14px; }
+.summary { display: flex; flex-wrap: wrap; gap: 6px; }
+.summary span { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--green-soft); color: var(--green-text); font-size: 12px; font-weight: 600; }
+.empty { margin: 0; color: var(--text-3); font-size: 13px; line-height: 1.6; }
+.inbox { display: grid; gap: 10px; margin-top: 14px; }
+.inboxNote { margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-3); }
+.inboxActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.inboxActions button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.inboxActions button:disabled { opacity: .6; cursor: default; }
+.inboxActions .primary { border-color: var(--green); background: var(--green); color: var(--on-primary, #fff); font-weight: 700; }
+.inboxActions .danger { color: #b3372f; border-color: #b3372f55; }
+.inboxDay h3 { margin: 4px 0 0; font-size: 13px; }
+.inboxDay .row input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--green); }
+.importRow { display: grid; gap: 6px; margin-top: 4px; }
+.importRow button { min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.importRow small { font-size: 11px; line-height: 1.6; color: var(--text-3); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.rowMain { display: grid; gap: 2px; min-width: 0; }
+.rowMain b { color: var(--text); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.rowMain small { color: var(--text-3); font-size: 12px; }
+.rowActions { display: flex; gap: 6px; flex: none; }
+.rowActions button { min-height: 44px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.rowActions button.danger { border-color: var(--danger, #c0392b); background: var(--danger-soft, #fdecec); color: var(--danger, #c0392b); font-weight: 700; }
+.editing { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--green-soft); color: var(--green-text); font-size: 13px; line-height: 1.5; }
+.editing button { flex: none; min-height: 40px; padding: 4px 12px; border: 1px solid var(--green); border-radius: 8px; background: var(--card); color: var(--green-text); font: inherit; font-size: 12px; cursor: pointer; }
+.photoLabel { color: var(--text-2); font-size: 13px; font-weight: 600; }
+.photoAdd { min-height: 44px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+.photoPreview { display: grid; gap: 8px; justify-items: start; }
+.photoPreview img { max-width: 100%; max-height: 180px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg, #f4f1ea); object-fit: contain; }
+.photoActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.photoActions button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+.photoAdd:disabled, .photoActions button:disabled, .presets button:disabled { opacity: .6; cursor: default; }
+.photoHint { color: var(--text-3); font-size: 12px; line-height: 1.6; }
+.rowThumb { width: 44px; height: 44px; flex: none; object-fit: contain; border-radius: 8px; }
+.kinds button:focus-visible, .presets button:focus-visible, .actions button:focus-visible, .views button:focus-visible, .rowActions button:focus-visible, .editing button:focus-visible, .photoAdd:focus-visible, .photoActions button:focus-visible, .dayPick input:focus-visible, .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+@media (max-width: 355px) {
+  .sheet { padding-inline: 14px; }
+  .kinds { gap: 6px; }
+  .kinds button { font-size: 13px; }
+  .views { gap: 6px; }
+  .summary span { font-size: 11px; }
+  .rowActions button { padding: 6px 8px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kinds button, .presets button, .actions button, .views button, .rowActions button { transition: none; }
+}

@@ -2,17 +2,23 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
 import { GradeTabs } from '../../components/GradeTabs'
-import { loadGradesCache, type GradeRowRemote } from '../../lib/academic-cache'
+import { loadAcademicMeta, loadGradesCache, type GradeRowRemote } from '../../lib/academic-cache'
 import { useQbankRevision } from '../../lib/useQbankRevision'
+import { openExternalUrl } from '../../lib/campus-links'
+import { useUiVariant } from '../../lib/ui-variant'
 
 const num = (value: string) => {
-  const parsed = Number(String(value).replace(/[^\d.]/g, ''))
+  const text = value.trim().normalize('NFKC')
+  if (!/^\d+(?:\.\d+)?$/.test(text)) return null
+  const parsed = Number(text)
   return Number.isFinite(parsed) ? parsed : null
 }
 
 export function CourseGradesPage({ embedded = false }: { embedded?: boolean } = {}) {
   useQbankRevision()
+  const variant = useUiVariant()
   const rows = loadGradesCache()
+  const synced = !!loadAcademicMeta('grades')?.savedAt
   const [query, setQuery] = useState('')
   const [term, setTerm] = useState('')
 
@@ -32,16 +38,20 @@ export function CourseGradesPage({ embedded = false }: { embedded?: boolean } = 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <h2 style={{ margin: 0, fontSize: 22 }}>课程成绩</h2>
         </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+          <Link to="/study/oneclick">更新本机成绩</Link>
+          <button type="button" onClick={() => openExternalUrl('https://zf.jou.edu.cn/')}>打开学校教务</button>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 10 }}>
-          {[['平均分', average === null ? '—' : average.toFixed(1)], ['总学分', credits ? credits.toFixed(1) : '—'], ['课程数', String(rows.length)]].map(([label, value]) => (
+          {[['平均分', average === null ? '—' : average.toFixed(1)], ['总学分', credits ? credits.toFixed(1) : '—'], ['课程数', rows.length ? String(rows.length) : synced ? '0' : '—']].map(([label, value]) => (
             <div key={label} style={{ padding: 10, borderRadius: 14, background: 'rgba(31,143,95,.06)' }}>
               <b style={{ fontSize: 22 }}>{value}</b><small style={{ display: 'block', opacity: 0.7 }}>{label}</small>
             </div>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索课程 / 代码 / 性质" aria-label="搜索课程成绩" style={{ flex: '1 1 150px', minHeight: 34, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 10px' }} />
-          <select value={term} onChange={(event) => setTerm(event.target.value)} aria-label="选择学期" style={{ minHeight: 34, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 8px' }}>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索课程 / 代码 / 性质" aria-label="搜索课程成绩" style={{ flex: '1 1 150px', minHeight: 44, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 10px', fontSize: 14 }} />
+          <select value={term} onChange={(event) => setTerm(event.target.value)} aria-label="选择学期" style={{ minHeight: 44, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 8px', fontSize: 14 }}>
             <option value="">全部学期</option>
             {terms.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -49,7 +59,8 @@ export function CourseGradesPage({ embedded = false }: { embedded?: boolean } = 
       </section>
 
       {rows.length ? <section style={{ borderRadius: 16, padding: 14, background: 'var(--card,#fff)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: variant === 'handdrawn' ? 13 : 12 }}>
           <thead><tr style={{ textAlign: 'left', opacity: 0.65 }}><th style={{ padding: '4px 2px' }}>课程</th><th>性质</th><th>学分</th><th>成绩</th><th>绩点</th></tr></thead>
           <tbody>{filtered.map((row: GradeRowRemote) => <tr key={`${row.code}-${row.year}-${row.term}`} style={{ borderTop: '1px solid rgba(0,0,0,.06)' }}>
             <td style={{ padding: '6px 2px' }}>{row.name}<small style={{ display: 'block', opacity: 0.55 }}>{row.year} {row.term} · {row.code}</small></td>
@@ -59,15 +70,17 @@ export function CourseGradesPage({ embedded = false }: { embedded?: boolean } = 
             <td>{row.gpa || '—'}</td>
           </tr>)}</tbody>
         </table>
+        </div>
         {!filtered.length ? <p role="status" style={{ fontSize: 12.5 }}>没有匹配的课程。</p> : null}
         <details style={{ marginTop: 10 }}>
           <summary style={{ cursor: 'pointer', fontSize: 12 }}>查看结构化 JSON 样例（{Math.min(filtered.length, 3)} 条）</summary>
           <pre style={{ overflowX: 'auto', fontSize: 11, background: 'rgba(0,0,0,.04)', padding: 8, borderRadius: 8 }}>{JSON.stringify(filtered.slice(0, 3), null, 2)}</pre>
         </details>
       </section> : <section style={{ borderRadius: 16, padding: 18, background: 'var(--card,#fff)', textAlign: 'center' }}>
+        {variant === 'handdrawn' ? <img src="/brand/handdrawn/fox-greeting.png" alt="" aria-hidden="true" style={{ display: 'block', width: 64, height: 'auto', margin: '0 auto 8px' }} /> : null}
         <b>还没有课程成绩</b>
-        <p style={{ fontSize: 12.5, opacity: 0.7 }}>去「一键获取」同步课表、成绩、考试。</p>
-        <Link to="/study/oneclick" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none' }}>去一键获取</Link>
+        <p style={{ fontSize: 12.5, opacity: 0.7 }}>Android App 可使用一键获取。在其他设备上，可直接打开学校教务查询，或在学习中心记录成绩备忘。</p>
+        <Link to="/study/oneclick" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none' }}>去一键获取</Link>
       </section>}
     </main>
 

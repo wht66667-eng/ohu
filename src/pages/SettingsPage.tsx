@@ -1,5 +1,5 @@
 import { OhuSharePanel } from '../components/SharePosterSheet'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { CampusIcon } from '../components/CampusIcon'
@@ -59,6 +59,25 @@ import {
 } from '../lib/alert-effects'
 import { getAppShell, isWorkShell } from '../lib/app-shell'
 import { showStudentRemindSettings } from '../lib/shell-guard'
+import {
+  listMyScheduleShares,
+  scheduleShareGrant,
+  scheduleShareRevoke,
+  socialInviteCreate,
+  socialInviteRevoke,
+  socialInviteStatus,
+  type InviteStatus,
+  type ShareRowView,
+} from '../lib/social-invites'
+import {
+  inviteActive,
+  inviteUsageText,
+  isRpcMissingError,
+  maskSocialUid,
+  RELATION_OPTIONS,
+  shareFieldsText,
+  type ShareFields,
+} from '../lib/social-invites-helpers'
 import { QuietLoginStreak } from '../components/StreakBar'
 import styles from './me.module.css'
 import settingStyles from './settings.module.css'
@@ -70,6 +89,7 @@ import { isFoxFreeVariant, useUiVariant } from '../lib/ui-variant'
 import { FoxAvatar } from '../components/fox/FoxAvatar'
 import { StorageDiagnostics } from '../components/StorageDiagnostics'
 import { UserServiceLinksSettings } from '../components/UserServiceLinksSettings'
+import { SoundSettings } from '../components/SoundSettings'
 
 function SettingsLink({ icon, title, detail, onClick }: { icon: string; title: string; detail: string; onClick: () => void }) {
   return <Pressable className={settingStyles.menuRow} onClick={onClick}>
@@ -110,7 +130,7 @@ function SettingsForAccount() {
   const isAdmin = auth.isSigned && !!(auth.profile?.isAdmin || auth.profile?.isSuperAdmin)
   const isSuperAdmin = !!auth.profile?.isSuperAdmin
   const showAdminBlock = signed && isAdmin && (shell === 'user' || shell === 'admin')
-  const section = resolveSettingsSection(params.get('section'), { studentRemind, showAdminBlock, showData: !work, showLinks: !work, showInstall: !work })
+  const section = resolveSettingsSection(params.get('section'), { studentRemind, showAdminBlock, showData: !work, showLinks: !work, showInstall: !work, showSound: !work })
   function openSection(next: SettingsSection) {
     const query = new URLSearchParams(params)
     query.set('section', next)
@@ -312,23 +332,49 @@ function SettingsForAccount() {
     }
   }, [showAdminBlock, section])
 
+  const handdrawn = uiVariant === 'handdrawn'
+  const basicSettings = <>
+    <SettingsLink icon="sun" title="外观与陪伴" detail={theme === 'system' ? '跟随系统主题' : theme === 'dark' ? '深色模式' : '浅色模式'} onClick={() => openSection('appearance')} />
+    {studentRemind ? <SettingsLink icon="bell" title="通知与提醒" detail="提醒时点、弹窗样式与系统权限" onClick={() => openSection('reminders')} /> : null}
+    {!work ? <SettingsLink icon="sound" title="声音与反馈" detail="提示音、音量、免打扰与背景音乐" onClick={() => openSection('sound')} /> : null}
+    <SettingsLink icon="shield" title="账号与安全" detail={signed ? '学号身份与退出' : '用学号开始'} onClick={() => openSection('account')} />
+  </>
+  const dataSettings = !work ? <>
+    <SettingsLink icon="box" title="数据与缓存" detail="查看本机存储估算，不会自动清理" onClick={() => openSection('data')} />
+    <SettingsLink icon="update" title="校园数据更新" detail="重新登录校园系统，更新课表、成绩、考试" onClick={() => nav('/study/oneclick')} />
+    <SettingsLink icon="link" title="网页快捷入口" detail="管理自己添加的校园网页" onClick={() => openSection('links')} />
+  </> : null
+  const aboutSettings = <>
+    <SettingsLink icon={handdrawn ? 'grid' : 'update'} title="哦狐科技" detail={`插件共创 · 管理员审核 · v${APP_VERSION}`} onClick={() => openSection('about')} />
+    {!work ? <SettingsLink icon={handdrawn ? 'share' : 'link'} title="安装与分享" detail="二维码、分享图与安装说明" onClick={() => openSection('install')} /> : null}
+  </>
+
   return (
     <div className={`${styles.page} ${settingStyles.page}`}>
       <PageHeader title={SETTINGS_SECTION_TITLES[section]} onBack={section === 'overview' ? undefined : backToSettings} />
 
       {section === 'overview' ? <>
         <p className={settingStyles.intro}>常用设置，按需调整。</p>
-        <section className={settingStyles.menu} aria-label="应用设置分类">
-          <SettingsLink icon="sun" title="外观与陪伴" detail={theme === 'system' ? '跟随系统主题' : theme === 'dark' ? '深色模式' : '浅色模式'} onClick={() => openSection('appearance')} />
-          {studentRemind ? <SettingsLink icon="bell" title="通知与提醒" detail="提醒时点、弹窗样式与系统权限" onClick={() => openSection('reminders')} /> : null}
-          <SettingsLink icon="shield" title="账号与安全" detail={signed ? '学号身份与退出' : '用学号开始'} onClick={() => openSection('account')} />
-          {!work ? <SettingsLink icon="box" title="数据与缓存" detail="查看本机存储估算，不会自动清理" onClick={() => openSection('data')} /> : null}
-          {!work ? <SettingsLink icon="update" title="更新数据" detail="重新登录校园系统，更新课表、成绩、考试" onClick={() => nav('/study/oneclick')} /> : null}
-          <SettingsLink icon="update" title="哦狐科技" detail={`插件共创 · 管理员审核 · v${APP_VERSION}`} onClick={() => openSection('about')} />
-          {!work ? <SettingsLink icon="link" title="网页快捷入口" detail="管理自己添加的校园网页" onClick={() => openSection('links')} /> : null}
-          {!work ? <SettingsLink icon="link" title="安装与分享" detail="二维码、分享图与安装说明" onClick={() => openSection('install')} /> : null}
-        </section>
+        {handdrawn ? <>
+          <section className={settingStyles.menu} aria-labelledby="settings-basic-title">
+            <h2 className={settingStyles.groupTitle} id="settings-basic-title">常用</h2>
+            {basicSettings}
+          </section>
+          {!work ? <section className={settingStyles.menu} aria-labelledby="settings-data-title">
+            <h2 className={settingStyles.groupTitle} id="settings-data-title">数据与工具</h2>
+            {dataSettings}
+          </section> : null}
+          <section className={settingStyles.menu} aria-labelledby="settings-about-title">
+            <h2 className={settingStyles.groupTitle} id="settings-about-title">关于与分享</h2>
+            {aboutSettings}
+          </section>
+        </> : <section className={settingStyles.menu} aria-label="应用设置分类">
+          {basicSettings}
+          {dataSettings}
+          {aboutSettings}
+        </section>}
         {showAdminBlock ? <section className={settingStyles.menu} aria-label="管理">
+          {handdrawn ? <h2 className={settingStyles.groupTitle}>管理</h2> : null}
           <SettingsLink icon="flag" title="管理工作台" detail={isSuperAdmin ? '内容治理、举报与成员管理' : '内容治理与举报处理'} onClick={() => openSection('admin')} />
         </section> : null}
       </> : null}
@@ -336,6 +382,11 @@ function SettingsForAccount() {
       {section === 'links' && !work ? <>
         <p className={settingStyles.intro}>把常用的校园网页放在一起，入口只保存在这台设备上。</p>
         <UserServiceLinksSettings />
+      </> : null}
+
+      {section === 'sound' && !work ? <>
+        <p className={settingStyles.intro}>轻一点的声音，及时但不打扰；所有选择只保存在这台设备上。</p>
+        <SoundSettings />
       </> : null}
 
       {section === 'install' && !work ? <OhuSharePanel /> : null}
@@ -363,7 +414,7 @@ function SettingsForAccount() {
         </div>
         {!work ? <button type="button" className={styles.setRow} onClick={() => nav('/?customize=home')}>
           <span className={styles.setIc} style={{ background: 'var(--green-soft)' }}><CampusIcon name="grid" /></span>
-          <span className={styles.setGrow}><b>首页内容卡片</b><span>选择首页显示内容并调整顺序</span></span>
+          <span className={styles.setGrow}><b>首页布局</b><span>选择常用入口，调整首页区块顺序</span></span>
           <span className={styles.setArrow}>›</span>
         </button> : null}
         {work || uiVariant === 'minimal' ? null : (
@@ -790,11 +841,12 @@ function SettingsForAccount() {
       </section>
       ) : null}
 
+      {section === 'account' && !work ? <SocialInviteSettings /> : null}
+
       {section === 'data' && !work ? <>
         <p className={settingStyles.intro}>查看当前浏览器或 App 可报告的本机存储信息。</p>
         <StorageDiagnostics />
         <section className={settingStyles.menu} aria-label="本机数据操作" style={{ marginTop: 14 }}>
-          <SettingsLink icon="update" title="一键更新本机数据" detail="重新登录校园系统，更新课表、成绩、考试" onClick={() => nav('/study/oneclick')} />
           <SettingsLink icon="box" title="一键清空本机数据" detail="清空身份、缓存与设置，回到首次认证" onClick={() => setAskClearData(true)} />
         </section>
       </> : null}
@@ -974,4 +1026,417 @@ function SettingsForAccount() {
       ) : null}
     </div>
   )
+}
+
+/**
+ * 社工端邀请码 + 课表共享（TASK-A4，设置页「账号与安全」内）：
+ * - 学生视角：生成一次性邀请码（默认 7 天有效；每枚绑定一位社工；每人同时仅 1 枚有效，
+ *   已有有效码时不再出生成按钮，可先撤销），可选拌关系类型（恋人/兄弟/死党/闺蜜/好友/自定义）；
+ *   列表展示全部码与状态，有效码可复制/撤销；
+ * - 课表共享：按「社工用户 uid 或其绑定码」授权，字段三档开关（上课时间/课程名/教室）
+ *   写入 schedule_shares.fields；已授权列表可撤销、可按当前开关更新字段；重开页面回显一致；
+ * - 管理员：显示「管理员发放面板在成员治理页」提示；
+ * - 迁移未部署（42883 / 表不存在）：显示部署前提示，按钮动作给可读错误，不崩溃。
+ */
+function SocialInviteSettings() {
+  const auth = useAuth()
+  const toast = useToast()
+  const signed = auth.isSigned && !auth.user?.isAnonymous
+  const isAdmin = signed && !!(auth.profile?.isAdmin || auth.profile?.isSuperAdmin)
+  const uid = signed ? auth.user?.uid || '' : ''
+  const [status, setStatus] = useState<InviteStatus | null>(null)
+  const [shares, setShares] = useState<ShareRowView[]>([])
+  const [fields, setFields] = useState<ShareFields>({ time: true, name: true, room: true })
+  const [grantKey, setGrantKey] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading')
+  const [loadError, setLoadError] = useState('')
+  /** 新邀请码的关系类型（只影响称呼，P2-04b） */
+  const [relation, setRelation] = useState('friend')
+  const [relationLabel, setRelationLabel] = useState('')
+  /** 用户手动动过字段开关后，不再用服务端行覆盖草稿 */
+  const draftTouched = useRef(false)
+
+  async function reload() {
+    if (!signed) {
+      setStatus(null)
+      setShares([])
+      setLoadState('ready')
+      return
+    }
+    setLoadState('loading')
+    setLoadError('')
+    const [st, sh] = await Promise.all([socialInviteStatus(), listMyScheduleShares()])
+    if (st.rpcMissing || (sh.error && isRpcMissingError(sh.error))) {
+      setStatus(null)
+      setShares([])
+      setLoadState('missing')
+      setLoadError(st.error || sh.error || '')
+      return
+    }
+    if (st.error) {
+      setStatus(null)
+      setShares([])
+      setLoadState('error')
+      setLoadError(st.error)
+      return
+    }
+    setStatus(st)
+    const rows = sh.error ? [] : sh.rows
+    setShares(rows)
+    setLoadState('ready')
+    if (!draftTouched.current && rows.length) setFields(rows[0].fields)
+  }
+
+  useEffect(() => {
+    void reload()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid])
+
+  const activeInvites = (status?.invites || []).filter((v) => inviteActive(v))
+  const spentInvites = (status?.invites || []).filter((v) => !inviteActive(v))
+
+  async function generate() {
+    if (busy) return
+    if (relation === 'custom' && !relationLabel.trim()) {
+      toast.err('自定义关系请填写称呼（1 到 12 个字）')
+      return
+    }
+    setBusy(true)
+    try {
+      const res = await socialInviteCreate('', relation, relationLabel)
+      if (res.rpcMissing) {
+        toast.err('邀请码体系尚未部署，暂时无法生成；服务端部署后自动恢复')
+        return
+      }
+      if (res.error) {
+        toast.err(res.error)
+        await reload()
+        return
+      }
+      toast.ok(`已生成邀请码 ${res.code}`)
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function copyCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code)
+      toast.ok('邀请码已复制')
+    } catch {
+      toast.err('复制失败，请长按邀请码手动复制')
+    }
+  }
+
+  /** 撤销自己发出的有效邀请码（撤销后社工不可再绑定；每人同时仅 1 枚有效，撤销后可重新生成） */
+  async function revokeInvite(code: string) {
+    if (busy) return
+    setBusy(true)
+    try {
+      const res = await socialInviteRevoke(code)
+      if (res.rpcMissing) {
+        toast.err('邀请码体系尚未部署，暂时无法撤销')
+        return
+      }
+      if (res.error) {
+        toast.err(res.error)
+        return
+      }
+      toast.ok('邀请码已撤销，对方将无法再用它绑定')
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function grant() {
+    if (busy) return
+    const key = grantKey.trim()
+    if (!key) {
+      toast.err('请填写要授权的社工用户 uid 或其绑定码')
+      return
+    }
+    setBusy(true)
+    try {
+      const res = await scheduleShareGrant(key, fields)
+      if (res.rpcMissing) {
+        toast.err('邀请码体系尚未部署，暂时无法授权共享')
+        return
+      }
+      if (res.error) {
+        toast.err(res.error)
+        return
+      }
+      toast.ok(res.granted > 1 ? `已授权 ${res.granted} 位社工查看你的课表` : '已授权课表共享')
+      setGrantKey('')
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function revoke(socialUid: string) {
+    if (busy) return
+    setBusy(true)
+    try {
+      const res = await scheduleShareRevoke(socialUid)
+      if (res.rpcMissing) {
+        toast.err('邀请码体系尚未部署，暂时无法撤销')
+        return
+      }
+      if (res.error) {
+        toast.err(res.error)
+        return
+      }
+      toast.ok('已撤销授权，对方立即无法再读取')
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function updateRowFields(socialUid: string) {
+    if (busy) return
+    setBusy(true)
+    try {
+      const res = await scheduleShareGrant(socialUid, fields)
+      if (res.rpcMissing) {
+        toast.err('邀请码体系尚未部署，暂时无法更新')
+        return
+      }
+      if (res.error) {
+        toast.err(res.error)
+        return
+      }
+      toast.ok('已按当前开关更新该授权的共享字段')
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const fieldRows: Array<{ key: keyof ShareFields; label: string; detail: string }> = [
+    { key: 'time', label: '上课时间', detail: '周几与节次' },
+    { key: 'name', label: '课程名', detail: '课程名称' },
+    { key: 'room', label: '教室', detail: '上课地点' },
+  ]
+
+  const inviteControls = <>
+    <p className={styles.hint}>给校外社工发一枚一次性邀请码（默认 7 天有效）。对方绑定后你们建立双人空间；每名学生同时只能有 1 枚有效邀请码。</p>
+    {activeInvites.length === 0 ? (
+      <>
+        <button type="button" className={styles.setRow} disabled={busy} onClick={() => void generate()}>
+          <span className={styles.setIc} style={{ background: '#e6f3ff' }}>🎟</span>
+          <span className={styles.setGrow}>
+            <b>{busy ? '正在生成…' : '生成邀请码'}</b>
+            <span>每枚绑定一位社工 · 每人同时只能有 1 枚有效邀请码</span>
+          </span>
+          <span className={styles.setArrow}>›</span>
+        </button>
+        <div style={{ marginTop: 8, display: 'grid', gap: 6 }}>
+          <p className={styles.hint} style={{ margin: 0 }}>关系类型（只影响称呼）：</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {RELATION_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={relation === opt.value}
+                disabled={busy}
+                style={{
+                  border: relation === opt.value ? '1.5px solid var(--green, #16735b)' : '1.5px solid #d8e4dc',
+                  borderRadius: 999,
+                  padding: '6px 12px',
+                  background: relation === opt.value ? '#eef6f0' : '#fbfdfb',
+                  color: relation === opt.value ? 'var(--green, #16735b)' : '#4b5e7a',
+                  font: 'inherit',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: busy ? 'default' : 'pointer',
+                }}
+                onClick={() => setRelation(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {relation === 'custom' ? (
+            <input
+              type="text"
+              value={relationLabel}
+              placeholder="自定义称呼（1 到 12 个字）"
+              aria-label="自定义关系称呼"
+              maxLength={12}
+              style={{ boxSizing: 'border-box', minHeight: 42, padding: '0 12px', borderRadius: 12, border: '1.5px solid #d8e4dc', background: '#fbfdfb', font: 'inherit', fontSize: 14 }}
+              onChange={(event) => setRelationLabel(event.target.value)}
+            />
+          ) : null}
+        </div>
+      </>
+    ) : (
+      <p className={styles.hint}>你已有一枚有效邀请码：每名学生同时只能有 1 枚有效邀请码，请先撤销或等它过期。</p>
+    )}
+  </>
+
+  const inviteList = <>
+    {activeInvites.map((v) => (
+      <div key={v.code} className={styles.setRow} style={{ marginTop: 8, cursor: 'default' }}>
+        <span className={styles.setIc} style={{ background: '#e6f3ff' }}>🎟</span>
+        <span className={styles.setGrow}>
+          <b>{v.code}</b>
+          <span>
+            {v.relationLabel} · {inviteUsageText(v)}
+            {v.expiresAt ? ` · ${new Date(v.expiresAt).toLocaleDateString('zh-CN')} 前有效` : ''}
+          </span>
+        </span>
+        <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <button
+            type="button"
+            style={{ border: 'none', borderRadius: 999, padding: '6px 10px', background: '#eef5ff', color: '#2b5c9f', fontSize: 12, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}
+            onClick={() => void copyCode(v.code)}
+          >
+            复制
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            style={{ border: 'none', borderRadius: 999, padding: '6px 10px', background: '#ffe0e6', color: '#b3372f', fontSize: 12, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}
+            onClick={() => void revokeInvite(v.code)}
+          >
+            撤销
+          </button>
+        </span>
+      </div>
+    ))}
+    {spentInvites.map((v) => (
+      <p key={v.code} className={styles.hint}>{v.code} · {v.relationLabel} · {inviteUsageText(v)}（不能再被绑定）</p>
+    ))}
+  </>
+
+  const shareControls = <>
+    <p className={styles.hint} style={{ marginBottom: 8 }}>勾选允许对方看到的内容，再填写社工用户 uid 或其绑定码进行授权。</p>
+    {fieldRows.map((row) => (
+      <button
+        key={row.key}
+        type="button"
+        className={styles.setRow}
+        aria-pressed={fields[row.key]}
+        onClick={() => {
+          draftTouched.current = true
+          setFields((prev) => ({ ...prev, [row.key]: !prev[row.key] }))
+        }}
+      >
+        <span className={styles.setIc} style={{ background: fields[row.key] ? '#e6f7ef' : '#fdecec' }}>
+          {fields[row.key] ? '✓' : '✕'}
+        </span>
+        <span className={styles.setGrow}>
+          <b>{row.label}</b>
+          <span>{row.detail}{fields[row.key] ? ' · 对方可见' : ' · 对方不可见'}</span>
+        </span>
+        <span className={styles.setArrow}>{fields[row.key] ? '开' : '关'}</span>
+      </button>
+    ))}
+    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+      <input
+        type="text"
+        value={grantKey}
+        placeholder="社工用户 uid 或绑定码（ABCD-EF23）"
+        aria-label="社工用户 uid 或绑定码"
+        style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', minHeight: 44, padding: '0 12px', borderRadius: 12, border: '1.5px solid #d8e4dc', background: '#fbfdfb', font: 'inherit', fontSize: 14 }}
+        onChange={(event) => setGrantKey(event.target.value)}
+        onKeyDown={(event) => { if (event.key === 'Enter') void grant() }}
+      />
+      <button
+        type="button"
+        disabled={busy || !grantKey.trim()}
+        style={{ flexShrink: 0, minHeight: 44, padding: '0 14px', border: 0, borderRadius: 12, background: 'var(--green, #16735b)', color: '#fff', font: 'inherit', fontSize: 14, fontWeight: 600, opacity: busy || !grantKey.trim() ? 0.55 : 1 }}
+        onClick={() => void grant()}
+      >
+        授权
+      </button>
+    </div>
+    <p className={styles.hint} style={{ marginTop: 6 }}>当前开关对随后新授权生效；已授权的对象可点「按当前开关更新」同步字段。撤销后对方立即不可再读，本地快照同步清除。</p>
+  </>
+
+  const shareList = shares.length ? (
+    <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
+      <p className={styles.hint} style={{ margin: 0 }}>已授权 {shares.length} 位：</p>
+      {shares.map((row) => (
+        <div key={row.id || row.socialUid} className={styles.setRow} style={{ cursor: 'default' }}>
+          <span className={styles.setIc} style={{ background: '#eef1f6' }}>👥</span>
+          <span className={styles.setGrow}>
+            <b>{maskSocialUid(row.socialUid)}</b>
+            <span>{shareFieldsText(row.fields)}</span>
+          </span>
+          <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              type="button"
+              disabled={busy}
+              style={{ border: 'none', borderRadius: 999, padding: '6px 10px', background: '#eef5ff', color: '#2b5c9f', fontSize: 12, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}
+              onClick={() => void updateRowFields(row.socialUid)}
+            >
+              按当前开关更新
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              style={{ border: 'none', borderRadius: 999, padding: '6px 10px', background: '#ffe0e6', color: '#b3372f', fontSize: 12, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}
+              onClick={() => void revoke(row.socialUid)}
+            >
+              撤销
+            </button>
+          </span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className={styles.hint} style={{ marginTop: 8 }}>还没有授权对象。授权后，对方在社工端首页可见「来自同学的课表」。</p>
+  )
+
+  return <>
+    <section className={styles.sec} style={{ paddingTop: 10 }}>
+      <h3>社工端邀请码</h3>
+      {!signed ? (
+        <p className={styles.hint}>登录后可生成自己的社工端邀请码，给校外社工用于注册绑定。</p>
+      ) : isAdmin ? (
+        <p className={styles.hint}>管理员发放面板在成员治理页：网页管理端 → 成员治理 → 邀请码，可不限量生成与撤销。</p>
+      ) : loadState === 'loading' ? (
+        <p className={styles.hint}>正在读取邀请码状态…</p>
+      ) : loadState === 'missing' ? (
+        <>
+          <p className={styles.hint}>邀请码体系尚未部署：生成与绑定暂时不可用；服务端部署后这里会自动恢复，下方选择会正常保存。</p>
+          {inviteControls}
+        </>
+      ) : loadState === 'error' ? (
+        <p className={styles.hint} role="alert">邀请码状态读取失败：{loadError}</p>
+      ) : (
+        <>
+          {inviteControls}
+          {inviteList}
+        </>
+      )}
+    </section>
+
+    <section className={styles.sec} style={{ paddingTop: 10 }}>
+      <h3>课表共享</h3>
+      {!signed ? (
+        <p className={styles.hint}>登录后可授权指定社工查看你的课表，并随时撤销。</p>
+      ) : loadState === 'loading' ? (
+        <p className={styles.hint}>正在读取共享授权…</p>
+      ) : loadState === 'missing' ? (
+        <>
+          <p className={styles.hint}>邀请码体系尚未部署：共享授权暂时不可用；服务端部署后这里会自动恢复，下方开关会正常保存。</p>
+          {shareControls}
+        </>
+      ) : loadState === 'error' ? (
+        <p className={styles.hint} role="alert">共享授权读取失败：{loadError}</p>
+      ) : (
+        <>
+          {shareControls}
+          {shareList}
+        </>
+      )}
+    </section>
+  </>
 }

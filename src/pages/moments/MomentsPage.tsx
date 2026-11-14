@@ -11,7 +11,7 @@ import { MomentComposer } from './MomentComposer'
 import { MomentDetails } from './MomentDetails'
 import styles from './MomentsPage.module.css'
 
-export function MomentsPage() {
+export function MomentsPage({ textOnlyComposer = false }: { textOnlyComposer?: boolean } = {}) {
   const auth = useAuth()
   const uid = auth.isSigned ? auth.user?.uid || '' : ''
   // A → B → A can be batched into one React commit; the same UID still starts a new session.
@@ -21,10 +21,10 @@ export function MomentsPage() {
     <div className={styles.emptyState}><FoxSheetPose pose="waving" className={styles.emptyFox} /><strong>好友的校园日常都在这里</strong><p>登录后查看好友动态、分享校园生活</p>
       <button type="button" onClick={() => auth.openLogin('登录后使用朋友圈')}>学号登录</button></div>
   </div>
-  return <MomentsContent key={`${uid}:${sessionRevision}`} uid={uid} />
+  return <MomentsContent key={`${uid}:${sessionRevision}`} uid={uid} textOnlyComposer={textOnlyComposer} />
 }
 
-function MomentsContent({ uid }: { uid: string }) {
+function MomentsContent({ uid, textOnlyComposer }: { uid: string; textOnlyComposer: boolean }) {
   const [params, setParams] = useSearchParams()
   const [moments, setMoments] = useState<Moment[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,7 +72,7 @@ function MomentsContent({ uid }: { uid: string }) {
         : !error && moments.length === 0 ? <div className={styles.emptyState}><FoxSheetPose pose="waving" className={styles.emptyFox} /><strong>还没有可见动态</strong><p className={styles.emptyHint}>发布近况，或添加好友后查看对方的好友动态。</p><button type="button" onClick={() => changeOverlay('compose', '1')}>发布第一条动态</button></div>
         : <div className={styles.momentsList}>{moments.map(moment => <MomentCard key={moment.id} moment={moment} onDelete={remove} onLikeChange={like} onOpen={() => changeOverlay('moment', String(moment.id))} />)}</div>}
     </main>
-    {composing && <MomentComposer uid={uid} onClose={() => changeOverlay('compose')} onPublished={() => { changeOverlay('compose'); void load(true) }} />}
+    {composing && <MomentComposer uid={uid} textOnly={textOnlyComposer} onClose={() => changeOverlay('compose')} onPublished={() => { changeOverlay('compose'); void load(true) }} />}
     {selected && <MomentDetails key={selected} uid={uid} id={selected} onClose={() => { changeOverlay('moment'); void load(true) }} onDelete={remove} />}
   </div>
 }

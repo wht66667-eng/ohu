@@ -5,6 +5,7 @@ import styles from './HomeServiceIcon.module.css'
 
 const artwork: Record<string, ReactNode> = {
   '校园卡': <g stroke="#174b37" strokeWidth="2.6" strokeLinejoin="round"><rect x="8" y="15" width="48" height="35" rx="7" fill="#fff8eb"/><path d="M9 25h46" strokeWidth="7"/><rect x="17" y="33" width="12" height="8" rx="2" fill="#ffb466" stroke="none"/><path d="M36 39h10" strokeLinecap="round"/></g>,
+  '寝室电费': <g stroke="#174b37" strokeWidth="2.6" strokeLinejoin="round"><rect x="12" y="10" width="40" height="46" rx="9" fill="#fff8eb"/><path d="M34 20 24 36h8l-4 14 14-18h-9l5-12Z" fill="#ffb466"/></g>,
   '校园班车': <g stroke="#174b37" strokeWidth="2.6" strokeLinejoin="round"><rect x="13" y="7" width="38" height="47" rx="9" fill="#ffc46c"/><rect x="19" y="15" width="26" height="19" rx="4" fill="#fff8eb"/><path d="M18 55v3m28-3v3M24 11h16" strokeLinecap="round"/><circle cx="23" cy="43" r="3" fill="#174b37"/><circle cx="41" cy="43" r="3" fill="#174b37"/></g>,
   '图书馆座位': <g stroke="#174b37" strokeWidth="2.6" strokeLinejoin="round"><path d="M19 29V16c0-12 26-12 26 0v13" fill="#9cc998"/><path d="M15 27c-7-4-9 7-6 15l4 7h38l4-7c3-8 1-19-6-15l-4 9H19Z" fill="#5b9b69"/><path d="M18 49v8m28-8v8M19 36h26" strokeLinecap="round"/></g>,
   '学习计划': <g stroke="#174b37" strokeWidth="2.6" fill="none" strokeLinecap="round"><circle cx="30" cy="33" r="22" fill="#d9ebcd"/><circle cx="30" cy="33" r="13"/><path d="m30 33 24-24m-1-3 3 8-8-3" strokeWidth="4"/></g>,

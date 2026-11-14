@@ -36,7 +36,9 @@ function validRecord(value: unknown): value is PhysicalTestRecord {
   if (!value || typeof value !== 'object') return false
   const row = value as PhysicalTestRecord
   return typeof row.id === 'string' && typeof row.academicYear === 'string' &&
-    /^\d{4}(?:-\d{4})?$/.test(row.academicYear) && typeof row.testedAt === 'string' &&
+    (/^\d{4}(?:-\d{4})?$/.test(row.academicYear) || row.academicYear === '' &&
+      row.id === 'tice:current' && row.source === 'tice-import' && row.testedAt === '' &&
+      Array.isArray(row.events) && row.events.length > 0) && typeof row.testedAt === 'string' &&
     validDate(row.testedAt) && (row.totalScore === null || Number.isFinite(row.totalScore) &&
       row.totalScore >= 0 && row.totalScore <= 120) &&
     (row.grade === undefined || typeof row.grade === 'string' && row.grade.length <= 20) &&
@@ -47,10 +49,15 @@ function validRecord(value: unknown): value is PhysicalTestRecord {
       optionalScore(event.score, 100) && (event.note === undefined || typeof event.note === 'string' && event.note.length <= 48))
 }
 
+function compareRecords(a: PhysicalTestRecord, b: PhysicalTestRecord) {
+  return Number(b.id === 'tice:current' && b.academicYear === '') - Number(a.id === 'tice:current' && a.academicYear === '') ||
+    (b.testedAt || b.academicYear).localeCompare(a.testedAt || a.academicYear)
+}
+
 function readRows(session = captureQbankSession()): PhysicalTestRecord[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(keyFor(session.uid)) || '[]')
-    return Array.isArray(parsed) ? parsed.filter(validRecord).sort((a, b) => (b.testedAt || b.academicYear).localeCompare(a.testedAt || a.academicYear)) : []
+    return Array.isArray(parsed) ? parsed.filter(validRecord).sort(compareRecords) : []
   } catch { return [] }
 }
 
@@ -60,7 +67,7 @@ export function listPhysicalTestResults() {
 
 function persist(rows: PhysicalTestRecord[], expected: ReturnType<typeof captureQbankSession>) {
   if (!isQbankSessionCurrent(expected)) throw new Error('账号已变更，请重新同步体测成绩。')
-  const merged = rows.sort((a, b) => (b.testedAt || b.academicYear).localeCompare(a.testedAt || a.academicYear)).slice(0, 100)
+  const merged = rows.sort(compareRecords).slice(0, 100)
   if (!merged.every(validRecord)) throw new Error('体测成绩格式异常，整批结果未保存。')
   const encoded = JSON.stringify(merged), key = keyFor(expected.uid)
   if (!isQbankSessionCurrent(expected)) throw new Error('账号已切换，成绩没有保存到其他账号。')
@@ -86,7 +93,7 @@ export function savePhysicalTestBatch(input: Array<Pick<PhysicalTestRecord, 'aca
 }
 
 function ticeEvents(year: TiceYear, current: TiceYear | null): PhysicalTestEvent[] {
-  const source = year.items.length ? year : current && current.year === year.year ? current : null
+  const source = current && current.year === year.year && current.items.length ? current : year.items.length ? year : null
   if (!source) return []
   return source.items.slice(0, 16).map((item) => ({
     name: item.name.slice(0, 24),
@@ -105,28 +112,36 @@ export function importTiceSummary(summary: TiceSummary, expected = captureQbankS
   const current = summary.current
   const years = new Map<string, TiceYear>()
   for (const year of summary.history) years.set(year.year, year)
-  if (current && current.year && !years.has(current.year)) years.set(current.year, current)
+  if (current && (current.year || current.year === '' && current.items.length) && !years.has(current.year)) years.set(current.year, current)
   const ordered = [...years.values()].sort((a, b) => b.year.localeCompare(a.year))
   if (!ordered.length) throw new Error('没有识别到学年成绩。请把「历年成绩」页整页复制后再试。')
-  const stamp = Date.now()
+  const stamp = Date.now(), existing = readRows(expected)
   const imported = ordered.map((year): PhysicalTestRecord => {
     const detail = current && current.year === year.year ? current : null
-    const total = detail && detail.total !== null && detail.total > 0 ? detail.total : year.total
+    const previous = existing.filter((row) => year.year && row.academicYear === year.year && row.source)
+    const total = detail?.total ?? year.total ?? previous.find((row) => row.totalScore !== null)?.totalScore ?? null
+    const grade = year.grade || detail?.grade || previous.find((row) => row.grade)?.grade
+    const events = ticeEvents(year, detail)
     return {
-      id: `tice:${year.year}`,
+      id: year === current && year.year === '' ? 'tice:current' : `tice:${year.year}`,
       academicYear: year.year,
       testedAt: '',
       totalScore: total,
-      ...(year.grade || detail?.grade ? { grade: (year.grade || detail?.grade || '').slice(0, 20) } : {}),
+      ...(grade ? { grade: grade.slice(0, 20) } : {}),
       ...(year.bonus > 0 ? { bonus: year.bonus } : {}),
-      events: ticeEvents(year, detail),
+      events: (events.length ? events : previous.find((row) => row.events.length)?.events || []).map((event) => ({
+        name: event.name, result: event.result,
+        ...(event.score === undefined ? {} : { score: event.score }),
+        ...(event.note ? { note: event.note } : {}),
+      })),
       source: 'tice-import',
       updatedAt: stamp,
     }
   })
   if (!imported.every(validRecord)) throw new Error('体测页面内容无法对应到明显的学年与分数，请检查后重试。')
   const importedYears = new Set(imported.map((row) => row.academicYear))
-  const kept = readRows(expected).filter((row) => !(row.source && importedYears.has(row.academicYear)))
+  const kept = existing.filter((row) => !(row.source && importedYears.has(row.academicYear)) &&
+    !(row.id === 'tice:current' && summary.hasCurrentDetail && current))
   return persist([...kept, ...imported], expected)
 }
 
@@ -137,7 +152,7 @@ export function savePhysicalTestResult(input: Omit<PhysicalTestRecord, 'id' | 'u
   const rows = readRows(expected)
   const sameTest = rows.findIndex((row) => !row.source && row.academicYear === candidate.academicYear && row.testedAt === candidate.testedAt)
   if (sameTest >= 0) candidate.id = rows[sameTest].id
-  const next = [candidate, ...rows.filter((row) => row.id !== candidate.id)].sort((a, b) => (b.testedAt || b.academicYear).localeCompare(a.testedAt || a.academicYear)).slice(0, 100)
+  const next = [candidate, ...rows.filter((row) => row.id !== candidate.id)].sort(compareRecords).slice(0, 100)
   if (!isQbankSessionCurrent(expected)) throw new Error('账号已切换，成绩没有保存到其他账号。')
   try {
     const key = keyFor(expected.uid), encoded = JSON.stringify(next)

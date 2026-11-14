@@ -55,6 +55,9 @@
     @media (prefers-reduced-motion: reduce) { .download { transition: none; } .download:active { transform: none; } .toast { transition: none; } }
     @media (max-width: 380px) { .release-grid { grid-template-columns: 1fr 1fr; } .release-grid div:last-child { grid-column: 1 / -1; } }
   </style>
+  <link rel="stylesheet" href="/download/device-test-163.css">
+  <link rel="stylesheet" href="/download/page-turn.css?v=20261112">
+  <link rel="stylesheet" href="/paper.css?v=20261113">
 </head>
 <body>
   <main>
@@ -62,13 +65,29 @@
       <img class="icon" src="./student-icon.png" width="64" height="64" alt="">
       <div><div class="brand-name">哦狐</div><p class="tagline">校园每一步，阿狐陪你。</p></div>
     </div>
+    <section class="device-test" id="device-test" aria-labelledby="device-test-title">
+        <h2 id="device-test-title">Android 1.2.170 真机试用</h2>
+        <div class="device-test-actions">
+          <a href="/downloads/device-test/70651fb3ff9c9c9/SunshineCampus-User-1.2.170.apk" data-test-apk>下载 Android 1.2.170</a>
+          <a href="/download/Ohhu-user-1.2.163-163-unsigned.ipa" download="Ohhu-user-1.2.163-163-unsigned.ipa">下载 iPhone 1.2.163 自签包</a>
+        </div>
+        <p data-apk-browser-tip hidden></p>
+        <details>
+          <summary>下载遇到问题？</summary>
+          <p>微信或 QQ 内请点右上角「···」，选择「在浏览器打开」。也可以复制下面的地址，粘贴到 Chrome 或手机自带浏览器。APK 仅适用于 Android。</p>
+          <label>Android 测试包地址 <input data-apk-address readonly style="box-sizing:border-box;width:100%;font-size:16px" value="https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/downloads/device-test/70651fb3ff9c9c9/SunshineCampus-User-1.2.170.apk"></label>
+          <button data-apk-copy type="button" hidden>复制 APK 地址</button>
+          <p data-apk-status role="status"></p>
+        </details>
+        <p>Android 测试包已签名，可试用新版纸页日记、校园生活入口和四校区 3D 沙盘。体测、课程成绩和学习通同步待真实账号验收。iPhone 1.2.163 需自行签名后安装。<a href="/download/ios-guide.html">查看 iPhone 安装指南</a></p>
+      </section>
     <section class="card" aria-labelledby="download-title">
       <div class="card-head">
-        <p class="eyebrow">官方学生端 · 安卓安装包</p>
+        <p class="eyebrow">哦狐学生端 · Android 正式版</p>
         <span class="health" id="health" data-state="loading" role="status" aria-live="polite">正在读取版本</span>
       </div>
-      <h1 id="download-title">把校园装进口袋</h1>
-      <p class="description">课表、单词记忆、番茄专注和校园互助，都在这里。</p>
+      <h1 id="download-title">下载哦狐学生端</h1>
+      <p class="description">日常使用请选择本页正式版。想体验新版学习教练和手账，可以下载上方的真机试用包。</p>
       <div class="release-grid" aria-label="安装包信息">
         <div><b id="release-version">—</b><small>版本</small></div>
         <div><b id="release-build">—</b><small>构建</small></div>
@@ -81,7 +100,7 @@
         <button class="ghost" id="copy-link" type="button" disabled>复制下载链接</button>
         <button class="ghost" id="copy-sha" type="button" disabled>复制校验值</button>
       </div>
-      <p class="hint">适用于 64 位安卓手机，Android 6.0 及以上。安装包来自本站发布清单，下载前会核对版本与校验值。旧版本需要安装本次安装包后，才会收到界面上新（热更新）。</p>
+      <p class="hint">适用于 64 位安卓手机，Android 6.0 及以上。此处按官网发布清单提供正式安装包。下载后可用下方校验值核对文件。</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <button class="ghost" id="retry" type="button" hidden style="width:100%;margin-top:10px">读取失败，重试一次</button>
     </section>
@@ -89,11 +108,11 @@
       <strong>在应用内没有开始下载？</strong>
       <p>点右上角「···」，选择「在浏览器打开」，再点击下载按钮。</p>
     </section>
-    <div class="steps" aria-label="安装步骤">
+    <details class="folio steps" open aria-label="安装步骤"><summary>安装步骤</summary>
       <p><b>01</b>下载完成，打开安装包。</p>
       <p><b>02</b>若手机询问安装权限，允许当前浏览器安装。</p>
       <p><b>03</b>打开「哦狐」，用学号完成一次认证。</p>
-    </div>
+    </details>
     <p class="ios" id="ios-tip" hidden>这是安卓 APK，苹果手机无法安装。可以改用 <a href="/download/pwa-guide.html">网页版添加到主屏幕</a>，或查看 <a href="/download/ios-guide.html">其他 iPhone 安装方式</a>。</p>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -226,5 +245,42 @@
       load();
     })();
   </script>
+
+<script>
+  (() => {
+    const card = document.getElementById('device-test');
+    const link = card.querySelector('[data-test-apk]');
+    const tip = card.querySelector('[data-apk-browser-tip]');
+    const help = card.querySelector('details');
+    const address = card.querySelector('[data-apk-address]');
+    const copy = card.querySelector('[data-apk-copy]');
+    const status = card.querySelector('[data-apk-status]');
+    const embedded = /MicroMessenger|QQ\//i.test(navigator.userAgent);
+    const iphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (embedded || iphone) {
+      tip.hidden = false;
+      tip.textContent = iphone ? 'iPhone 无法安装 APK，请使用本页 iPhone 安装指南。' : '当前在微信或 QQ 内。请先在系统浏览器打开再下载 APK。';
+      if (embedded && !iphone) help.open = true;
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        help.open = true;
+        if (iphone) tip.scrollIntoView({ block: 'nearest' });
+        else address.focus();
+      });
+    }
+    address.addEventListener('focus', () => address.select());
+    copy.hidden = false;
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(address.value);
+        status.textContent = '已复制，请在手机浏览器中粘贴打开。';
+      } catch {
+        address.focus();
+        address.select();
+        status.textContent = '地址已选中，请长按复制。';
+      }
+    });
+  })();
+</script>
 </body>
 </html>

@@ -4,6 +4,9 @@ import { AuthProvider } from './lib/auth'
 import { getAppShell, shellHomePath } from './lib/app-shell'
 import { IS_NATIVE } from './lib/platform'
 import { CampusGate } from './components/CampusGate'
+import { EntryChoice } from './components/EntryChoice'
+import { SocialGate } from './components/SocialGate'
+import { readEntryTrack, saveEntryTrack, type EntryTrack } from './lib/entry-track'
 import { PhoneShell } from './components/PhoneShell'
 import { BootGate } from './components/BootGate'
 import { SimpleHomePage } from './pages/SimpleHomePage'
@@ -14,6 +17,7 @@ import { clientPath } from './lib/client-navigation'
 import { confirmOtaAppReady } from './ota-ready'
 
 import { RouteLoading, RouteEntryMotion } from './components/RouteLoading'
+import { StudentScrollRestoration } from './components/StudentScrollRestoration'
 import { PublicMeetShell } from './components/meet/PublicMeetShell'
 
 type ScreenLoader = () => Promise<{ default: ComponentType }>
@@ -26,11 +30,13 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/contacts/add', () => import('./pages/AddFriendPage').then((module) => ({ default: module.AddFriendPage }))],
   ['/contacts/requests', () => import('./pages/FriendRequestsPage').then((module) => ({ default: module.FriendRequestsPage }))],
   ['/discover', () => import('./pages/DiscoverPage').then((module) => ({ default: module.DiscoverPage }))],
+  ['/campus-life', () => import('./pages/campus/CampusLifePage').then((module) => ({ default: module.CampusLifePage }))],
   ['/moments', () => import('./pages/moments/MomentsPage').then((module) => ({ default: module.MomentsPage }))],
   ['/tasks', () => import('./pages/TasksPage').then((module) => ({ default: module.TasksPage }))],
   ['/market', () => import('./pages/MarketPage').then((module) => ({ default: module.MarketPage }))],
   ['/info', () => import('./pages/InfoPage').then((module) => ({ default: module.InfoPage }))],
   ['/profile', () => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage }))],
+  ['/study/coach', () => import('./pages/study/StudyCoachPage').then(module => ({ default: module.StudyCoachPage }))],
   ['/study/focus', () => import('./pages/study/StudyFocusPage').then((module) => ({ default: module.StudyFocusPage }))],
   ['/study/chaoxing', () => import('./pages/study/ChaoxingBridgePage').then((module) => ({ default: module.ChaoxingBridgePage }))],
   ['/study/quality', () => import('./pages/study/QualityPage').then((module) => ({ default: module.QualityPage }))],
@@ -50,6 +56,7 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/chats/:id', () => import('./pages/ChatRoomPage').then((module) => ({ default: module.ChatRoomPage }))],
   ['/schedule', () => import('./pages/schedule/ScheduleHome').then((module) => ({ default: module.ScheduleHome }))],
   ['/calendar', () => import('./pages/AcademicCalendarPage').then((module) => ({ default: module.AcademicCalendarPage }))],
+  ['/design-lab', () => import('./pages/DesignLabPage').then((module) => ({ default: module.DesignLabPage }))],
   ['/schedule/guide', () => import('./pages/schedule/SchoolScheduleGuide').then((module) => ({ default: module.SchoolScheduleGuidePage }))],
   ['/meet', () => import('./pages/meet/MeetPage').then((module) => ({ default: module.MeetPage }))],
   ['/meet/:code', () => import('./pages/meet/MeetPage').then((module) => ({ default: module.MeetPage }))],
@@ -57,6 +64,11 @@ const SECONDARY_ROUTES: ReadonlyArray<readonly [string, ScreenLoader]> = [
   ['/zhongce', () => import('./pages/study/ZhongcePage').then((module) => ({ default: module.ZhongcePage }))],
   ['/plaza', () => import('./pages/plaza/PlazaPage').then((module) => ({ default: module.PlazaPage }))],
   ['/campus-map', () => import('./pages/CampusMapPage').then((module) => ({ default: module.CampusMapPage }))],
+  ['/library', () => import('./pages/CampusServicePages').then((module) => ({ default: module.LibraryPage }))],
+  ['/bus', () => import('./pages/CampusServicePages').then((module) => ({ default: module.BusPage }))],
+  ['/campus-card', () => import('./pages/CampusServicePages').then((module) => ({ default: module.CampusCardPage }))],
+  ['/dorm-power', () => import('./pages/CampusServicePages').then((module) => ({ default: module.DormPowerPage }))],
+  ['/nearby-food', () => import('./pages/CampusServicePages').then((module) => ({ default: module.NearbyFoodPage }))],
   ['/sports/teams', () => import('./pages/MorningTeamsPage').then((module) => ({ default: module.MorningTeamsPage }))],
   ['/sports', () => import('./pages/SportsPage').then((module) => ({ default: module.SportsPage }))],
   ['/todo', () => import('./pages/TodoPage').then((module) => ({ default: module.TodoPage }))],
@@ -102,13 +114,15 @@ function DeferredPage({ load }: { load: ScreenLoader }) {
 
 function ReadyPage({ children }: { children: ReactNode }) {
   useEffect(() => { void confirmOtaAppReady() }, [])
-  return <><RouteEntryMotion />{children}</>
+  return <><StudentScrollRestoration /><RouteEntryMotion />{children}</>
 }
 
 function ApplicationShell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const isMeetRoute = location.pathname === '/meet' || location.pathname.startsWith('/meet/')
-  const explicitStudent = new URLSearchParams(location.search).get('view') === 'student'
+  const params = new URLSearchParams(location.search)
+  const explicitStudent = params.get('view') === 'student'
+  const isPublicNotes = location.pathname.replace(/\/$/, '') === '/campus-life' && params.get('section') === 'notes'
   let adminContext = false
   let studentPreview = explicitStudent
   try {
@@ -131,6 +145,7 @@ function ApplicationShell({ children }: { children: ReactNode }) {
   // Invitation links are independently readable in a fresh mobile browser.
   // Joining a public activity still requires the normal account login.
   if (!IS_NATIVE && location.pathname.startsWith('/meet/')) return <PublicMeetShell>{children}</PublicMeetShell>
+  if (isPublicNotes) return <PhoneShell>{children}</PhoneShell>
   if (!IS_NATIVE && !isMeetRoute && adminContext && !explicitStudent && !isAdminWorkspacePath(location.pathname)) {
     return <Navigate to={adminScopedPath(location.pathname, '/admin', false) + location.search + location.hash} replace />
   }
@@ -138,6 +153,16 @@ function ApplicationShell({ children }: { children: ReactNode }) {
     return <Navigate to="/admin/content" replace />
   }
   if (!IS_NATIVE && !explicitStudent && isAdminWorkspacePath(location.pathname)) return <AdminWorkspace><AdminNotificationRuntime />{children}</AdminWorkspace>
+  return <EntryRouter>{children}</EntryRouter>
+}
+
+/** 首次启动选择端别：学生端走学号认证门，社工端走验证码登录门；选择存本机可重选。 */
+function EntryRouter({ children }: { children: ReactNode }) {
+  const [track, setTrack] = useState<EntryTrack | null>(() => readEntryTrack())
+  if (!track) {
+    return <EntryChoice onDone={(next) => { saveEntryTrack(next); setTrack(next) }} />
+  }
+  if (track === 'social') return <SocialGate>{children}</SocialGate>
   return <CampusGate><PhoneShell>{children}</PhoneShell></CampusGate>
 }
 
@@ -151,7 +176,8 @@ function ApplicationShell({ children }: { children: ReactNode }) {
  * 因此 TabBar / PhoneShell 里的字符串比较语义完全一致，页面无需改动。
  */
 function AppRouter({ children }: { children: ReactNode }) {
-  return IS_NATIVE ? <HashRouter>{children}</HashRouter> : <BrowserRouter>{children}</BrowserRouter>
+  const base = import.meta.env.BASE_URL
+  return IS_NATIVE ? <HashRouter>{children}</HashRouter> : <BrowserRouter basename={base.startsWith('/') ? base : '/'}>{children}</BrowserRouter>
 }
 
 /** 多壳 APK：非学生端默认进对应工作台，UI 设计仍共用 */
@@ -171,13 +197,16 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ShellHome />} />
             <Route path="/admin" element={<Navigate to="/admin/content" replace />} />
+            <Route path="/today-fortune" element={<Navigate to="/chat?view=student" replace />} />
+            <Route path="/plugins/daily-tarot-reflection" element={<Navigate to="/chat?view=student&fortune=tarot" replace />} />
+            <Route path="/plugins/daily-zodiac-mood" element={<Navigate to="/chat?view=student&fortune=stars" replace />} />
             {/* 旧入口统一落到成绩中心的对应子页，避免侧边栏/首页/深链出现两套页面 */}
             <Route path="/grades/courses" element={<Navigate to="/grades?tab=courses" replace />} />
             <Route path="/grades/public" element={<Navigate to="/grades?tab=elective" replace />} />
             <Route path="/sports/results" element={<Navigate to="/grades?tab=tice" replace />} />
             <Route path="/study/pu" element={<Navigate to="/grades?tab=pu" replace />} />
             {SECONDARY_ROUTES.map(([path, load]) => <Route key={path} path={path} element={<DeferredPage key={path} load={load} />} />)}
-            {SECONDARY_ROUTES.filter(([path]) => !isAdminWorkspacePath(path) && !['/messages', '/notify', '/settings'].includes(path)).map(([path, load]) => <Route key={`admin${path}`} path={`/admin${path}`} element={<DeferredPage key={`admin${path}`} load={load} />} />)}
+            {SECONDARY_ROUTES.filter(([path]) => !isAdminWorkspacePath(path) && !['/messages', '/notify', '/settings', '/design-lab'].includes(path)).map(([path, load]) => <Route key={`admin${path}`} path={`/admin${path}`} element={<DeferredPage key={`admin${path}`} load={load} />} />)}
             {/* 游戏 / 宠物模块已归档，旧链接统一回落首页 */}
             <Route path="/games" element={<Navigate to="/" replace />} />
             <Route

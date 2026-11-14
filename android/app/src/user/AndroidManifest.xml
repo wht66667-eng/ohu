@@ -17,13 +17,28 @@
         <receiver
             android:name="com.sunshinecampus.app.NextClassWidgetProvider"
             android:exported="false"
-            android:label="下一节课">
+            android:label="@string/widget_microgreen_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_next_class_info" />
+        </receiver>
+        <receiver android:name="com.sunshinecampus.app.ClassicGreetingWidgetProvider"
+            android:exported="false" android:label="@string/widget_classic_label">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_classic_greeting_info" />
+        </receiver>
+        <receiver android:name="com.sunshinecampus.app.HanddrawnTodoWidgetProvider"
+            android:exported="false" android:label="@string/widget_handdrawn_label">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_handdrawn_todo_info" />
+        </receiver>
+        <receiver android:name="com.sunshinecampus.app.SimpleShortcutWidgetProvider"
+            android:exported="false" android:label="@string/widget_simple_label">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_simple_shortcuts_info" />
         </receiver>
         <receiver
             android:name="com.sunshinecampus.app.FoxCompanionWidgetProvider"

@@ -25,7 +25,8 @@ const DEFAULTS: Record<StateKind, { icon: string; title: string; hint: string }>
 }
 
 export function StateView({ kind = 'loading', title, hint, action, compact = false, className }: StateViewProps) {
-  const foxFree = isFoxFreeVariant(useUiVariant())
+  const variant = useUiVariant()
+  const foxFree = isFoxFreeVariant(variant)
   const preset = DEFAULTS[kind]
   const shownHint = hint !== undefined ? hint : preset.hint
   return (
@@ -37,7 +38,7 @@ export function StateView({ kind = 'loading', title, hint, action, compact = fal
         <span className={styles.spin} aria-hidden="true" />
       ) : (kind === 'empty' || kind === 'error') && foxFree ? null : kind === 'empty' || kind === 'error' ? (
         <span className={`${styles.foxIcon} ${kind === 'error' ? styles.foxError : ''}`} aria-hidden="true">
-          <FoxSheetPose pose="waving" />
+          <FoxSheetPose pose={variant === 'handdrawn' && kind === 'empty' ? 'cheering' : 'waving'} />
         </span>
       ) : (
         <span className={styles.icon} aria-hidden="true">{preset.icon}</span>

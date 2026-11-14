@@ -32,7 +32,7 @@ public final class FoxCompanionWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_fox_status, status);
             views.setTextViewText(R.id.widget_fox_streak, streak > 0 ? "已连续陪伴 " + streak + " 天" : "轻触打开哦狐打卡吧");
             views.setImageViewResource(R.id.widget_fox_image, streak >= 3 ? R.drawable.widget_fox_happy : R.drawable.widget_fox_idle);
-            Intent intent = new Intent(context, MainActivity.class);
+            Intent intent = new Intent(context, SecurityEntryActivity.class);
             intent.setAction("com.sunshinecampus.app.OPEN_FOX_COMPANION_WIDGET");
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pending = PendingIntent.getActivity(context, id + 200000, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

@@ -1,0 +1,329 @@
+/* 手账纸页彩笔笔框（P1-05b TASK-E2）。
+   视觉规格以 01-定稿目标-手账纸页笔盒.png 为准：狐狸橙描边、暖纸底、
+   笔类三枚选中态橙底白字、7 色圆点+自定义、粗细 3–14 实时数值、
+   盒内胶囊橡皮、盒外左下撤销/重做、右上「✏ 绘画中」徽章。
+   纸面色/墨色全部取 paper.css 皮肤令牌；强调色用各皮肤的 --fox-orange。 */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.ink, .inkLive {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* 默认触摸用于滚动：绘画模式才让画布接住指针。 */
+.stage[data-active] .inkLive {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+.stage[data-active][data-eraser=''] .inkLive { cursor: none; }
+
+.strokeHost {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.strokeHost canvas { width: 100%; height: 100%; display: block; }
+
+/* 右上角「✏ 绘画中」徽章：点按即退出绘画、恢复滚动。 */
+.badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 3;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fox-orange, #ff8a3d);
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+  font-size: .9rem;
+  box-shadow: var(--paper-shadow, 0 3px 10px rgba(0, 0, 0, .05));
+  cursor: pointer;
+}
+.badge::before, .badge::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: .85;
+}
+.badge::before { top: -7px; right: -5px; transform: rotate(-38deg); }
+.badge::after { top: -3px; right: -11px; transform: rotate(32deg); }
+
+/* 撤销/重做：笔盒外部左下角圆形悬浮，全程可用。 */
+.history {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+}
+.round {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--fox-orange, #ff8a3d) 55%, var(--paper-binding, #d5d5d5));
+  background: var(--paper-bg, #fff);
+  color: var(--paper-ink, #171717);
+  cursor: pointer;
+  box-shadow: var(--paper-shadow, 0 3px 10px rgba(0, 0, 0, .05));
+}
+.round:disabled { opacity: .35; cursor: default; }
+
+/* 右下角笔盒触发按钮 + 上方浮层。 */
+.dock {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.trigger {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px 0 13px;
+  border-radius: 999px;
+  border: 1.5px solid var(--fox-orange, #ff8a3d);
+  background: var(--paper-bg, #fff);
+  color: var(--paper-ink, #171717);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: var(--paper-shadow, 0 3px 10px rgba(0, 0, 0, .05));
+}
+.trigger[data-drawing] { background: var(--fox-orange, #ff8a3d); color: #fff; }
+
+.box {
+  width: min(76vw, 300px);
+  display: grid;
+  gap: 11px;
+  padding: 12px;
+  border: 1.5px solid var(--fox-orange, #ff8a3d);
+  border-radius: 16px;
+  background: var(--paper-bg, #fff);
+  color: var(--paper-ink, #171717);
+  box-shadow: var(--paper-shadow-lg, 0 10px 24px rgba(0, 0, 0, .08));
+  transform-origin: 100% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .box { animation: paper-box-pop 260ms cubic-bezier(.22, 1, .36, 1) both; }
+  @keyframes paper-box-pop {
+    from { opacity: 0; transform: translateY(8px) scale(.92); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.pen {
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--paper-bg-2, #f5f2ea);
+  color: var(--paper-ink, #171717);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+}
+.pen[aria-pressed='true'] {
+  background: var(--fox-orange, #ff8a3d);
+  color: #fff;
+  border-color: var(--fox-orange, #ff8a3d);
+}
+.pen[aria-pressed='true']::before, .pen[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: .8;
+}
+.pen[aria-pressed='true']::before { top: 2px; right: 3px; transform: rotate(-36deg); }
+.pen[aria-pressed='true']::after { top: 6px; right: -1px; transform: rotate(30deg); }
+
+.colors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.dot {
+  width: 26px;
+  height: 26px;
+  /* 视觉规格定稿：小圆点；覆盖全局 44px 按钮触达规则 */
+  min-width: 26px;
+  min-height: 26px;
+  border-radius: 50%;
+  padding: 0;
+  border: 2px solid color-mix(in srgb, var(--paper-ink, #171717) 16%, transparent);
+  cursor: pointer;
+}
+.dot[aria-pressed='true'] {
+  outline: 2.5px solid currentColor;
+  outline-offset: 2px;
+}
+.custom {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--paper-ink, #171717) 45%, transparent);
+  display: grid;
+  place-items: center;
+  font-size: .8rem;
+  line-height: 1;
+  color: var(--paper-ink-2, #444);
+  cursor: pointer;
+}
+.custom input {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+}
+
+.sizeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+.sizeRow output {
+  min-width: 36px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.slider {
+  flex: 1;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+.slider::-webkit-slider-runnable-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--paper-bg-2, #f5f2ea);
+  border: 1px solid var(--paper-binding, #d5d5d5);
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6.5px;
+  border-radius: 50%;
+  background: var(--fox-orange, #ff8a3d);
+  border: 2px solid var(--paper-bg, #fff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+}
+.slider::-moz-range-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--paper-bg-2, #f5f2ea);
+  border: 1px solid var(--paper-binding, #d5d5d5);
+}
+.slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--fox-orange, #ff8a3d);
+  border: 2px solid var(--paper-bg, #fff);
+}
+
+.eraser {
+  justify-self: center;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--fox-orange, #ff8a3d);
+  background: var(--paper-bg-2, #f5f2ea);
+  color: var(--paper-ink, #171717);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.eraser[aria-pressed='true'] {
+  background: var(--fox-orange, #ff8a3d);
+  color: #fff;
+}
+
+/* 橡皮跟随光标圈（触屏不显示：没有 hover 指针）。 */
+.eraserRing {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin: -14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fox-orange, #ff8a3d);
+  background: color-mix(in srgb, var(--fox-orange, #ff8a3d) 14%, transparent);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .eraserRing { display: none; }
+  .stage[data-active] .inkLive { cursor: default; }
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box { animation: none; }
+}

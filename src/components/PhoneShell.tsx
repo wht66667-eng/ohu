@@ -3,12 +3,13 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { goBack } from '../lib/back'
 import { studyBackHistory } from '../lib/study-back-history'
 import { ToastProvider } from '../context/ToastContext'
-/* 学生端已移除手机号登录/注册：账号身份来自学号，不再挂载 AuthSheets。 */
+/* 学生端使用学号登录，资料编辑独立挂载。 */
 import { initNativeShell } from '../lib/native'
 import { IS_NATIVE } from '../lib/platform'
 import { Toaster } from '../lib/toast'
 import { PublishSheet } from './PublishSheet'
 import { TabBar } from './TabBar'
+import { listenForCampusCameraRestore } from '../lib/moment-gallery'
 import { StudentManagementTools } from './StudentManagementTools'
 import { FoxgirlCompanion } from './fox/FoxgirlCompanion'
 import { usePullRefresh } from './usePullRefresh'
@@ -32,16 +33,23 @@ import { foxLocalDay, refreshFoxV1Summary } from '../lib/fox-v1'
 import { isFocusImmersive } from '../services/focus'
 import { FocusTimerProvider, FocusTimerBar } from '../context/FocusTimerContext'
 import styles from './PhoneShell.module.css'
-import { restoreUiVariant, useUiVariant } from '../lib/ui-variant'
+import { getUiVariant, restoreUiVariant, useUiVariant } from '../lib/ui-variant'
+import { ensureFontDownload, ensureHanddrawnFonts, getFontFamilyPref, restoreFontPref } from '../lib/font-pref'
 import { useKeyboardInset } from '../lib/use-keyboard-inset'
 import { confirmOtaAppReady } from '../ota-ready'
 import { installStudentHaptics } from '../lib/student-haptics'
+import { installSoundManager, playSound, SoundEvent } from '../lib/sound'
 import { useQbankRevision } from '../lib/useQbankRevision'
 import { refreshScheduleWidgets } from '../lib/schedule-widget'
+import { TODO_DATA_CHANGED_EVENT } from '../lib/todo-data-events'
+import { isWidgetShortcut, WIDGET_SHORTCUTS_CHANGED_EVENT } from '../lib/widget-shortcuts'
+import { ProfileEditHost } from '../lib/auth-ui'
 import { StudentLoginSheet } from './StudentLoginSheet'
 import { AppSidebar } from './AppSidebar'
 import { AppUpdateNotice } from './AppUpdateNotice'
 import { PageTransition } from './PageTransition'
+import { useHomeOpening } from './useHomeOpening'
+import openingStyles from './HomeOpening.module.css'
 import { refreshSchool } from '../store/school'
 
 const TAB_ROUTES = new Set([
@@ -53,6 +61,7 @@ const TAB_ROUTES = new Set([
   '/info',
   '/messages',
   '/plaza',
+  '/campus-life',
   '/profile',
   '/contact',
   '/settings',
@@ -68,6 +77,7 @@ const ROOT_ROUTES = new Set([
   '/services',
   '/messages',
   '/plaza',
+  '/campus-life',
   '/profile',
   '/settings',
   '/admin/content',
@@ -77,7 +87,13 @@ const ROOT_ROUTES = new Set([
 export function PhoneShell({ children }: { children: ReactNode }) {
   useUiVariant()
   useKeyboardInset()
-  useEffect(() => { void restoreUiVariant() }, [])
+  useEffect(() => {
+    void restoreUiVariant()
+    restoreFontPref()
+    const saved = getFontFamilyPref()
+    if (saved !== 'default') void ensureFontDownload(saved).catch(() => undefined)
+    if (getUiVariant() === 'handdrawn') void ensureHanddrawnFonts()
+  }, [])
   const loc = useLocation()
   const navigate = useNavigate()
   const navigationType = useNavigationType()
@@ -95,14 +111,15 @@ export function PhoneShell({ children }: { children: ReactNode }) {
   }, [loc.pathname, navigate])
   useEffect(() => {
     const host = window as Window & { __SC_WIDGET_ROUTE__?: string }
-    const openSchedule = () => {
-      if (host.__SC_WIDGET_ROUTE__ !== '/schedule') return
+    const openWidget = () => {
+      const route = host.__SC_WIDGET_ROUTE__
+      if (!isWidgetShortcut(route)) return
       delete host.__SC_WIDGET_ROUTE__
-      navigate('/schedule')
+      navigate(route)
     }
-    window.addEventListener('native-schedule-widget-open', openSchedule)
-    openSchedule()
-    return () => window.removeEventListener('native-schedule-widget-open', openSchedule)
+    window.addEventListener('native-schedule-widget-open', openWidget)
+    openWidget()
+    return () => window.removeEventListener('native-schedule-widget-open', openWidget)
   }, [navigate])
   const auth = useAuth()
   const qbankRevision = useQbankRevision()
@@ -145,16 +162,21 @@ export function PhoneShell({ children }: { children: ReactNode }) {
     sync()
     window.addEventListener('ohhu-schedule-cache', sync)
     window.addEventListener('ohhu-schedule-calendar', sync)
+    window.addEventListener(TODO_DATA_CHANGED_EVENT, sync)
+    window.addEventListener(WIDGET_SHORTCUTS_CHANGED_EVENT, sync)
     window.addEventListener('focus', sync)
     document.addEventListener('visibilitychange', sync)
     return () => {
       window.removeEventListener('ohhu-schedule-cache', sync)
       window.removeEventListener('ohhu-schedule-calendar', sync)
+      window.removeEventListener(TODO_DATA_CHANGED_EVENT, sync)
+      window.removeEventListener(WIDGET_SHORTCUTS_CHANGED_EVENT, sync)
       window.removeEventListener('focus', sync)
       document.removeEventListener('visibilitychange', sync)
     }
   }, [auth.phase, auth.isSigned, auth.user?.uid, qbankRevision, work])
   useEffect(() => work ? undefined : installStudentHaptics(), [work])
+  useEffect(() => work ? undefined : installSoundManager(), [work])
   const workOk = hasWorkAccess({
     shell,
     isSigned: auth.isSigned,
@@ -168,17 +190,38 @@ export function PhoneShell({ children }: { children: ReactNode }) {
    * 两端都必须先过首次免责声明 + 权限引导。
    */
   const gateOk = work ? firstRunOk && workOk : firstRunOk
+  const homeOpening = useHomeOpening(gateOk && !work && !focusMute, loc.pathname === '/')
+  const lastSoundPath = useRef(loc.pathname)
+  useEffect(() => {
+    if (lastSoundPath.current === loc.pathname) return
+    lastSoundPath.current = loc.pathname
+    if (gateOk && !work && !focusMute) playSound(SoundEvent.PageSwitch)
+  }, [loc.pathname, gateOk, work, focusMute])
   useFoxCodexProgress(gateOk && !work)
   // Consent and sign-in screens are usable startup surfaces too. Actual pages
   // acknowledge readiness after their lazy module has committed successfully.
   useEffect(() => {
     if (!gateOk && (!firstRunOk || auth.phase !== 'booting')) void confirmOtaAppReady()
   }, [gateOk, firstRunOk, auth.phase])
+  const campusCameraOwner = auth.isSigned && auth.user?.uid ? 'user:' + auth.user.uid : 'guest'
+  useEffect(() => {
+    if (!gateOk || work || focusMute || auth.phase === 'booting') return
+    let current = true
+    const listener = listenForCampusCameraRestore(campusCameraOwner, () => {
+      navigate('/campus-life?section=journal&compose=restored')
+    }, () => current).catch(() => undefined)
+    return () => {
+      current = false
+      void listener.then(handle => handle?.remove())
+    }
+  }, [auth.phase, campusCameraOwner, focusMute, gateOk, navigate, work])
   const withTab =
     !focusMute &&
     (TAB_ROUTES.has(loc.pathname) ||
       loc.pathname.startsWith('/admin/'))
-  const plazaSearch = loc.pathname === '/plaza' ? new URLSearchParams(loc.search) : null
+  const search = new URLSearchParams(loc.search)
+  const showingCampusFeed = loc.pathname === '/campus-life' && !search.get('section') && search.get('feed') !== 'friends'
+  const plazaSearch = loc.pathname === '/plaza' || showingCampusFeed ? search : null
   const plazaChat = plazaSearch?.get('tab') === 'lobby' && plazaSearch.get('compose') !== '1'
   const fill =
     focusMute ||
@@ -257,7 +300,7 @@ export function PhoneShell({ children }: { children: ReactNode }) {
   }, [gateOk])
 
   return (
-    <div className={styles.chrome}>
+    <div className={styles.chrome} data-app-viewport="">
       <div className={styles.phone}>
         <ToastProvider>
           <FocusTimerProvider>
@@ -285,7 +328,8 @@ export function PhoneShell({ children }: { children: ReactNode }) {
               ref={pull.containerRef}
               data-app-page=""
               data-app-shell={shell}
-              className={`${styles.page} hide-scroll ${withTab && gateOk ? styles.withTab : ''} ${fill ? styles.fill : ''}`}
+              data-home-opening={homeOpening}
+              className={`${styles.page} hide-scroll ${withTab && gateOk ? styles.withTab : ''} ${fill ? styles.fill : ''} ${homeOpening ? openingStyles.active : ''}`}
             >
               <ShellRouteGuard />
               {gateOk && work && !focusMute ? <ShellNotifyHost /> : null}
@@ -312,6 +356,7 @@ export function PhoneShell({ children }: { children: ReactNode }) {
           </div>
           {!focusMute ? <Toaster /> : null}
           {!focusMute ? <StudentLoginSheet /> : null}
+          {gateOk && !work && !focusMute ? <ProfileEditHost /> : null}
           {!work && !focusMute ? <>
 <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           </> : null}

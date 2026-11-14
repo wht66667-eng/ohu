@@ -14,6 +14,7 @@ import { fetchCampusPostById, setCampusPostStatus } from '../lib/campus-map'
 import { captureImSession, currentImSession } from '../lib/im-session'
 import { useImSessionVersion } from '../lib/use-im-session-version'
 import { DeniedState, EmptyState, ErrorState, LoadingState } from '../components/ui/StateViews'
+import { CampusNoteReportList } from './CampusNoteReportList'
 import styles from './AdminReportsPage.module.css'
 
 const STATUS_TEXT: Record<ReportStatus, string> = {
@@ -43,6 +44,7 @@ function ReportsForAccount() {
   const [hasMore, setHasMore] = useState(false)
   const [nextBeforeId, setNextBeforeId] = useState<number | null>(null)
   const [actionId, setActionId] = useState<number | null>(null)
+  const [showCampusNotes, setShowCampusNotes] = useState(false)
   const request = useRef(0)
   const alive = useRef(true)
   const mutation = useRef(false)
@@ -100,10 +102,10 @@ function ReportsForAccount() {
   }, [busy, hasMore, isAdmin, loadingMore, nextBeforeId, tab, uid])
 
   useEffect(() => {
-    if (!isAdmin) return
+    if (!isAdmin || showCampusNotes) return
     void reload()
     return () => { request.current++ }
-  }, [isAdmin, reload])
+  }, [isAdmin, reload, showCampusNotes])
 
   async function operate(id: number, run: (valid: () => boolean) => Promise<void>) {
     const owner = captureImSession(uid)
@@ -230,6 +232,11 @@ function ReportsForAccount() {
   return (
     <div className={styles.page}>
       <PageHeader title="举报处理" />
+      <div className={styles.tabs} role="group" aria-label="举报来源">
+        <button type="button" aria-pressed={!showCampusNotes} className={!showCampusNotes ? styles.tabOn : styles.tab} onClick={() => setShowCampusNotes(false)}>一般举报</button>
+        <button type="button" aria-pressed={showCampusNotes} disabled={actionId !== null} className={showCampusNotes ? styles.tabOn : styles.tab} onClick={() => setShowCampusNotes(true)}>便签举报</button>
+      </div>
+      {showCampusNotes ? <CampusNoteReportList uid={uid} /> : <>
       <p className={styles.lead}>
         广场大厅和帖子的举报可以直接删原文、禁言或封大厅。其他类型仍只更新处理状态。
       </p>
@@ -334,6 +341,7 @@ function ReportsForAccount() {
           {loadingMore ? '正在加载…' : '加载更早举报'}
         </button>
       ) : null}
+      </>}
     </div>
   )
 }

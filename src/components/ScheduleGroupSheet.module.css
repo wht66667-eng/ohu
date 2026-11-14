@@ -1,25 +1,27 @@
 .dialog { width:min(620px,calc(100vw - 24px)); max-width:none; max-height:min(92dvh,900px); padding:0; border:0; border-radius:22px; background:var(--card); color:var(--text); overflow:hidden; }
 .sheet { max-height:min(92dvh,900px); overflow:auto; overscroll-behavior:contain; padding:20px; }
 .header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-.header span { color:var(--green-text); font-size:10px; font-weight:800; letter-spacing:.1em; }
+
 .header h2 { margin:4px 0 0; font-size:22px; }
 .header > button { flex:none; width:44px; height:44px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:24px; cursor:pointer; }
-.header > button:disabled { opacity:.5; cursor:wait; }
+
 .intro,.hint { color:var(--text-2); font-size:12px; line-height:1.55; }
 .intro { margin:10px 0 16px; }
 .form,.import,.list,.free { margin-top:14px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
 .form h3,.import h3,.sectionHead h3 { margin:0; color:var(--green-text); font-size:15px; }
 .form { display:grid; gap:10px; }
 .form > label:not(.consent) { display:grid; grid-template-columns:84px minmax(0,1fr); align-items:center; gap:8px; color:var(--text-2); font-size:12px; }
-.form input,.form select,.import input,.rename input,.sectionHead input { min-width:0; min-height:44px; padding:0 11px; border:1px solid var(--line); border-radius:11px; background:var(--page-bot); color:var(--text); font:inherit; font-size:14px; }
+.form input,.form select,.rename input,.sectionHead input { min-width:0; min-height:44px; padding:0 11px; border:1px solid var(--line); border-radius:11px; background:var(--page-bot); color:var(--text); font:inherit; font-size:14px; }
 .privacy { margin:0; padding:9px 10px; border-radius:10px; background:var(--mint); color:var(--text-2); font-size:11px; line-height:1.5; }
 .consent { display:flex; align-items:flex-start; gap:8px; color:var(--text-2); font-size:12px; line-height:1.45; }
 .consent input,.pick input { flex:none; width:19px; height:19px; margin:0; accent-color:var(--green); }
-.primary,.import button,.code button,.rename button,.itemActions button,.sectionHead > button { min-height:42px; padding:0 13px; border:1px solid var(--line); border-radius:11px; background:var(--mint); color:var(--green-text); font:inherit; font-size:12px; font-weight:750; cursor:pointer; }
+.primary,.import button,.rename button,.itemActions button,.sectionHead > button { min-height:42px; padding:0 13px; border:1px solid var(--line); border-radius:11px; background:var(--mint); color:var(--green-text); font:inherit; font-size:12px; font-weight:750; cursor:pointer; }
 .primary { min-height:46px; border:0; background:var(--green); color:var(--on-primary); font-size:14px; }
 .primary:disabled,.import button:disabled,.itemActions button:disabled,.sectionHead button:disabled { opacity:.5; cursor:not-allowed; }
-.import > div { display:flex; gap:8px; margin-top:9px; }
-.import input { flex:1; text-transform:uppercase; }
+.import { display:grid; gap:9px; }
+.shareText, .shareText label { display:grid; gap:6px; color:var(--text-2); font-size:12px; }
+.shareText textarea { width:100%; box-sizing:border-box; min-height:72px; resize:vertical; padding:9px 11px; border:1px solid var(--line); border-radius:11px; background:var(--page-bot); color:var(--text); font:inherit; overflow-wrap:anywhere; }
+.shareText button { min-height:44px; border:1px solid var(--line); border-radius:11px; background:var(--mint); color:var(--green-text); font:inherit; cursor:pointer; }
 .sectionHead { display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .sectionHead > label { display:flex; align-items:center; gap:5px; color:var(--text-2); font-size:12px; }
 .sectionHead input { width:62px; min-height:38px; text-align:center; }
@@ -30,11 +32,9 @@
 .pick > span { min-width:0; display:grid; gap:3px; }
 .pick strong { font-size:13px; overflow-wrap:anywhere; }
 .pick small { color:var(--text-3); font-size:11px; line-height:1.4; }
-.code,.rename,.itemActions { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
-.code code { flex:1; min-width:100px; overflow-wrap:anywhere; color:var(--green-text); font-size:14px; font-weight:800; letter-spacing:.08em; }
+.rename,.itemActions { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .rename input { flex:1; }
 .itemActions { justify-content:flex-end; }
-.revokePrompt { width:100%; color:var(--text-3); font-size:11px; text-align:right; }
 .itemActions .remove { background:color-mix(in srgb,var(--fox) 13%,var(--card)); color:var(--text-2); }
 .warning { margin:9px 0 0; padding:9px 10px; border-radius:10px; background:color-mix(in srgb,var(--fox) 14%,var(--card)); color:var(--text-2); font-size:11px; line-height:1.5; }
 .slots { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
@@ -43,9 +43,9 @@
 .slots span { font-size:12px; font-weight:700; text-align:right; }
 .slots small { grid-column:1 / -1; color:var(--text-3); font-size:11px; }
 .error,.notice { margin:12px 0 0; padding:10px 12px; border-radius:11px; font-size:12px; line-height:1.5; }
-.error { background:color-mix(in srgb,#d94d43 10%,var(--card)); color:#a12620; }
+.error { background:color-mix(in srgb,#d94d43 10%,var(--card)); color:var(--text); }
 .notice { background:var(--mint); color:var(--green-text); }
-.sheet button:focus-visible,.sheet input:focus-visible,.sheet select:focus-visible { outline:3px solid color-mix(in srgb,var(--green) 40%,transparent); outline-offset:2px; }
+.sheet button:focus-visible,.sheet input:focus-visible,.sheet select:focus-visible,.sheet textarea:focus-visible { outline:3px solid color-mix(in srgb,var(--green) 40%,transparent); outline-offset:2px; }
 .sheet button:active:not(:disabled) { transform:scale(.985); }
 @media(max-width:480px) { .dialog,.sheet { width:100%; max-height:94dvh; border-radius:18px 18px 0 0; } .sheet { padding:16px; } .form > label:not(.consent) { grid-template-columns:1fr; gap:5px; } .slots { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { .sheet button { transition:none; } }

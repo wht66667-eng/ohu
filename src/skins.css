@@ -61,10 +61,19 @@
   --display: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 :root[data-theme='dark'][data-ui-variant='bloom'] {
+  --page-top: #1f1418; --page-mid: #1f1418; --page-bot: #1f1418;
+  --bg-light: #1f1418; --theme-dark-canvas: #1f1418;
+  --bg-grad-from: #1a1013; --bg-grad-mid: #1f1418; --bg-grad-to: #1a1013;
+  --card: #2a1c21; --surface: #2a1c21; --card-glass: rgba(42,28,33,.96);
+  --chip-bg: #33222a; --chip-border: #4c333d;
+  --text: #f7e9ea; --text-primary: #f7e9ea; --text-2: #dcbfc4; --text-3: #c2a3a9;
   --radius: 24px; --radius-lg: 28px;
-  --green: #d9738c; --green-hot: #c96479; --green-deep: #a8506a;
-  --green-text: #e89aad; --green-ink: #f0b6c3;
+  --green: #d9738c; --green-hot: #c96479; --green-deep: #c96479;
+  --green-text: #e89aad; --green-ink: #f7e9ea;
   --green-soft: #3d242c; --mint: #3d242c; --mint-2: #492e36;
+  --line: #4c333d; --warm-line: #4c333d;
+  --on-primary: #1a1013;
+  --shadow: 0 8px 24px rgba(0,0,0,.38); --shadow-sm: 0 3px 10px rgba(0,0,0,.3);
 }
 
 /* ── 第 8 版 · 澄光 glass ────────────────────────────── */
@@ -83,10 +92,19 @@
   --shadow: 0 10px 24px rgba(74,110,153,.09); --shadow-sm: 0 4px 12px rgba(74,110,153,.05);
 }
 :root[data-theme='dark'][data-ui-variant='glass'] {
+  --page-top: #111a24; --page-mid: #111a24; --page-bot: #111a24;
+  --bg-light: #111a24; --theme-dark-canvas: #111a24;
+  --bg-grad-from: #0d151d; --bg-grad-mid: #0d151d; --bg-grad-to: #0d151d;
+  --card: #1a2632; --surface: #1a2632; --card-glass: rgba(26,38,50,.9);
+  --chip-bg: #223040; --chip-border: #33455a;
+  --text: #e9f0f9; --text-primary: #e9f0f9; --text-2: #b9c8d8; --text-3: #9aadc0;
   --radius: 23px; --radius-lg: 27px;
-  --green: #d97b4a; --green-hot: #c86c3c; --green-deep: #a85a30;
-  --green-text: #e59a6e; --green-ink: #efb490;
+  --green: #d97b4a; --green-hot: #c86c3c; --green-deep: #e08a5c;
+  --green-text: #e59a6e; --green-ink: #e9f0f9;
   --green-soft: #3a2a1e; --mint: #3a2a1e; --mint-2: #463526;
+  --line: #33455a; --warm-line: #33455a;
+  --on-primary: #10161d;
+  --shadow: 0 10px 24px rgba(0,0,0,.4); --shadow-sm: 0 4px 12px rgba(0,0,0,.3);
 }
 
 /* ── 第 9 版 · 晴野 meadow ───────────────────────────── */
@@ -105,8 +123,19 @@
   --shadow: 0 4px 0 rgba(44,77,50,.09); --shadow-sm: 0 2px 0 rgba(44,77,50,.05);
 }
 :root[data-theme='dark'][data-ui-variant='meadow'] {
+  --page-top: #12180f; --page-mid: #12180f; --page-bot: #12180f;
+  --bg-light: #12180f; --theme-dark-canvas: #12180f;
+  --bg-grad-from: #0e130c; --bg-grad-mid: #0e130c; --bg-grad-to: #0e130c;
+  --card: #1d241a; --surface: #1d241a; --card-glass: rgba(29,36,26,.96);
+  --chip-bg: #262f22; --chip-border: #3a4633;
+  --text: #eef3e4; --text-primary: #eef3e4; --text-2: #c3cfb6; --text-3: #a7b39a;
   --radius: 15px; --radius-lg: 19px;
+  --green: #8fbf9c; --green-hot: #7cb08a; --green-deep: #6fa87f;
+  --green-text: #a9d3b5; --green-ink: #eef3e4;
   --green-soft: #2b3a26; --mint: #2b3a26; --mint-2: #35452e;
+  --line: #3a4633; --warm-line: #3a4633;
+  --on-primary: #0e130c;
+  --shadow: 0 4px 0 rgba(0,0,0,.35); --shadow-sm: 0 2px 0 rgba(0,0,0,.28);
 }
 
 /* ── 第 10 版 · 星栖 night（自带暗色，与亮暗主题无关） ── */
@@ -192,3 +221,112 @@
 
 :root[data-ui-variant='pure'] { --green:#252525; --green-hot:#151515; --green-deep:#111; --green-text:#252525; --mint:#eee; --green-soft:#eee; --mint-2:#e5e5e5; --leaf:#d1d1d1; --on-primary:#fff; }
 :root[data-theme='dark'][data-ui-variant='pure'] { --green:#ededed; --green-hot:#ddd; --green-deep:#ccc; --green-text:#ededed; --mint:#383838; --green-soft:#383838; --mint-2:#444; --leaf:#555; --on-primary:#171717; }
+
+/* ── 手绘版 · handdrawn（手绘参考 2026-11-09 七张稿） ─────────
+   字库 @font-face 统一在 src/fonts.css 注册（全皮肤字体库），此处仅令牌。 */
+
+:root[data-ui-variant='handdrawn'] {
+  --page-top:#fffaf0; --page-mid:#fffaf0; --page-bot:#fffaf0;
+  --bg-light:#fffaf0; --theme-light-canvas:#fffaf0;
+  --bg-grad-from:#fffaf0; --bg-grad-mid:#fff7e8; --bg-grad-to:#fffaf0;
+  --card:#fffefa; --surface:#fffefa; --card-glass:rgba(255,254,250,.97);
+  --chip-bg:#f6efdd; --chip-border:#ddd2b8;
+  --text:#153d2c; --text-primary:#153d2c; --text-2:#616c62; --text-3:#8a8f82;
+  --green:#1f5b3a; --green-hot:#17492e; --green-deep:#123b25; --green-text:#1f5b3a; --green-ink:#153d2c;
+  --green-soft:#e4efe0; --mint:#e4efe0; --mint-2:#d6e6d0; --leaf:#bfd8b4;
+  --yellow:#ffd9a0; --yellow-2:#ffc978; --sun:#ffe9c7; --orange:#ff8a3d;
+  --fox:#ff8a3d; --fox-gold:#ffb45e; --fox-deep:#c9601f; --fox-orange:#ff8a3d; --campus-green:#1f5b3a;
+  --pink:#f4b8a5; --blue:#7fa8c9; --ocean:#7fa8c9; --ocean-deep:#5d87a8; --ocean-soft:#e3edf4; --purple:#b79bd1;
+  --service-blue:#e3edf4; --service-blue-ink:#2c5877; --service-amber:#ffe9c7; --service-amber-ink:#9a5a17; --service-violet:#ece2f4; --service-violet-ink:#6b4a86;
+  --danger:#a3321b; --danger-soft:#fbede8; --price:#9a5a17;
+  --on-primary:#fff8eb; --line:#d9cfb8; --warm-line:#e4d9c0;
+  --radius:18px; --radius-lg:22px;
+  --shadow:0 2px 0 rgba(31,91,58,.10); --shadow-sm:0 1px 0 rgba(31,91,58,.07);
+  --display:"OHU-HuiTing","OHU-Xiaolai","Kaiti SC","STKaiti","KaiTi",system-ui,sans-serif;
+  --hand:"OHU-Xiaolai","OHU-WenKaiLite","Kaiti SC","STKaiti","KaiTi",system-ui,sans-serif;
+  --sans:"OHU-Xiaolai","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --font-numeric:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+:root[data-theme='dark'][data-ui-variant='handdrawn'] {
+  --page-top:#241e14; --page-mid:#241e14; --page-bot:#241e14;
+  --bg-light:#241e14; --theme-dark-canvas:#241e14;
+  --bg-grad-from:#201a11; --bg-grad-mid:#241e14; --bg-grad-to:#201a11;
+  --card:#2e2718; --surface:#2e2718; --card-glass:rgba(46,39,24,.97);
+  --chip-bg:#3a3120; --chip-border:#57492e;
+  --text:#f3eada; --text-primary:#f3eada; --text-2:#d8cbb2; --text-3:#bfae90;
+  --green:#7fbf9a; --green-hot:#6db289; --green-deep:#5aa37a; --green-text:#9ed4b4; --green-ink:#f3eada;
+  --green-soft:#33402f; --mint:#33402f; --mint-2:#3d4a37; --leaf:#4d5c44;
+  --yellow:#8a6a3a; --yellow-2:#7a5c30; --sun:#4a3a20; --orange:#ffb27a;
+  --fox:#ffb27a; --fox-gold:#ffc99b; --fox-deep:#e08c4a; --fox-orange:#ffb27a; --campus-green:#9ed4b4;
+  --pink:#8a5a4a; --blue:#4a6a85; --ocean:#4a6a85; --ocean-deep:#3a566d; --ocean-soft:#2e3a44; --purple:#6a4a85;
+  --service-blue:#2e3a44; --service-blue-ink:#a8c4d8; --service-amber:#4a3a20; --service-amber-ink:#e0b070; --service-violet:#3a2e44; --service-violet-ink:#c4a8d8;
+  --danger:#ffb3a3; --danger-soft:#432c26; --price:#e0b070;
+  --on-primary:#201a11; --line:#57492e; --warm-line:#4a3d26;
+  --shadow:0 2px 0 rgba(0,0,0,.25); --shadow-sm:0 1px 0 rgba(0,0,0,.2);
+  color-scheme:dark;
+}
+
+/* 手绘表面（轻手绘·高可读）：纸底与墨线保留，功能控件不做满屏手绘化。
+   只有装饰性标签带轻微不规则圆角；按钮/输入框沿用各模块自身形状，避免抢功能可读性。 */
+:root[data-ui-variant='handdrawn'] :where(section,article,details) { border-radius:var(--radius-lg,22px); }
+:root[data-ui-variant='handdrawn'] hr { border-style:dashed; }
+:root[data-ui-variant='handdrawn'] :is(h1,h2,h3) { font-family:var(--display); letter-spacing:.015em; }
+:root[data-ui-variant='handdrawn'] :where(button,a,input,select,textarea):focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+
+/* 手绘字面覆盖：图标文字、页签、按钮、标签与小结同步手写体；正文与数字仍系统字体。 */
+:root[data-ui-variant='handdrawn'] :is(button,a,summary,label,legend,h4,h5,h6) { font-family:var(--hand); }
+:root[data-ui-variant='handdrawn'] :is([class*='kicker'],[class*='eyebrow'],[class*='chip'],[class*='badge'],[class*='tag'],[class*='state']) { font-family:var(--hand); }
+:root[data-ui-variant='handdrawn'] :is([class*='chip'],[class*='badge'],[class*='tag']) { border-radius:10px 12px 11px 13px / 13px 10px 12px 11px; }
+:root[data-ui-variant='handdrawn'] :where(section,article) { border:1px solid var(--warm-line); }
+:root[data-ui-variant='handdrawn'] svg { stroke-linecap:round; stroke-linejoin:round; }
+
+/* 手绘版吉祥物：替换为参考稿同款狐狸（其余皮肤保持原吉祥物）。 */
+:root[data-ui-variant='handdrawn'] img[src*='fox-avatar'] { content:url('/brand/handdrawn/fox-avatar.png'); }
+:root[data-ui-variant='handdrawn'] img[src*='fox-grades-transparent'] { content:url('/brand/handdrawn/fox-reading-scene.png'); width:auto; height:104px; border-radius:0; }
+:root[data-ui-variant='handdrawn'] [class*='heroArt'] { width:auto; }
+
+/* 水墨以纸面、墨阶与克制的渐变区分层次。色彩变量沿用现有功能语义。 */
+:root[data-ui-variant='ink'] {
+  --page-top:#f7f6f2; --page-mid:#f3f2ee; --page-bot:#f7f6f2;
+  --bg-light:#f7f6f2; --theme-light-canvas:#f7f6f2;
+  --bg-grad-from:#f9f8f4; --bg-grad-mid:#f3f2ee; --bg-grad-to:#ebebe8;
+  --card:#fdfcf9; --surface:#fdfcf9; --card-glass:rgba(253,252,249,.96);
+  --text:#181817; --text-primary:#181817; --text-2:#484846; --text-3:#595955;
+  --green:#1c1d1d; --green-hot:#343534; --green-deep:#111212; --green-text:#222322; --green-ink:#1c1d1d;
+  --green-soft:#e8e7e2; --mint:#e8e7e2; --mint-2:#dadad5; --leaf:#c8c7c1;
+  --line:#cccbc4; --warm-line:#d6d4cd; --chip-bg:#efeee9; --chip-border:#cccbc4;
+  --yellow:#e7e6e0; --yellow-2:#d5d4cc; --sun:#eeeae0; --orange:#52534f;
+  --fox:#222322; --fox-gold:#575854; --fox-deep:#3e3f3c; --fox-orange:#3e3f3c; --campus-green:#222322;
+  --pink:#d9d6d1; --blue:#c8cccd; --ocean:#555d60; --ocean-deep:#414b4e; --ocean-soft:#e4e7e7; --purple:#676568;
+  --service-blue:#e9eae8; --service-blue-ink:#353735; --service-amber:#edeae3; --service-amber-ink:#3e3b35;
+  --service-violet:#ebe8e9; --service-violet-ink:#434044;
+  --on-primary:#fff; --on-green:#fff;
+  --ink-wash:radial-gradient(ellipse at 87% 7%, #d5d7d6 0%, transparent 60%), linear-gradient(152deg,#fcfbf7,#eeede8);
+  --ink-solid:linear-gradient(125deg,#151616,#383a39);
+  --shadow:0 12px 34px #25262513; --shadow-sm:0 3px 14px #2526250e;
+  --radius:13px; --radius-lg:20px;
+  --display:"OHU-InkTitle","Songti SC","Noto Serif CJK SC","SimSun",serif;
+  --font-numeric:system-ui,sans-serif;
+}
+:root[data-theme='dark'][data-ui-variant='ink'] {
+  --page-top:#161716; --page-mid:#171817; --page-bot:#161716;
+  --bg-light:#171817; --theme-dark-canvas:#171817;
+  --bg-grad-from:#1d1f1d; --bg-grad-mid:#181918; --bg-grad-to:#131413;
+  --card:#222422; --surface:#222422; --card-glass:rgba(34,36,34,.96);
+  --text:#f4f2ea; --text-primary:#f4f2ea; --text-2:#d1cfc7; --text-3:#bcbab2;
+  --green:#ecebe4; --green-hot:#fffef7; --green-deep:#d3d2c8; --green-text:#eeede7; --green-ink:#f4f2ea;
+  --green-soft:#363835; --mint:#363835; --mint-2:#444641; --leaf:#55574f;
+  --line:#575950; --warm-line:#494b43; --chip-bg:#333531; --chip-border:#575950;
+  --yellow:#69685e; --yellow-2:#626158; --sun:#393a34; --orange:#d1cfc6;
+  --fox:#f4f2ea; --fox-gold:#d5d2c8; --fox-deep:#d6d3ca; --fox-orange:#d6d3ca; --campus-green:#f4f2ea;
+  --pink:#665f5e; --blue:#868b8d; --ocean:#b0b8b9; --ocean-deep:#d1d9da; --ocean-soft:#323737; --purple:#b7b3bb;
+  --service-blue:#343837; --service-blue-ink:#e0e5e4; --service-amber:#383732; --service-amber-ink:#e5e1d7;
+  --service-violet:#373438; --service-violet-ink:#e5dfe6;
+  --on-primary:#171817; --on-green:#171817;
+  --ink-wash:radial-gradient(ellipse at 83% 8%, #454947 0%, transparent 62%), linear-gradient(152deg,#222422,#191b19);
+  --ink-solid:linear-gradient(125deg,#f1f0e8,#d7d7cf);
+  --shadow:none; --shadow-sm:none;
+}
+:root[data-ui-variant='ink'] :is(h1,h2,h3) { font-family:var(--display); }
+:root[data-ui-variant='ink'] [data-ink-fox] { object-fit:contain; }
+:root[data-theme='dark'][data-ui-variant='ink'] [data-ink-fox] { filter:invert(1); }

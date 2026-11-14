@@ -23,7 +23,14 @@ function fixture(run) {
   }
 }
 function page(seed, response = manifest, fail = false, sourceTemplate = template) {
-  const elements = Object.fromEntries(['download', 'release-meta', 'status', 'wechat-tip', 'ios-tip', 'download-release'].map(id => [id, { textContent: id === 'download-release' ? JSON.stringify(seed) : '', attrs: {}, removeAttribute(name) { delete this.attrs[name] }, hasAttribute(name) { return name === 'href' ? !!this.href : name in this.attrs }, addEventListener() {} }]))
+  const elements = Object.fromEntries(Array.from(sourceTemplate.matchAll(/<[a-z][^<>]*\sid="([^"]+)"[^<>]*>/gi), ([, id]) => [id, {
+    textContent: id === 'download-release' ? JSON.stringify(seed) : '',
+    dataset: {},
+    attrs: {},
+    removeAttribute(name) { delete this.attrs[name] },
+    hasAttribute(name) { return name === 'href' ? !!this.href : name in this.attrs },
+    addEventListener() {},
+  }]))
   const script = sourceTemplate.match(/<script>([\s\S]*?)<\/script>/)[1]
   const urls = []
   vm.runInNewContext(script, { document: { getElementById: id => elements[id] }, navigator: { userAgent: 'test' }, location: { href: 'https://example.test/download/student.html', origin: 'https://example.test' }, URL, AbortController, Date,

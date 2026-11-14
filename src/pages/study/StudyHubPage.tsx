@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { todayMinutes } from '../../lib/focus-stats'
 import { PageHeader } from '../../components/PageHeader'
 import { PasswordInput } from '../../components/PasswordInput'
@@ -58,6 +58,7 @@ import { useUiMotion } from '../../lib/motion-pref'
 import { useUiVariant } from '../../lib/ui-variant'
 import { FocusIcon } from '../../components/focus/FocusIcon'
 import { academicTermForDate, academicTermLabel, availableGradeTerms, gradesForScope } from '../../lib/academic-terms'
+import { useEntryTrack } from '../../lib/entry-track'
 import { readPocketUni } from '../../lib/pocketuni-store'
 import { readQuality } from '../../lib/quality-store'
 import { puDisplayTotal, puRowsWithCredit } from '../../lib/pocketuni-parse'
@@ -71,13 +72,17 @@ function clamp(n: number, lo: number, hi: number) {
 }
 
 export function StudyHubPage() {
+  const [search] = useSearchParams()
   useQbankRevision()
   const session = captureQbankSession()
+  if (search.get('tab') === 'coach') return <Navigate to="/study/coach" replace />
   return <StudyHubContent key={`${session.uid}:${session.revision}`} />
 }
 
 function StudyHubContent() {
   const auth = useAuth()
+  // TASK-A6：社工端复用学生端壳——学习中心隐藏「从教务一键同步」卡（题库/单词等保留）
+  const social = useEntryTrack() === 'social'
   const ownerSession = useRef(captureQbankSession()).current
   const uiVariant = useUiVariant()
   const cute = uiVariant === 'cute'
@@ -633,6 +638,11 @@ function StudyHubContent() {
         )}</div>
       </div>
 
+      <Link to="/study/coach" className={styles.focusEntry}>
+        <span><b>阿狐学习教练</b><small>拆解目标、查看计划、保存待办</small></span>
+        <span aria-hidden="true">↗</span>
+      </Link>
+
       <div ref={tabsRef} className={styles.tabs} role="tablist" aria-label="学习内容">
         {(
           [
@@ -776,7 +786,7 @@ function StudyHubContent() {
               setRememberPwd(a.remember)
             }}
           />
-          {syncCard}
+          {social ? null : syncCard}
         </section>
       ) : null}
 
@@ -793,7 +803,7 @@ function StudyHubContent() {
             <p className={styles.puEntryCopy}>学号 + 校园网密码 + 统一认证密码，读取课表、成绩、考试；体测、PU、学习通各授权一次后也能一键更新。</p>
             <span className={styles.puEntryLink}>去一键获取 ›</span>
           </Link>
-          {syncCard}
+          {social ? null : syncCard}
           <Link to="/study/pu" className={`${styles.card} ${styles.puEntry}`}>
             <div className={styles.cardHead}>
               <div>
@@ -1199,6 +1209,7 @@ function StudyHubContent() {
           </ul>
         </section>
       ) : null}
+
       </div>
     </motion.div>
   )

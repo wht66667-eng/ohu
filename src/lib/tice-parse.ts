@@ -79,7 +79,7 @@ export interface TiceSummary {
 const NOISE = (text: string) =>
   text === '' || text === '---' || text === '—' || text.includes('具体信息') || text === '详细' || text === '查看'
 
-/** 学年可能是 `2025-2026`、`2526`、`2025`；必须整格匹配，学号 `2023120448` 不能被当成学年。 */
+/** 学年可能是 `2025-2026`、`2526`、`2025`；必须整格匹配，学号 `2023000000` 不能被当成学年。 */
 export function normalizeTiceYear(raw: string): string {
   const text = String(raw ?? '').replace(/\s/g, '')
   if (/^20\d{2}[-~—–/至](?:20)?\d{2,4}$/.test(text)) {
@@ -87,7 +87,7 @@ export function normalizeTiceYear(raw: string): string {
     return `${start}-${start + 1}`
   }
   const short = text.match(/^(\d{2})(\d{2})$/)
-  if (short) {
+  if (short && Number(short[2]) === (Number(short[1]) + 1) % 100) {
     const start = 2000 + Number.parseInt(short[1], 10)
     return `${start}-${start + 1}`
   }
@@ -246,6 +246,42 @@ export function parseTiceHistory(html: string): TiceYear[] {
   return years
 }
 
+export function parseTiceHistoryDetailLinks(html: string): Array<{ year: string; path: string }> {
+  const links: Array<{ year: string; path: string }> = []
+  const seen = new Set<string>()
+  let yearCol = -1
+  for (const match of String(html ?? '').matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr\s*>/gi)) {
+    const row = tableGrid(match[0])[0] ?? []
+    const headerCol = row.findIndex((cell) => cell.includes('学年'))
+    if (headerCol >= 0) { yearCol = headerCol; continue }
+    const year = normalizeTiceYear(cellAt(row, yearCol >= 0 ? yearCol : row.findIndex((cell) => !!normalizeTiceYear(cell))))
+    if (!year) continue
+    const decoded = match[0].replace(/&amp;/gi, '&').replace(/&#0?39;|&#x27;|&apos;/gi, "'").replace(/&quot;|&#0?34;|&#x22;/gi, '"')
+    for (const link of decoded.matchAll(/(?:window\.open\(\s*|href\s*=\s*)(['"])([^'"]*listdetalhistroyScore\.jsp[^'"]*)\1/gi)) {
+      const path = link[2]
+      if (!/^\/SportWeb\/health_info\/listdetalhistroyScore\.jsp(?:\?|$)/i.test(path)) continue
+      const key = `${year}:${path}`
+      if (!seen.has(key)) { links.push({ year, path }); seen.add(key) }
+    }
+  }
+  return links
+}
+
+export function resolveTiceCurrentYear(history: TiceYear[], current: TiceYear | null): string {
+  if (!current || current.year) return current?.year ?? ''
+  const measurements = (year: TiceYear) => year.items.map((item) => ({
+    name: normalizeName(item.name).replace(/测量$/, ''),
+    value: Number.parseFloat(item.raw),
+  })).filter((item) => Number.isFinite(item.value) && item.value !== 0 && item.value !== -100)
+  const items = measurements(current)
+  if (items.length < 3) return ''
+  const matched = history.filter((year) => {
+    const previous = measurements(year)
+    return previous.length === items.length && items.every((item) => previous.some((other) => other.name === item.name && other.value === item.value))
+  })
+  return matched.length === 1 ? matched[0].year : ''
+}
+
 /** 解析「本次」体测明细（queryHealthInfo.jsp）。页面不带学年，由调用方补。 */
 export function parseTiceCurrent(html: string, year = ''): TiceYear | null {
   const rows = tableGrid(html)
@@ -280,6 +316,12 @@ export function parseTiceCurrent(html: string, year = ''): TiceYear | null {
   let bonus = 0
 
   for (const row of rows.slice(headerIndex + 1)) {
+    if (row.some((cell) => /^(总计|合计)$/.test(cell))) {
+      total = optionalNumber(cellAt(row, totalCol >= 0 ? totalCol : scoreCol)) ?? total
+      const conclusion = cellAt(row, gradeCol >= 0 ? gradeCol : noteCol)
+      if (!NOISE(conclusion)) grade = conclusion
+      break
+    }
     const name = cellAt(row, nameCol)
     if (!name || name.includes('项目名称')) continue
     const rawScore = cellAt(row, rawCol)
@@ -298,8 +340,11 @@ export function parseTiceCurrent(html: string, year = ''): TiceYear | null {
   }
 
   if (!items.length) return null
+  const pageText = decodeText(html.replace(/<\/(?:td|th|p|div|h[1-6])\s*>/gi, ' '))
+  const labeledYear = pageText.match(/学年\s*[:：]?\s*(20\d{2}\s*[-~—–/至]\s*(?:20)?\d{2}|\d{4})(?!\d)/)?.[1]
+    ?? pageText.match(/(?<!\d)(20\d{2}\s*[-~—–/至]\s*(?:20)?\d{2})\s*学年/)?.[1]
   return {
-    year,
+    year: year || normalizeTiceYear(labeledYear ?? ''),
     total,
     grade,
     bonus,
@@ -348,10 +393,12 @@ export function parseTiceDetailText(text: string, year: string): TiceYear | null
 export function mergeTicePages(history: TiceYear[], current: TiceYear | null): TiceSummary {
   let resolved = current
   if (resolved) {
-    const matched = resolved.year ? history.find((year) => year.year === resolved?.year) : undefined
+    const year = resolveTiceCurrentYear(history, resolved)
+    const matched = year ? history.find((entry) => entry.year === year) : undefined
     const total = resolved.total !== null && resolved.total > 0 ? resolved.total : (matched?.total ?? resolved.total)
     resolved = {
       ...resolved,
+      year,
       total,
       grade: resolved.grade || matched?.grade || '',
     }
@@ -370,7 +417,7 @@ export function parseTicePages(input: {
 }): TiceSummary {
   const history = input.historyHtml ? parseTiceHistory(input.historyHtml) : []
   const current = input.currentHtml
-    ? parseTiceCurrent(input.currentHtml, input.currentYear ?? history[0]?.year ?? '')
+    ? parseTiceCurrent(input.currentHtml, input.currentYear ?? '')
     : null
   return mergeTicePages(history, current)
 }

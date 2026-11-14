@@ -89,6 +89,15 @@
   padding: 4px 14px 12px;
 }
 
+:global([data-ui-variant='handdrawn']) .empty::before {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 56px;
+  margin: 0 auto 8px;
+  background: url('/brand/handdrawn/fox-greeting.png') center / contain no-repeat;
+}
+
 .empty {
   text-align: center;
   color: var(--text-2);
@@ -824,15 +833,15 @@
 .chatPage { height:100%; min-height:0; overflow:hidden; }
 .head { flex-wrap:nowrap; gap:10px; flex-shrink:0; min-height:92px; padding:15px 14px 13px; }
 .titleBlock { flex:1; min-width:0; }
-.eyebrow { display:block; color:var(--green-text); font-size:9px; letter-spacing:.14em; font-weight:800; }
+.eyebrow { display:block; color:var(--green-text); font-size:9px; letter-spacing:.14em; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .titleBlock h1 { margin:5px 0 4px; color:var(--green-text); font-size:27px; line-height:1.3; font-weight:850; letter-spacing:-.035em; }
 .titleBlock h1>span { margin-left:4px; color:var(--orange); }
 .titleBlock>span:not(.eyebrow) { color:var(--text-3); font-size:11px; line-height:1.5; }
 .headActions { display:flex; align-items:center; gap:6px; flex:none; }
-.momentsAction { display:grid; place-items:center; width:42px; height:44px; border:1px solid var(--line); border-radius:50%; background:var(--green-soft); color:var(--green-text); }
+.momentsAction { display:grid; place-items:center; width:44px; height:44px; border:1px solid var(--line); border-radius:50%; background:var(--green-soft); color:var(--green-text); }
 .communityScene { aspect-ratio:800/317; flex-shrink:0; overflow:hidden; margin:0 14px 11px; border-radius:17px; background:var(--green-soft); }
 .communityLinks { display:flex; gap:8px; flex-shrink:0; margin:0 14px 11px; }
-.communityLinks a { display:inline-flex; align-items:center; min-height:44px; padding:0 13px; border:1px solid var(--line); border-radius:18px; background:var(--card); color:var(--green-text); font-size:11px; font-weight:650; text-decoration:none; }
+.communityLinks a { display:inline-flex; align-items:center; min-height:44px; min-width:44px; padding:0 13px; border:1px solid var(--line); border-radius:18px; background:var(--card); color:var(--green-text); font-size:11px; font-weight:650; text-decoration:none; }
 .tabs { flex-shrink:0; gap:5px; margin:0 14px 14px; padding:5px; border:1px solid var(--line); border-radius:17px; background:var(--card); }
 .tab,.tabOn { display:flex; align-items:center; justify-content:center; gap:4px; min-height:44px; padding:8px 2px; border-radius:12px; font-size:12px; box-shadow:none; }
 .tab { background:transparent; }
@@ -864,7 +873,7 @@
 .cardActs .dm { margin-left:auto; }
 .page :is(a,button):focus-visible { outline:2px solid var(--green); outline-offset:3px; }
 :global([data-theme=dark]) .communityScene img { filter:brightness(.78); }
-@media(max-width:355px) { .head { padding-inline:11px; gap:5px; } .titleBlock h1 { font-size:23px; } .eyebrow { font-size:8px; } .headActions { gap:3px; } .momentsAction { width:38px; } .communityScene,.communityLinks,.tabs { margin-inline:11px; } .tabs { gap:3px; } .tab,.tabOn { font-size:11px; gap:3px; } }
+@media(max-width:355px) { .head { padding-inline:11px; gap:5px; } .titleBlock h1 { font-size:23px; } .eyebrow { font-size:8px; } .headActions { gap:3px; } .momentsAction { width:44px; } .communityScene,.communityLinks,.tabs { margin-inline:11px; } .tabs { gap:3px; } .tab,.tabOn { font-size:11px; gap:3px; } }
 @media(prefers-reduced-motion:reduce) { .communityLinks a,.backTop { scroll-behavior:auto; transition:none; } }
 
 /* Keep conversation and send controls in view while the system keyboard is open. */

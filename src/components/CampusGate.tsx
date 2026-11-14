@@ -6,6 +6,7 @@ import { rememberCampusSession } from '../lib/campus-session'
 import { OneClickPage } from '../pages/study/OneClickPage'
 
 const GATE_KEY = 'ohu.campus-gate.v1'
+const SKIP_KEY = 'ohu.campus-gate.skipped.v1'
 
 type GateRecord = { studentId: string; at: number }
 
@@ -25,23 +26,55 @@ export function markCampusVerified(studentId: string) {
   } catch { /* 存储不可用时仅本次会话有效 */ }
 }
 
+/** 校园网 / VPN 暂时不可用时，用户可选择先进入 App；这不是认证通过，只是不再开屏拦截。 */
+function hasSkippedGate(): boolean {
+  try {
+    return localStorage.getItem(SKIP_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markGateSkipped() {
+  try {
+    localStorage.setItem(SKIP_KEY, '1')
+  } catch { /* 存储不可用时仅本次会话有效 */ }
+}
+
 /**
- * 学生端入口门禁：首次进入必须在一键获取页完成 学号 + 校园网 + 统一认证 登录，
- * 同步成功后才放行，并把课表/成绩/考试等缓存到本机。
+ * 学生端入口门禁：首次进入建议在一键获取页完成 学号 + 校园网 + 统一认证 登录，
+ * 同步成功后把课表/成绩/考试等缓存到本机。
+ *
+ * 门禁只是本机 UI 拦截，不签发云端身份。学校 WebVPN 关闭 / 不可达时认证必然失败，
+ * 因此提供「先进入 App，稍后再同步」出口：跳过不会伪造认证通过，也不启动后台同步；
+ * 校园网恢复后到「一键获取」页（/study/oneclick）随时补做同步。
  */
 export function CampusGate({ children }: { children: ReactNode }) {
   const identity = loadLocalIdentity()
-  const [ready, setReady] = useState(() => !!identity && verifiedFor(identity.studentId))
+  const [ready, setReady] = useState(() => (!!identity && verifiedFor(identity.studentId)) || hasSkippedGate())
   const [showHelp, setShowHelp] = useState(false)
 
   if (!CAMPUS_BRIDGE_AVAILABLE) return children
   if (ready) return children
+
+  const skip = () => {
+    markGateSkipped()
+    setReady(true)
+  }
 
   return <>
     <div style={{ height: '100dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
       <button type="button" onClick={() => setShowHelp(true)} style={{ display: 'block', width: '100%', padding: '10px 16px', border: 0, background: '#fff8e6', color: '#7a4b12', fontSize: 12, textAlign: 'left' }}>
         密码规则：校园网 2023 级后 8 位 / 2024 级起后 8 位 + @Jou；统一认证 Jou@ + 后 8 位。点此查看完整说明 ›
       </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'var(--card, #f3f7f4)', borderBottom: '1px solid rgba(20,40,30,0.08)' }}>
+        <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--ink, #2c3a33)' }}>
+          校园网 / VPN 暂时打不开？认证需要学校通道在线。可以先用本地功能，恢复后再同步。
+        </span>
+        <button type="button" onClick={skip} style={{ flex: 'none', minHeight: 40, padding: '0 14px', borderRadius: 10, border: '1px solid var(--green, #16735b)', background: 'transparent', color: 'var(--green, #16735b)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>
+          先进入 App ›
+        </button>
+      </div>
       <OneClickPage gate={{ onPass: (credentials: GateCredentials) => {
         const now = loadLocalIdentity()
         if (now) markCampusVerified(now.studentId)

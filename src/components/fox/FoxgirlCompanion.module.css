@@ -31,3 +31,10 @@
 .character[aria-expanded="true"] img { animation:characterPop .3s cubic-bezier(.34,1.56,.64,1); }
 @keyframes characterPop { from { transform:scale(.85); } to { transform:scale(1); } }
 @media (prefers-reduced-motion:reduce) { .panel,.panelHead,.panelPrimary,.panelRow,.panelNote,.panelAvatar,.character[aria-expanded="true"] img { animation:none !important; } }.restore { min-width:52px; min-height:44px; border:1px solid var(--line); border-radius:6px; color:var(--text-2); background:var(--card); font-size:12px; }:global(:root[data-keyboard-open]) .companion { display:none; }
+/* 手绘版把吉祥物放在头像/hero/空态，不使用会遮挡卡片的悬浮陪伴。 */
+:global(:root[data-ui-variant='handdrawn']) .companion { display:none; }
+
+:global(html[data-ui-variant='ink']) .panel { --bubble-bg:var(--card); --bubble-text:var(--text); --bubble-text-2:var(--text-2); --bubble-line:var(--line); --bubble-primary:var(--green); --bubble-on-primary:var(--on-primary); --bubble-accent:var(--green-text); --bubble-accent-soft:var(--green-soft); --bubble-accent-ring:var(--line); --bubble-avatar:var(--green-soft); }
+:global(html[data-ui-variant='ink']) :is(.panelPrimary,.panelGhost) { min-height:44px; }
+:global(html[data-ui-variant='ink']) .panelAvatar { animation:none; }
+:global(html[data-theme='dark'][data-ui-variant='ink']) .character img[data-ink-fox] { filter:invert(1); }

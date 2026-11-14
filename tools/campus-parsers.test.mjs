@@ -13,6 +13,7 @@ import {
   parsePuCreditJson,
   parsePuPageText,
   puClassesPresent,
+  puCreditOf,
   puDisplayTotal,
   puIsEmpty,
   puSummaryFromJson,
@@ -22,10 +23,13 @@ import {
 import {
   mergeTicePages,
   normalizeTiceYear,
+  parseTiceCurrent,
   parseTiceHistory,
+  parseTiceHistoryDetailLinks,
   parseTicePages,
   parseTicePaste,
   parseTiceText,
+  resolveTiceCurrentYear,
 } from '../src/lib/tice-parse.ts'
 import { chaoxingFromJson, chaoxingToJson, parseChaoxingCourses } from '../src/lib/chaoxing-parse.ts'
 
@@ -56,10 +60,20 @@ const PU_API = {
 const TICE_HISTORY_HTML = `<html><body><table>
 <tr><td colspan="16">学生历年体质测试汇总表</td></tr>
 <tr align="center"><th>序号</th><th>学号</th><th>姓名</th><th>性别</th><th>学年</th><th>体测成绩</th><th>体测等级</th><th>详细</th></tr>
-<tr><td>1</td><td>2023120448</td><td>王昊天</td><td>男</td><td>2324</td><td>44</td><td>不及格</td><td>具体信息</td></tr>
-<tr><td>2</td><td>2023120448</td><td>王昊天</td><td>男</td><td>2425</td><td>0</td><td></td><td>具体信息</td></tr>
-<tr><td>3</td><td>2023120448</td><td>王昊天</td><td>男</td><td>2526</td><td>70</td><td>及格</td><td>具体信息</td></tr>
+<tr><td>1</td><td>2023000000</td><td>测试同学</td><td>男</td><td>2324</td><td>44</td><td>不及格</td><td>具体信息</td></tr>
+<tr><td>2</td><td>2023000000</td><td>测试同学</td><td>男</td><td>2425</td><td>0</td><td></td><td>具体信息</td></tr>
+<tr><td>3</td><td>2023000000</td><td>测试同学</td><td>男</td><td>2526</td><td>70</td><td>及格</td><td>具体信息</td></tr>
 </table></body></html>`
+
+function ticeHistoryWithDetails(count) {
+  const rows = Array.from({ length: count }, (_, index) => {
+    const start = 2018 + index
+    const year = `${String(start).slice(2)}${String(start + 1).slice(2)}`
+    const url = `/SportWeb/health_info/listdetalhistroyScore.jsp?gradeNo=${index + 1}&amp;sex=X`
+    return `<tr><td>${index + 1}</td><td>${year}</td><td>${60 + index}</td><td>及格</td><td><font onclick="window.open(&#39;${url}&#39;)">具体信息</font></td></tr>`
+  }).join('\n')
+  return `<table><tr><th>序号</th><th>学年</th><th>体测成绩</th><th>体测等级</th><th>详细</th></tr>${rows}</table>`
+}
 
 const TICE_CURRENT_HTML = `<html><body><table>
 <tr><td colspan="8">体质测试成绩查询</td></tr>
@@ -98,6 +112,28 @@ test('PU 接口 JSON：活动/成果分桶，字符串学分也能读', () => {
   assert.equal(summary.rows.filter((row) => row.bucket === 'activity').length, 2)
   assert.equal(summary.rows.filter((row) => row.bucket === 'apply').length, 1)
   assert.equal(summary.rows.some((row) => row.name.includes('勿选')), false)
+})
+
+test('PU 去重：接口与页面文字的重复行只计一次', () => {
+  const dupApi = {
+    index: { code: 0, data: { totalCredit: 1, activityCredit: 1, applyCredit: 0 } },
+    activity: {
+      code: 0,
+      data: {
+        list: [
+          { name: '【素质拓展B类】synthetic-dup', credit: 1 },
+          { name: '【素质拓展B类】synthetic-dup', credit: 1 },
+        ],
+      },
+    },
+    apply: { code: 0, data: { list: [] } },
+  }
+  const api = parsePuCreditJson(dupApi)
+  assert.equal(api.rows.length, 1, '同名同学分的重复接口行去重')
+  assert.equal(puCreditOf(api, 'b'), 1)
+
+  const text = parsePuPageText('【素质拓展B类】synthetic-dup（1）\n【素质拓展B类】synthetic-dup（1）')
+  assert.equal(text.rows.length, 1, '完全相同的页面文字行去重')
 })
 
 test('PU 没读到 ≠ 0，且统一入口优先 JSON', () => {
@@ -147,8 +183,46 @@ test('体测历年表：学号不误判学年，0 分有效、空等级保留为
   assert.equal(history[1].total, 0, '0 是有效分数')
   assert.equal(history[1].grade, '')
   assert.equal(history[2].total, 44)
-  assert.equal(normalizeTiceYear('2023120448'), '')
+  assert.equal(normalizeTiceYear('2023000000'), '')
   assert.equal(normalizeTiceYear('2526'), '2025-2026')
+})
+
+test('体测历年详情：实体引号可识别，全部学年不截断', () => {
+  const html = ticeHistoryWithDetails(7)
+  const history = parseTiceHistory(html)
+  const links = parseTiceHistoryDetailLinks(html)
+  assert.equal(history.length, 7)
+  assert.equal(history[0].year, '2024-2025')
+  assert.equal(history[6].year, '2018-2019')
+  assert.equal(links.length, 7)
+  assert.deepEqual(links[0], { year: '2018-2019', path: '/SportWeb/health_info/listdetalhistroyScore.jsp?gradeNo=1&sex=X' })
+  assert.deepEqual(links[6], { year: '2024-2025', path: '/SportWeb/health_info/listdetalhistroyScore.jsp?gradeNo=7&sex=X' })
+  const missing = html.replace(/<tr><td>1<\/td>[\s\S]*?<\/tr>/, '')
+  const remaining = parseTiceHistoryDetailLinks(missing)
+  assert.equal(remaining.length, 6)
+  assert.equal(remaining[0].year, '2019-2020')
+  assert.ok(remaining[0].path.includes('gradeNo=2'))
+})
+
+test('体测当前学年：缺少学校依据时不按设备日期伪造新学年', () => {
+  const history = parseTiceHistory(TICE_HISTORY_HTML)
+  const current = parseTiceCurrent(TICE_CURRENT_HTML)
+  assert.equal(resolveTiceCurrentYear(history, current), '')
+  assert.equal(resolveTiceCurrentYear([], current), '')
+  assert.equal(mergeTicePages(history, current).current.year, '')
+  assert.equal(resolveTiceCurrentYear([{ ...current, year: '2025-2026' }], current), '2025-2026')
+  assert.equal(resolveTiceCurrentYear([{ ...current, year: '2025-2026' }, { ...current, year: '2024-2025' }], current), '')
+
+  const summary = parseTicePages({
+    historyHtml: TICE_HISTORY_HTML,
+    currentHtml: TICE_CURRENT_HTML.replace('<body>', '<body><p>学年：2026-2027</p>'),
+  })
+  assert.equal(summary.history.length, 3)
+  assert.equal(summary.current.year, '2026-2027')
+  assert.equal(summary.current.items.length, 10)
+  assert.equal(summary.current.total, 0, '新学年不借用上一学年的总分')
+  assert.equal(normalizeTiceYear('2026'), '2026-2027')
+  assert.equal(normalizeTiceYear('1000'), '')
 })
 
 test('体测本次页：rowspan 展开、</tr > 容忍、--- 记为未计分', () => {
@@ -163,7 +237,7 @@ test('体测本次页：rowspan 展开、</tr > 容忍、--- 记为未计分', (
 })
 
 test('体测两页合并：本次页 0.0 占位时用历年总分与等级兜底', () => {
-  const summary = parseTicePages({ historyHtml: TICE_HISTORY_HTML, currentHtml: TICE_CURRENT_HTML })
+  const summary = parseTicePages({ historyHtml: TICE_HISTORY_HTML, currentHtml: TICE_CURRENT_HTML, currentYear: '2025-2026' })
   assert.equal(summary.history.length, 3)
   assert.equal(summary.current.year, '2025-2026')
   assert.equal(summary.current.total, 70)

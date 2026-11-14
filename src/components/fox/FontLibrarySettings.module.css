@@ -1,0 +1,12 @@
+.panel { margin-block:18px; }
+.panel h3 { margin:0 0 8px; }
+.panel p { color:var(--text-2); line-height:1.6; font-size:13px; }
+.choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.choices button { display:grid; gap:6px; width:100%; min-height:44px; padding:12px; text-align:left; color:var(--text); border:1px solid var(--line); border-radius:12px; background:var(--card); cursor:pointer; }
+.choices button[aria-pressed='true'] { outline:2px solid var(--green); outline-offset:-2px; }
+.choices button:focus-visible { outline:3px solid var(--green-text); outline-offset:3px; }
+.choices strong { font-size:14px; }
+.choices small { color:var(--text-2); line-height:1.5; }
+.sample { display:block; padding:8px 10px; border:1px dashed var(--line); border-radius:10px; background:var(--page-mid,#f6f5f2); font-size:15px; line-height:1.5; }
+.state { color:var(--green-text); font-size:12px; }
+@media (max-width:350px) { .choices { grid-template-columns:1fr; } }

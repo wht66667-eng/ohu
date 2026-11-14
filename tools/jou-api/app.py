@@ -15,7 +15,7 @@
 面向全校同学的防护分层：
   1) 并发闸门：限制同时打到教务系统的请求数（默认 4），避免把教务系统压垮导致服务器 IP 被封
   2) 分层限流：按学号（防单账号爆破）+ 按来源 IP（防批量刷取；阈值刻意放宽以兼容校园网 NAT 出口）
-  3) 会话治理：验证码会话 3 分钟 TTL + 全局总量上限 + 每 IP 未消费会话上限
+  3) 会话治理：验证码会话 5 分钟 TTL（300 秒）+ 全局总量上限 + 每 IP 未消费会话上限
   4) 日志脱敏：学号掩码，密码与验证码原文永不入日志
 
 运行（生产）：gunicorn -w 1 -k gthread --threads 16 --timeout 60 -b 0.0.0.0:8090 app:app
@@ -83,7 +83,9 @@ def ai_proxy():
     limited, retry = _win_ip_query.hit(_client_ip())
     if limited:
         return _err_simple("1004", 429, "请求较频繁，请稍后再试", retry)
-    key = os.environ.get("AGNES_API_KEY", "").strip() or "sk-NH9uC8UCm7vLyXIvakCYxJrNgnWTxq56QrxB8CkRYK7nEtsT"
+    key = os.environ.get("AGNES_API_KEY", "").strip()
+    if not key:
+        return _err_simple("MODEL_UNAVAILABLE", 503, "AI 尚未配置，请稍后再试")
     try:
         upstream = _requests.post(
             "https://apihub.agnes-ai.com/v1/chat/completions",
@@ -508,7 +510,6 @@ def timetable_auto():
 @app.route("/api/integrations/capabilities", methods=["GET"])
 def integration_capabilities():
     from importlib.util import find_spec
-    from physical_read import configured
     enabled = os.environ.get("CHAOXING_READ_ENABLED", "") == "1" and find_spec("Crypto") is not None
     return _ok({"chaoxing": {"enabled": enabled, "readOnly": True},
                 "physical": {"enabled": False, "source": "jou-tice", "httpUpstream": False, "note": "device-sync-only"}})

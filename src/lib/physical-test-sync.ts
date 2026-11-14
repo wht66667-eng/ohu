@@ -1,3 +1,11 @@
+/**
+ * 【休眠模块 2026-11-12 标注】本模块当前无任何调用方（grep src 零引用），
+ * 且其依赖的 /api/physical/{captcha,query} 路由已从 jou-api 移除
+ * （见 docs/product/哦狐_实际项目设计与实施方案.md P2-ROUTE-DRIFT 记录：
+ * 体测 capabilities 硬编码 enabled=false、note=device-sync-only）。
+ * 保留原因：physical-test-results.ts（本机记录展示）仍被设置页使用，
+ * 同步入口若日后恢复需先在 jou-api 重新登记路由。删除前请先复核上述记录。
+ */
 import { TIMETABLE_API_BASE } from './timetable'
 import { captureQbankSession, isQbankSessionCurrent } from './qbank'
 import { withTimeout } from './abort-signal'

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { PinPhotoPicker } from '../components/CampusPinPhotos'
@@ -10,6 +10,7 @@ import { useAuth } from '../lib/auth'
 import { useCampusPreference } from '../lib/use-campus-preference'
 import { campusNameFromLabel, preferredCampusRow } from '../lib/campus-preference'
 import { uploadImages } from '../lib/market'
+import { saveLocalCampusCheckin } from '../lib/campus-map-local'
 import { createCampusPoiCheckin, submitCampusPoi, fetchCampusPois, fetchCampuses, fetchCampusPosts, fetchCampusSchools, createCampusPost, toggleCampusLike, fetchCampusComments, createCampusComment, type Campus, type CampusComment, type CampusPoi, type CampusPost, type CampusSchool } from '../lib/campus-map'
 import { submitReport } from '../lib/reports'
 import { currentActor } from '../lib/social-actor'
@@ -20,9 +21,13 @@ import { MapIcon } from '../components/campus-map/MapIcons'
 import { FoxSheetPose } from '../components/fox/FoxSheetPose'
 import { filterMapPois, MAP_CATEGORIES, poiCategory, fetchCampusGuidePois, type MapCategory } from '../lib/campus-map-presentation'
 import s from './CampusMapPage.module.css'
-import { readLocalPins, saveLocalPin, mergeCampusPois, type LocalPin } from '../lib/campus-map-local'
+import { readLocalPins, saveLocalPin, mergeCampusPois, readLocalCampusCheckins, type LocalPin } from '../lib/campus-map-local'
+import { saveSnapshotToJournal, journalOwnerOf } from '../lib/journal-snapshot'
+import { localDateKey } from '../lib/chat-fortune'
 
 const OPEN_MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
+const CampusSandbox = lazy(() => import('../components/campus-map/CampusSandbox').then(m => ({ default: m.CampusSandbox })))
+const CampusBuildingDirectory = lazy(() => import('../components/campus-map/CampusBuildingDirectory').then(m => ({ default: m.CampusBuildingDirectory })))
 
 export function CampusMapPage() {
   const auth = useAuth(); const toast = useToast()
@@ -42,6 +47,9 @@ export function CampusMapPage() {
   const [pinForm, setPinForm] = useState(false); const [pinName, setPinName] = useState(''); const [pinCategory, setPinCategory] = useState<'美食'|'好玩'|'打卡'>('打卡'); const [pinCoords, setPinCoords] = useState(''); const [pinNote, setPinNote] = useState(''); const [submitPin, setSubmitPin] = useState(false); const [pickPoint, setPickPoint] = useState(false); const pickPointRef = useRef(false)
   const [pinPhotos, setPinPhotos] = useState<File[]>([]); const [locating, setLocating] = useState(false); const [locationMessage, setLocationMessage] = useState(''); const [locationError, setLocationError] = useState('')
   const [userLocation, setUserLocation] = useState<MapLocation | null>(null)
+  const [savingJournal, setSavingJournal] = useState(false)
+  const [sandboxOpen, setSandboxOpen] = useState(false)
+  const [directoryOpen, setDirectoryOpen] = useState(false)
   const locationAbort = useRef<AbortController | null>(null)
   const locationRequest = useRef(0); const positionRef = useRef<[number, number] | null>(null); const actionScope = useRef(''); actionScope.current = `${ownerUid}:${schoolId}:${campusId}`
   const actionGeneration = useRef(0)
@@ -70,6 +78,7 @@ export function CampusMapPage() {
   const school = schools.find(x => x.id === schoolId); const selectedCampus = campuses.find(x => x.id === campusId)
   const canIllustrate = selectedCampus?.name.includes('苍梧') === true
   const illustrated = canIllustrate && mapPresentation === 'illustrated'
+  const directoryCampus = selectedCampus?.name.includes('通灌') ? 'tongguan' : selectedCampus?.name.includes('宋跳') ? 'songtiao' : selectedCampus?.name.includes('墟沟') ? 'xugou' : 'cangwu'
   const cloudCampusId = campusId != null && campusId > 0 ? campusId : null
   const localCheckinOnly = selectedPoi != null && (selectedPoi.verification_status === 'local' || isJouGuidePoi(selectedPoi))
   const mapStyleUrl = school?.map_style_url || OPEN_MAP_STYLE
@@ -123,8 +132,7 @@ export function CampusMapPage() {
     if (!auth.isSigned || !ownerUid || actor?.uid !== ownerUid) { toast.err('请先登录后打卡'); return }
     const poi = selectedPoi, note = checkinNote.trim().slice(0, 240), share = shareCheckin
     if (selectedPoi.verification_status === 'local' || isJouGuidePoi(selectedPoi)) {
-      const key = `ohhu:campus-map-checkins:v1:${ownerUid}`
-      try { const old = JSON.parse(localStorage.getItem(key) || '[]'); const rows = Array.isArray(old) ? old : []; localStorage.setItem(key, JSON.stringify([{ poi_name: poi.name, lng: poi.lng, lat: poi.lat, note, created_at: new Date().toISOString() }, ...rows].slice(0,500))); toast('本地打卡已保存，仅此设备可见'); setCheckinOpen(false); setCheckinNote(''); return } catch { toast.err('本地保存失败，请检查设备存储空间'); return }
+      try { saveLocalCampusCheckin(ownerUid, { poi_name: poi.name, lng: poi.lng, lat: poi.lat, note, created_at: new Date().toISOString() }); toast('本地打卡已保存，仅此设备可见'); setCheckinOpen(false); setCheckinNote(''); return } catch { toast.err('本地保存失败，请检查设备存储空间'); return }
     }
     const generation = actionGeneration.current, scope = actionScope.current
     const stillCurrent = () => actionGeneration.current === generation && actionScope.current === scope && currentActor()?.uid === ownerUid
@@ -140,6 +148,17 @@ export function CampusMapPage() {
       if (actionGeneration.current === generation) setBusy(false)
     }
   }
+  async function saveVisitsToJournal() {
+    if (savingJournal) return
+    setSavingJournal(true)
+    try {
+      const today = localDateKey()
+      const rows = readLocalCampusCheckins(ownerUid).filter(row => localDateKey(new Date(row.created_at)) === today)
+      const body = rows.length ? `今日到访 ${rows.length} 处：\n${rows.map(row => '· ' + row.poi_name).join('\n')}` : '今天还没有本机到访记录，去地图上打卡吧。'
+      await saveSnapshotToJournal(journalOwnerOf(auth.isSigned, auth.user?.uid), '地图 · 今日到访', body)
+    } catch { toast.err('保存失败，请重试。') } finally { setSavingJournal(false) }
+  }
+
   async function uploadPinForReview(row: LocalPin, scope: string, uid: string): Promise<string | null> {
     if (!cloudCampusId) return '此校区还没有配置云端地点范围，地点和照片可先保存在本机'
     const photos = row.local_photo_count ? await readPinPhotos(uid, row.id) : []
@@ -251,9 +270,11 @@ export function CampusMapPage() {
     {view==='list'?<section className={s.poiGrid} aria-label="校园地点列表">{visiblePois.length?visiblePois.map(p=><button className={s.poiCard} type="button" key={p.id} onClick={()=>{setSelectedPoi(p);setView('map')}}><span className={s.poiIcon}><MapIcon name={MAP_CATEGORIES.find(x=>x.label===poiCategory(p.category))!.icon}/></span><span><b>{p.name}</b><small>{p.category} · {p.verification_status==='verified'?'已核验':p.verification_status==='local'?'仅自己可见':'公开地图参考'}</small></span><i>查看 →</i></button>):<div className={s.state}>没有找到对应地点，试试其他分类或关键词。</div>}</section>:null}
     {selectedPoi&&view==='map'?<PoiDetailSheet poi={selectedPoi} uid={ownerUid} location={userLocation} busy={busy} canSubmit={!!cloudCampusId} onClose={()=>setSelectedPoi(null)} onCheckin={()=>{if(requireLogin())setCheckinOpen(true)}} onSubmit={()=>void submitSelectedLocalPin()} requireLogin={requireLogin}/>:null}
     {locationMessage||locationError?<div className={`${s.locationStatus} ${locationError?s.locationFailure:''}`} role="status"><span>{locationError||locationMessage}</span>{locating?<button type="button" onClick={cancelLocation}>取消定位</button>:locationError?<button type="button" onClick={()=>void locateMe()}>重新定位</button>:null}</div>:null}
+    <button type="button" className={s.directoryEntry} onClick={() => setSandboxOpen(true)}><span><b>四校区 3D 沙盘</b><small>旋转查看建筑和地标</small></span><i>打开 →</i></button>
+    <button type="button" className={s.directoryEntry} onClick={()=>setDirectoryOpen(true)}><span><b>校园建筑目录</b><small>四校区官方建筑名称、编号与院系速查</small></span><i>查阅 →</i></button>
     <details className={s.coverageNote}><summary><b>地图说明与数据来源</b><span>查看 ›</span></summary><p>建筑、道路和地点沿用公开地图坐标，树木和建筑高度用于手绘装饰。苍梧提供手绘样板；通灌和宋跳内部资料仍需补齐，先保留真实地图。候选地点名称与入口请以现场为准。</p><a href={JOU_OFFICIAL_MAP} target="_blank" rel="noreferrer">学校官方校园图 ↗</a></details>
     {error?<p className={s.sourceNote} role="status">{error}</p>:null}
-    <div className={s.mapSecondaryActions}><button type="button" onClick={()=>{if(requireLogin())setCompose(true)}}>发布校园动态</button><Link to="/plaza">看看校园广场 →</Link></div>
+    <div className={s.mapSecondaryActions}><button type="button" disabled={savingJournal} onClick={() => void saveVisitsToJournal()}>{savingJournal ? '正在保存…' : '记入手账'}</button><button type="button" onClick={()=>{if(requireLogin())setCompose(true)}}>发布校园动态</button><Link to="/plaza">看看校园广场 →</Link></div>
     <p className={s.sourceNote}>公开地图中的候选位置请以现场和官方信息为准。</p><div className={s.feedHead}><div><b>{school?.name || '校园动态'}</b><span>{selectedCampus ? ` · ${selectedCampus.name}` : ''} · {postCount} 条公开动态</span></div><Link to="/plaza">返回校园广场</Link></div>
     {loading ? <div className={s.state}>正在加载动态…</div> : error && !posts.length ? <div className={s.state}>动态数据暂不可用。请管理员确认校园地图数据库迁移已应用。</div> : !posts.length ? <div className={s.state}>这里还没有公开动态。你可以先发布一条，审核通过后展示。</div> : <div className={s.feed}>{posts.map(post => <article className={s.card} key={post.id}><header><span className={s.avatar}>{post.author_name.slice(0,1) || '校'}</span><div><b>{post.author_name}</b><time>{new Date(post.created_at).toLocaleString()}</time></div><button type="button" className={s.report} onClick={() => void report(post)}>举报</button></header><p>{post.body}</p>{post.image_urls?.length ? <div className={s.images}>{post.image_urls.map(url => <img key={url} src={url} alt="校园动态配图" loading="lazy" />)}</div> : null}<footer><button type="button" aria-pressed={post.liked} onClick={() => void like(post)}>{post.liked ? '♥ 已赞' : '♡ 点赞'} · {post.like_count}</button><button type="button" onClick={() => void toggleComments(post.id)}>评论</button><span>{pois.find(p => p.id === post.poi_id)?.name || selectedCampus?.name || '动态'}</span></footer>{commentsOpen.includes(post.id) ? <div className={s.comments}>{(comments[post.id] || []).map(c => <p key={c.id}><b>校园用户：</b>{c.body}</p>)}<div><input value={commentDraft[post.id] || ''} maxLength={500} onChange={e => setCommentDraft(v => ({ ...v, [post.id]: e.target.value }))} placeholder={auth.isSigned ? '写下评论…' : '登录后评论'} /><button type="button" onClick={() => void comment(post.id)}>发送</button></div></div> : null}</article>)}</div>}
     {compose ? <div className={s.scrim} onClick={e => { if (e.target === e.currentTarget) setCompose(false) }}><section className={s.modal} role="dialog" aria-modal="true" aria-labelledby="compose-title"><h2 id="compose-title">发布动态</h2><p className={s.publicNote}>发布内容会向所有人公开，审核通过后展示。默认不公开账号昵称和头像。</p><label>关联地点（可选）<select value={poiId} onChange={e => setPoiId(e.target.value)}><option value="">不关联地点</option>{pois.filter(p => p.id > 0).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label><textarea value={body} onChange={e => setBody(e.target.value)} maxLength={1000} placeholder="分享校园生活…" /><label className={s.profileConsent}><input type="checkbox" checked={shareProfile} onChange={e => setShareProfile(e.target.checked)} />同时公开我的昵称和头像</label><div className={s.photoRow}><ImagePickButton label="添加图片" multiple disabled={busy || files.length >= 6} onPick={f => setFiles(v => [...v, ...f].slice(0,6))} /><span>{files.length}/6</span></div>{files.length ? <div className={s.fileNames}>{files.map(f=>f.name).join('、')}</div> : null}<div className={s.modalActions}><button type="button" onClick={() => setCompose(false)}>取消</button><button type="button" className={s.primary} disabled={busy} onClick={() => void publish()}>{busy ? '正在提交…' : '确认公开并提交审核'}</button></div></section></div> : null}
@@ -268,6 +289,8 @@ export function CampusMapPage() {
       {cloudCampusId && auth.isSigned ? <label className={s.profileConsent}><input type="checkbox" disabled={busy} checked={submitPin} onChange={e => setSubmitPin(e.target.checked)} />提交地点和照片供管理员审核，通过后公开</label> : <p className={s.sourceNote}>共享地点正在准备中；可以先保存到本机。</p>}
       <div className={s.modalActions}><button type="button" disabled={busy} onClick={() => { setPinForm(false); resetPinDraft() }}>取消</button><button type="button" className={s.primary} disabled={busy || locating} onClick={() => void savePin()}>{busy ? '正在保存…' : submitPin ? '保存并提交审核' : '保存到本机'}</button></div>
     </section></div> : null}
+    {sandboxOpen ? <Suspense fallback={<p role="status">正在打开 3D 沙盘…</p>}><CampusSandbox initialCampus={directoryCampus} onClose={() => setSandboxOpen(false)} /></Suspense> : null}
+    {directoryOpen ? <Suspense fallback={<div className={s.scrim}><div className={s.modal} role="status">正在打开建筑目录…</div></div>}><CampusBuildingDirectory onClose={()=>setDirectoryOpen(false)} initialCampus={directoryCampus}/></Suspense> : null}
   </main>
 }
 

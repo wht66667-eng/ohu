@@ -24,6 +24,7 @@ import { appendPreviewMessages, MESSAGE_PREVIEW_MODES, setMessagePreviewMode, us
 import { HOME_PREVIEW_SCENARIOS, selectHomePreviewScenario, useHomePreviewScenario, type HomePreviewScenario } from './ui-review-home-fixtures'
 import { REMINDER_PREVIEW_MODES, setReminderPreviewMode, useReminderPreviewMode, type ReminderPreviewMode } from './ui-review-reminder-fixtures'
 import { ReminderSettingsPreview } from './ui-review-reminder-page'
+import { SocialGatePreview } from './ui-review-social-page'
 import '../src/index.css'
 import '../src/skins.css'
 import './ui-review-preview.css'
@@ -46,7 +47,7 @@ function Review() {
   }
   return <div className="ui-review-workspace">
     <header className="ui-review-label"><strong>真实组件 / 本地样例，不是在线验收</strong><span>独立 43127 端口 · 请勿输入真实教务账号或私人信息</span></header>
-    <nav className="ui-review-tabs" aria-label="验收页面"><NavLink to="/" end>首页</NavLink><NavLink to="/schedule">课表</NavLink><NavLink to="/messages">消息／好友</NavLink><NavLink to="/chats/7">私信</NavLink><NavLink to="/settings?section=reminders">提醒设置</NavLink></nav>
+    <nav className="ui-review-tabs" aria-label="验收页面"><NavLink to="/" end>首页</NavLink><NavLink to="/schedule">课表</NavLink><NavLink to="/messages">消息／好友</NavLink><NavLink to="/chats/7">私信</NavLink><NavLink to="/settings?section=reminders">提醒设置</NavLink><NavLink to="/social-gate">社工端门</NavLink></nav>
     <details className="ui-review-controls"><summary>本地样例控制 · {auth.user?.name || '已退出'}</summary>
       <label className="ui-review-scenario">首页合成状态<select aria-label="首页合成状态" value={scenario.mode} onChange={(event) => { selectHomePreviewScenario(event.target.value as HomePreviewScenario); setSlow(getPreviewDelay() > 1000); setNotice('已切换首页合成状态；全部内容来自本地样例。') }}>{HOME_PREVIEW_SCENARIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
       {reminders ? <label className="ui-review-scenario">提醒合成反馈<select aria-label="提醒合成反馈" value={reminderMode} onChange={(event) => { setReminderPreviewMode(event.target.value as ReminderPreviewMode); setNotice('已切换提醒反馈样例；系统通知、后台桥接和权限请求均已阻止。') }}>{REMINDER_PREVIEW_MODES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label> : null}
@@ -57,7 +58,7 @@ function Review() {
     <p className="ui-review-status" role="status">{notice}</p>
     <div className="ui-review-shell" data-home-preview-phone data-reminder-preview-phone={reminders || undefined} data-message-preview-phone={messages || undefined}>
     <div className={`ui-review-body${chat ? ' ui-review-chat' : ''}`} data-app-body data-app-page data-home-preview-main data-reminder-preview-main={reminders || undefined} data-message-preview-main={messages || undefined}>
-      <Routes><Route path="/" element={<HomePage key={scenario.revision} />} /><Route path="/schedule" element={<ScheduleHome />} /><Route path="/chats" element={<ChatListPage key={messageScenario.revision} />} /><Route path="/chats/:id" element={<ChatRoomPage key={messageScenario.revision} />} /><Route path="/settings" element={<ReminderSettingsPreview />} /><Route path="/messages" element={new URLSearchParams(location.search).get('view') === 'updates' ? <MessageUpdatesPage key={messageScenario.revision} /> : <MessagesPage key={messageScenario.revision} />} /><Route path="/contacts" element={<ContactsPage key={messageScenario.revision} />} /><Route path="/contacts/add" element={<AddFriendPage key={messageScenario.revision} />} /><Route path="/contacts/requests" element={<FriendRequestsPage key={messageScenario.revision} />} /><Route path="/notify" element={<NotifyPage key={messageScenario.revision} />} /><Route path="*" element={<PreviewDestination />} /></Routes>
+      <Routes><Route path="/" element={<HomePage key={scenario.revision} />} /><Route path="/schedule" element={<ScheduleHome />} /><Route path="/chats" element={<ChatListPage key={messageScenario.revision} />} /><Route path="/chats/:id" element={<ChatRoomPage key={messageScenario.revision} />} /><Route path="/settings" element={<ReminderSettingsPreview />} /><Route path="/social-gate" element={<SocialGatePreview />} /><Route path="/messages" element={new URLSearchParams(location.search).get('view') === 'updates' ? <MessageUpdatesPage key={messageScenario.revision} /> : <MessagesPage key={messageScenario.revision} />} /><Route path="/contacts" element={<ContactsPage key={messageScenario.revision} />} /><Route path="/contacts/add" element={<AddFriendPage key={messageScenario.revision} />} /><Route path="/contacts/requests" element={<FriendRequestsPage key={messageScenario.revision} />} /><Route path="/notify" element={<NotifyPage key={messageScenario.revision} />} /><Route path="*" element={<PreviewDestination />} /></Routes>
     </div>
     <div className="ui-review-tabbar"><TabBar onPlus={() => setPublishOpen(true)} /></div>
     </div>

@@ -120,6 +120,7 @@ export function ProfilePage() {
   const eng = useFoxState()
   const reduce = useUiMotion()
   const variant = useUiVariant()
+  const handdrawn = variant === 'handdrawn'
   const showFoxArt = !isFoxFreeVariant(variant)
   const [codex, setCodex] = useState(false)
   const workShell = isWorkShell(getAppShell())
@@ -150,7 +151,7 @@ export function ProfilePage() {
   return <div className={styles.page} data-fox-art={showFoxArt ? 'true' : 'false'}>
     <header className={styles.header}>
       <div className={styles.headingCopy}><span>OHU · MY CAMPUS ✦</span><h1>我的校园生活</h1><p>每一个努力的日子，都值得被记录。</p></div>
-      <FocusThemeToggle /><Link to="/settings" className={styles.headerAction} aria-label="打开设置"><ProfileIcon name="settings" /></Link>
+      <FocusThemeToggle />
     </header>
 
     <section className={styles.account} aria-label="个人账号">
@@ -171,7 +172,7 @@ export function ProfilePage() {
       </div>
       {!signed ? <p className={styles.loginHint}>学号 + 校园网 + 统一认证</p> : null}
       {showFoxArt || signed ? <div className={`${styles.companion} ${auth.user?.profileMotto || auth.user?.profileIntro ? styles.companionProfile : ''}`}>
-        {showFoxArt ? <FoxSheetPose className={styles.accountFox} pose="waving" /> : null}
+        {showFoxArt ? <FoxSheetPose className={styles.accountFox} pose={handdrawn ? 'cheering' : 'waving'} /> : null}
         <div>
           <b>{auth.user?.profileMotto ? `“${auth.user.profileMotto}”` : signed ? '今天也有小美好' : '你的校园小伙伴'}</b>
           <p>{auth.user?.profileIntro || (signed ? '编辑资料写下你的个人介绍，发送好友申请时对方就能看到。' : '先逛逛校园，发现喜欢的生活。')}</p>
@@ -181,9 +182,8 @@ export function ProfilePage() {
 
     <section className={styles.stats} aria-label="校园快捷入口">
       <Link to="/schedule" className={styles.stat}><StudentServiceArtwork id="schedule" fallback="课表查询" size={38} /><b>我的课表</b><small>课程日程</small></Link>
+      <Link to="/grades" className={styles.stat}><StudentServiceArtwork id="grades" fallback="成绩查询" size={38} /><b>成绩中心</b><small>成绩与体测</small></Link>
       <Link to="/campus-map" className={styles.stat}><StudentServiceArtwork id="map" fallback="目标墙" size={38} /><b>地图打卡</b><small>地点与打卡</small></Link>
-      <Link to="/todo" className={styles.stat}><StudentServiceArtwork id="todo" fallback="我的待办" size={38} /><b>待办任务</b><small>学习与生活</small></Link>
-      <Link to="/notify" className={styles.stat}><StudentServiceArtwork id="messages" fallback="校园广场" size={38} /><b>通知消息</b><small>课程与系统</small></Link>
     </section>
 
     <aside className={styles.growth}><div><b>用心记录每一次成长</b><span>{showFoxArt ? '今天也和哦狐一起，向喜欢的生活前进一步。' : '向喜欢的生活前进一步。'}</span></div>{showFoxArt ? <FoxSheetPose pose="writing" className={styles.growthFox} /> : null}</aside>

@@ -17,6 +17,7 @@ export interface OhuPluginManifest {
   bundled: true
   reviewed: true
   official: boolean
+  defaultEnabled?: boolean
   author: string
   sourceName?: string
   sourceHref?: string
@@ -51,18 +52,6 @@ export const BUILT_IN_PLUGINS: readonly OhuPluginManifest[] = [
     author: '哦狐',
   },
   {
-    id: 'daily-tarot-reflection', version: '1.1.0', name: '今日塔罗灵感', category: '趣味探索',
-    summary: '先与 AI 聊塔罗知识或直接翻牌；可提问并让 AI 结合本机抽牌给出反思提示，不预测现实。',
-    entryPath: '/plugins/daily-tarot-reflection', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
-    sourceName: 'anois/tarot（交互灵感）', sourceHref: 'https://github.com/anois/tarot', sourceLicense: '上游源码 MIT；哦狐独立实现洗牌、牌阵与自绘牌面，未复制代码、数据或图像',
-  },
-  {
-    id: 'daily-zodiac-mood', version: '1.1.0', name: '星座今日灵感', category: '趣味探索',
-    summary: '可先与 AI 聊星座知识，再点亮星图获取行动提示；不收集生日信息，不预测现实。',
-    entryPath: '/plugins/daily-zodiac-mood', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
-    sourceName: 'fortune-org/fortune-platform（开源交互参考）', sourceHref: 'https://github.com/fortune-org/fortune-platform', sourceLicense: 'MIT；哦狐独立实现星图选择与本机提示，未复制代码或素材',
-  },
-  {
     id: 'birthday-number-play', version: '1.0.0', name: '生日数字趣玩', category: '趣味探索',
     summary: '可先询问数字主题相关知识，再在本机生成反思提示；生日输入不会保存或上传。',
     entryPath: '/plugins/birthday-number-play', permissions: [], bundled: true, reviewed: true, official: false, author: 'wft',
@@ -87,6 +76,12 @@ export const BUILT_IN_PLUGINS: readonly OhuPluginManifest[] = [
     sourceName: 'Scwizard/jiangsu-safety-competition（题库数据来源）', sourceHref: 'https://github.com/Scwizard/jiangsu-safety-competition/tree/4b797158c1886d5c457eaf33a4afd1a4a0218fbd',
     sourceLicense: 'Apache-2.0；保留 Scwizard 署名。插件界面独立实现，未接入平台自动作答或交卷。',
   },
+  {
+    id: 'appearance-workshop', version: '1.0.0', name: '外观工坊', category: '校园生活',
+    summary: '切换皮肤、选择字体并调整服务页常用入口。布局保存在本机。',
+    entryPath: '/settings?section=appearance', permissions: [], bundled: true, reviewed: true,
+    official: true, defaultEnabled: false, author: '哦狐',
+  },
 ] as const
 
 export interface PluginLocalPreferences {
@@ -95,7 +90,7 @@ export interface PluginLocalPreferences {
 }
 
 // New optional plugins start off; preserve every explicit prior choice.
-const DEFAULT_ENABLED = BUILT_IN_PLUGINS.filter((plugin) => plugin.official).map((plugin) => plugin.id)
+const DEFAULT_ENABLED = BUILT_IN_PLUGINS.filter((plugin) => plugin.defaultEnabled ?? plugin.official).map((plugin) => plugin.id)
 export const PLUGIN_PREFERENCES_EVENT = 'ohu-plugin-preferences-change'
 
 export function pluginPreferencesKey(uid?: string | null): string {

@@ -197,3 +197,33 @@
 /* Shared campus canvas in both appearance modes. */
 .page { background: var(--page-mid); color: var(--text); }
 :root[data-theme='dark'] .page { background: var(--page-mid); color: var(--text); }
+.fortuneSettingsEntry,.fortuneAction { min-height:44px; padding:4px 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--green-text); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.fortuneSettingsEntry { flex:none; }
+.fortuneAction { display:block; margin-top:8px; background:var(--green-soft); }
+.fortuneSettingsEntry:active,.fortuneAction:active { filter:brightness(.87); }
+.fortuneSettings { display:grid; gap:12px; min-width:0; color:var(--text); }
+.fortuneSettings h2,.dailyFortune h2,.dailyCard h3 { margin:0; }
+.fortuneSettings h2 { font-size:18px; }
+.fortuneSettings p { margin:0; color:var(--text-2); font-size:13px; line-height:1.55; }
+.fortuneDate { display:grid; gap:6px; font-size:13px; font-weight:700; }
+.fortuneDate input { min-height:44px; min-width:0; padding:6px 10px; border:1px solid var(--line); border-radius:9px; color:var(--text); background:var(--page-mid); font:inherit; }
+.clearBirth { min-height:44px; justify-self:start; color:var(--green-text); font:inherit; font-size:13px; text-decoration:underline; }
+.fortuneToggle { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; padding:6px 10px; border:1px solid var(--line); border-radius:9px; font-size:14px; cursor:pointer; }
+.fortuneToggle input { width:20px; height:20px; margin:0; accent-color:var(--green); }
+.fortuneWorkspace.fortuneWorkspace { overflow:hidden; padding:var(--safe-top,0px) 0 var(--safe-bottom,0px); }
+.fortuneLoading { padding:20px; }
+.dailyFortune { display:grid; gap:8px; max-width:570px; margin-bottom:12px; padding:12px; border:1px solid var(--line); border-radius:15px; background:var(--card); }
+.dailyFortune:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+.dailyFortune header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.dailyFortune h2 { font-size:16px; }
+.dailyFortune time,.dailyFortune small { color:var(--text-2); font-size:11px; }
+.dailyCard { display:grid; grid-template-columns:52px minmax(0,1fr); align-items:center; gap:11px; padding:7px; border-radius:10px; background:var(--page-mid); }
+.dailyCard h3 { font-size:14px; color:var(--green-text); }
+.dailyCard p { margin:4px 0 0; color:var(--text-2); font-size:13px; line-height:1.45; }
+.dailyCard > button { min-height:44px; }
+.dailyCard :global([role='status']) { font-size:10px; }
+@media (max-width:360px) {
+  .head { padding-inline:8px; gap:5px; }
+  .fortuneSettingsEntry { padding-inline:6px; font-size:11px; }
+  .who span { font-size:11px; }
+}

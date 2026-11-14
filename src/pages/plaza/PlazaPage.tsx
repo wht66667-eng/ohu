@@ -12,6 +12,7 @@ import { DialogLayer } from '../../components/ui/DialogLayer'
 import { isImeComposing, submitMessageKey } from '../../lib/keyboard-viewport'
 import { onAppRefresh } from '../../lib/native'
 import { PostCardSkeleton, RowSkeleton } from '../../components/ui/Skeleton'
+import { ComposerKeyboard } from '../../components/ComposerKeyboard'
 import { StickerPanel } from '../../components/StickerPanel'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../lib/auth'
@@ -146,6 +147,7 @@ export function PlazaPage() {
   const nav = useNavigate()
   const toast = useToast()
   const auth = useAuth()
+  const composeField = useRef<HTMLTextAreaElement>(null)
   const uid = auth.isSigned ? (cloudIdentityUid() || auth.user?.uid || '') : ''
   /* 写库必须用 CloudBase uid，本机 local:xxx 会被 RLS 拒绝。 */
   const writeUid = uid
@@ -1083,7 +1085,7 @@ export function PlazaPage() {
     <div className={`${styles.page} ${tab === 'lobby' ? styles.chatPage : ''}`}>
       <header className={styles.head}>
         <div className={styles.titleBlock}>
-          <span className={styles.eyebrow}>OHU · CAMPUS COMMUNITY ✦</span>
+          <span className={styles.eyebrow}>OHU · CAMPUS ✦</span>
           <h1>校园广场<span aria-hidden="true">✦</span></h1>
           <span>分享校园里的每个好消息</span>
         </div>
@@ -1446,6 +1448,7 @@ export function PlazaPage() {
               ))}
             </div>
             <textarea
+              ref={composeField}
               value={composeBody}
               disabled={sending}
               aria-label="动态内容"
@@ -1454,6 +1457,7 @@ export function PlazaPage() {
               maxLength={500}
               rows={4}
             />
+            <ComposerKeyboard field={composeField} value={composeBody} onChange={setComposeBody} disabled={sending} />
             <div className={styles.composeImgs}>
               {composeImages.map((url, i) => (
                 <div className={styles.composeImgWrap} key={url}>

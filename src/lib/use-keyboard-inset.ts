@@ -14,6 +14,7 @@ export function useKeyboardInset(): void {
     let baselineWidth = window.innerWidth
     let previousHeight = baselineHeight
     let frame = 0
+    let focusFrame = 0
     const apply = () => {
       const active = document.activeElement
       const editing = active instanceof HTMLElement && active.matches('input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=file]), textarea, [contenteditable=true]')
@@ -41,15 +42,20 @@ export function useKeyboardInset(): void {
     window.addEventListener('resize', apply)
     window.addEventListener('app-native-insets', apply)
     document.addEventListener('focusin', apply)
-    document.addEventListener('focusout', apply)
+    const afterFocusChange = () => {
+      cancelAnimationFrame(focusFrame)
+      focusFrame = requestAnimationFrame(apply)
+    }
+    document.addEventListener('focusout', afterFocusChange)
     return () => {
       cancelAnimationFrame(frame)
+      cancelAnimationFrame(focusFrame)
       viewport?.removeEventListener('resize', apply)
       viewport?.removeEventListener('scroll', apply)
       window.removeEventListener('resize', apply)
       window.removeEventListener('app-native-insets', apply)
       document.removeEventListener('focusin', apply)
-      document.removeEventListener('focusout', apply)
+      document.removeEventListener('focusout', afterFocusChange)
       root.style.removeProperty('--app-viewport-height')
       root.style.removeProperty('--app-viewport-top')
       root.removeAttribute('data-keyboard-open')

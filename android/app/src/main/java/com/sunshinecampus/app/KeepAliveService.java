@@ -139,7 +139,7 @@ public class KeepAliveService extends Service {
     }
 
     private Notification buildNotification(String title, String text) {
-        Intent open = new Intent(this, MainActivity.class);
+        Intent open = new Intent(this, SecurityEntryActivity.class);
         open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         open.putExtra("focusNotificationRoute", "/study");
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
@@ -194,7 +194,7 @@ public class KeepAliveService extends Service {
             NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm == null) return;
 
-            Intent open = new Intent(ctx, MainActivity.class);
+            Intent open = new Intent(ctx, SecurityEntryActivity.class);
             open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             open.putExtra("focusNotificationRoute", "/study");
             int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;

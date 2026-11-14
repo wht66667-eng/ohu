@@ -1,0 +1,89 @@
+.page {
+  --fortune-page:#f3ebdf;
+  --fortune-panel:#fff9ed;
+  --fortune-raised:#fbf2e3;
+  --fortune-line:#d9c6ad;
+  --fortune-ink:#28213a;
+  --fortune-copy:#62516a;
+  --fortune-accent:#492b55;
+  --fortune-selected:#492b55;
+  --fortune-on-selected:#fff5e2;
+  --fortune-soft:#eee0ed;
+  --fortune-focus:#8052a1;
+  --fortune-board:#201b35;
+  --fortune-board-edge:#604968;
+  --fortune-gold:#f4d397;
+  --fortune-serif:Georgia,"Songti SC",SimSun,serif;
+  width:100%;
+  min-height:0;
+  height:100%;
+  overflow:auto;
+  scroll-padding-block-start:122px;
+  min-width:0;
+  padding-bottom:32px;
+  color:var(--fortune-ink);
+  background:var(--fortune-page);
+}
+
+:global([data-theme='dark']) .page {
+  --fortune-page:#181423;
+  --fortune-panel:#221b30;
+  --fortune-raised:#302541;
+  --fortune-line:#51415c;
+  --fortune-ink:#fcf0dc;
+  --fortune-copy:#d8c8dc;
+  --fortune-accent:#f5d597;
+  --fortune-selected:#f4d39b;
+  --fortune-on-selected:#302139;
+  --fortune-soft:#3a2b47;
+  --fortune-focus:#f9d795;
+  --fortune-board:#1a152d;
+  --fortune-board-edge:#6a526f;
+}
+
+.navigation {
+  position:sticky;
+  top:0;
+  z-index:5;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--fortune-line);
+  background:var(--fortune-page);
+}
+.navigation > header,.navigationInner,.content { width:100%; max-width:688px; margin-inline:auto; }
+.chatHeader { min-height:56px; padding:4px clamp(12px,4vw,24px); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.chatHeader h2 { margin:0; color:var(--fortune-ink); font-size:22px; letter-spacing:.065em; }
+.chatHeader button { min-height:44px; padding:4px 12px; border-radius:10px; color:var(--fortune-accent); border:1px solid var(--fortune-line); background:var(--fortune-panel); font:inherit; font-size:13px; cursor:pointer; }
+.navigationInner,.content { min-width:0; padding-inline:clamp(12px,4vw,24px); }
+.content { padding-top:12px; }
+.switcher {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+  padding:4px;
+  border:1px solid var(--fortune-line);
+  border-radius:14px;
+  background:var(--fortune-raised);
+}
+.switcher button {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:0;
+  min-height:44px;
+  padding:6px 3px;
+  border:1px solid transparent;
+  border-radius:10px;
+  background:transparent;
+  color:var(--fortune-copy);
+  font:inherit;
+  font-size:clamp(12px,3.4vw,15px);
+  font-weight:700;
+  cursor:pointer;
+}
+.tabMark { font-family:var(--fortune-serif); font-size:14px; line-height:1; }
+.switcher button[aria-selected='true'] { background:var(--fortune-selected); color:var(--fortune-on-selected); }
+.switcher button:active { box-shadow:inset 0 0 0 2px currentColor; }
+.switcher button:focus-visible,.content > :focus-visible { outline:2px solid var(--fortune-focus); outline-offset:2px; }
+.content > :focus-visible { border-radius:17px; }
+.tarotPanel:not([hidden]) { display:grid; gap:12px; }

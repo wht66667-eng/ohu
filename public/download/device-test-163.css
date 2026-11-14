@@ -1,0 +1,9 @@
+/* Device test downloads share the site palette and stay usable on narrow screens. */
+.device-test { margin-block: 20px; padding: clamp(16px, 3vw, 24px); border: 1px solid #c7ddcb; border-radius: 18px; background: #f1f8f1; color: #1d3029; scroll-margin-top: 96px; }
+.device-test h2, .device-test h3 { margin: 0 0 8px; color: #174c35; font-size: 19px; line-height: 1.35; }
+.device-test p { margin: 8px 0 0; color: #40594b; font-size: 13px; line-height: 1.6; }
+.device-test-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.device-test-actions a { flex: 1 1 170px; display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid #16735b; border-radius: 10px; color: #fff; background: #16735b; font-size: 14px; font-weight: 700; text-decoration: none; }
+.device-test-actions a:last-child { color: #174c35; background: #fff; }
+.device-test-actions a:hover, .device-test-actions a:focus-visible { outline: 2px solid #174c35; outline-offset: 2px; }
+.device-test-jump { display: inline-flex; align-items: center; min-height: 44px; color: #174c35; font-weight: 700; text-underline-offset: 4px; }

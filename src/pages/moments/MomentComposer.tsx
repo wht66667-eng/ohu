@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { ComposerKeyboard } from '../../components/ComposerKeyboard'
 import { DialogLayer } from '../../components/ui/DialogLayer'
 import { useToast } from '../../context/ToastContext'
 import { captureImSession, currentImSession } from '../../lib/im-session'
@@ -19,13 +20,14 @@ async function blankTile(index: number): Promise<File> {
   return canvasPhotoFile(canvas, `white-grid-${index + 1}.jpg`)
 }
 
-export function MomentComposer({ uid, onClose, onPublished }: { uid: string; onClose: () => void; onPublished: () => void }) {
+export function MomentComposer({ uid, textOnly = false, onClose, onPublished }: { uid: string; textOnly?: boolean; onClose: () => void; onPublished: () => void }) {
   const toast = useToast()
   const [body, setBody] = useState(''), [photos, setPhotos] = useState<PhotoDraft[]>([])
   const [fillWithWhite, setFillWithWhite] = useState(false), [editingId, setEditingId] = useState('')
   const [visibility, setVisibility] = useState<'friends_only' | 'private'>('friends_only')
   const [busy, setBusy] = useState(false), [picking, setPicking] = useState(false), [error, setError] = useState('')
   const [preview, setPreview] = useState<number | null>(null), [discard, setDiscard] = useState(false), [dragging, setDragging] = useState('')
+  const bodyField = useRef<HTMLTextAreaElement>(null)
   const input = useRef<HTMLInputElement>(null), lock = useRef(false), pickLock = useRef(false), live = useRef(true)
   const objectUrls = useRef(new Set<string>())
   useEffect(() => {
@@ -99,6 +101,7 @@ export function MomentComposer({ uid, onClose, onPublished }: { uid: string; onC
   }
   async function publish() {
     if (lock.current || pickLock.current) return
+    if (textOnly && photos.length) { setError('当前入口仅支持文字动态。'); return }
     const validation = body.trim() ? momentsModerationBlock(body) : photos.length ? null : '写一段文字或添加图片后再发表'
     if (validation) { setError(validation); return }
     const session = captureImSession(uid); if (!session) return
@@ -126,8 +129,10 @@ export function MomentComposer({ uid, onClose, onPublished }: { uid: string; onC
     <div className={styles.composer}>
       <header className={styles.header}><button type="button" onClick={close} disabled={disabled}>取消</button><h2>发表动态</h2><button type="button" className={styles.publish} onClick={() => void publish()} disabled={disabled || (!body.trim() && !photos.length)}>{busy ? '发表中…' : '发表'}</button></header>
       <div className={styles.body}>
-        <textarea className={styles.text} aria-label="这一刻的想法" placeholder="这一刻的想法…" value={body} maxLength={1000} disabled={disabled} onChange={event => setBody(event.target.value)} rows={4} />
+        <textarea ref={bodyField} className={styles.text} aria-label="这一刻的想法" placeholder="这一刻的想法…" value={body} maxLength={1000} disabled={disabled} onChange={event => setBody(event.target.value)} rows={4} />
+        <ComposerKeyboard field={bodyField} value={body} onChange={setBody} disabled={disabled} />
         {body.length > 800 ? <p className={styles.count}>{body.length}/1000</p> : null}
+        {textOnly ? <p className={styles.hint}>当前入口可发布文字，照片可保存在本机手账。</p> : <>
         <p className={styles.hint}>点照片编辑，拖动左上角手柄调整顺序</p>
         <div className={styles.grid} aria-label="待发布图片">{photos.map((photo, index) => <div className={`${styles.photo} ${dragging === photo.id ? styles.dragging : ''}`} data-photo-id={photo.id} key={photo.id}>
           <button type="button" className={styles.image} disabled={disabled} onClick={() => setEditingId(photo.id)} aria-label={`编辑第${index + 1}张图片`}><img src={photo.url} alt={`第${index + 1}张待发布图片`} draggable={false} /></button>
@@ -138,13 +143,14 @@ export function MomentComposer({ uid, onClose, onPublished }: { uid: string; onC
         </div>)}{fillWithWhite && photos.length ? Array.from({ length: 9 - photos.length }, (_, i) => <div className={styles.white} key={`white-${i}`} aria-label="白色补位图">白图</div>) : null}{photos.length < 9 ? <button type="button" className={styles.add} disabled={disabled} onClick={() => void chooseGallery()} aria-label="从相册添加照片">＋</button> : null}</div>
         <div className={styles.albumRow}><span>{photos.length}/9 张</span><button type="button" disabled={disabled || photos.length >= 9} onClick={() => input.current?.click()}>从文件选图</button></div>
         {photos.length ? <label className={styles.whiteOption}><input type="checkbox" disabled={disabled} checked={fillWithWhite} onChange={event => setFillWithWhite(event.target.checked)} />白图补齐九宫格</label> : null}
+        </>}
         <label className={styles.visibility}><span>谁可以看</span><select aria-label="谁可以看" value={visibility} disabled={disabled} onChange={event => setVisibility(event.target.value as typeof visibility)}><option value="friends_only">好友可见</option><option value="private">仅自己</option></select></label>
-        <p className={styles.hint}>选图与编辑只在本机完成，点击发表后才上传。编辑导出最长边1600像素，发布还会按上传限制压缩。</p>
+        {!textOnly ? <p className={styles.hint}>选图与编辑只在本机完成，点击发表后才上传。编辑导出最长边1600像素，发布还会按上传限制压缩。</p> : null}
         {picking ? <p role="status">正在读取所选图片…</p> : null}{busy ? <p role="status">正在上传并发表，请稍候…</p> : null}{error ? <p className={styles.error} role="alert">{error}</p> : null}
       </div>
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={event => { const files = [...(event.target.files || [])]; event.target.value = ''; void pick(files) }} />
     </div>
-    {editingPhoto ? <Suspense fallback={<div className={styles.opening} role="status">正在打开编辑器…</div>}><MomentPhotoEditor key={editingPhoto.id} file={editingPhoto.file} initialState={editingPhoto.edit} availableFiles={photos.map(photo => photo.file)} onClose={() => setEditingId('')} onSave={(file, state) => applyEdit(editingPhoto.id, file, state)} /></Suspense> : null}
+    {editingPhoto ? <Suspense fallback={<div className={styles.opening} role="status">正在打开编辑器…</div>}><MomentPhotoEditor key={uid + ':' + editingPhoto.id} owner={'user:' + uid} file={editingPhoto.file} initialState={editingPhoto.edit} availableFiles={photos.map(photo => photo.file)} onClose={() => setEditingId('')} onSave={(file, state) => applyEdit(editingPhoto.id, file, state)} /></Suspense> : null}
     {preview !== null && photos[preview] ? <DialogLayer title="图片预览" full className={styles.previewSurface} onClose={() => setPreview(null)}><div className={styles.preview}><header><button type="button" onClick={() => setPreview(null)}>返回</button><span>{preview + 1}/{photos.length}</span><button type="button" onClick={() => { setEditingId(photos[preview].id); setPreview(null) }}>编辑</button></header><img src={photos[preview].url} alt={`预览第${preview + 1}张`} /><footer><button type="button" disabled={preview === 0} onClick={() => setPreview(preview - 1)}>上一张</button><button type="button" disabled={preview === photos.length - 1} onClick={() => setPreview(preview + 1)}>下一张</button></footer></div></DialogLayer> : null}
     {discard ? <DialogLayer title="放弃这次编辑？" onClose={() => setDiscard(false)}><div className={styles.discard}><h3>放弃这次编辑？</h3><p>未发表的文字和图片不会保留。</p><button type="button" onClick={() => setDiscard(false)}>继续编辑</button><button type="button" onClick={onClose}>放弃</button></div></DialogLayer> : null}
   </DialogLayer>

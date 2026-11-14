@@ -5,7 +5,7 @@
 .secondary { background:var(--mint); }
 .draw:disabled { opacity:.72; cursor:wait; }
 .primary:active,.secondary:active,.draw:active { transform:scale(.985); }
-.primary:focus-visible,.secondary:focus-visible,.draw:focus-visible,.spreadPicker button:focus-visible,.resetSign:focus-visible,.constellation:focus-visible { outline:3px solid #f89742; outline-offset:3px; }
+.primary:focus-visible,.secondary:focus-visible,.draw:focus-visible,.spreadPicker button:focus-visible,.resetSign:focus-visible { outline:3px solid #f89742; outline-offset:3px; }
 .label { display:grid; gap:5px; color:var(--text-2); font-size:12px; }
 .select { width:100%; min-height:40px; padding:7px 10px; border:1px solid var(--line); border-radius:10px; background:var(--page-mid); color:var(--text); font:inherit; }
 .result { display:grid; gap:5px; padding:11px; border-radius:12px; background:var(--mint); color:var(--text); }
@@ -18,9 +18,6 @@
 
 .tarotTool,.zodiacTool { position:relative; isolation:isolate; }
 .tarotTool::before,.zodiacTool::before { position:absolute; z-index:-1; inset:0; background:radial-gradient(ellipse at 50% 32%,rgba(248,151,66,.13),transparent 57%),linear-gradient(145deg,rgba(12,79,60,.04),transparent 70%); content:""; pointer-events:none; }
-.cosmicHeader { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.kicker { color:var(--green-text); font-size:12px; font-weight:800; letter-spacing:.08em; }
-.deckCount { flex:none; padding:5px 9px; border:1px solid rgba(19,105,82,.13); border-radius:999px; background:rgba(19,105,82,.08); color:var(--green-text); font-size:11px; font-weight:750; }
 .spreadPicker { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .spreadPicker button { min-height:42px; padding:7px; border:1px solid var(--line); border-radius:12px; background:var(--page-mid); color:var(--text-2); font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
 .spreadPicker button:disabled { opacity:.55; cursor:wait; }
@@ -31,15 +28,11 @@
 .deckCardBack { position:absolute; display:grid; place-items:center; width:103px; height:151px; border:2px solid #f2d9aa; border-radius:14px; background:linear-gradient(145deg,#0b4f3a,#083d31 65%,#0c5843); box-shadow:0 13px 23px rgba(15,51,40,.22); }
 .deckCardBack:nth-child(1) { transform:translate(-12px,7px) rotate(-11deg); }
 .deckCardBack:nth-child(2) { transform:translate(8px,3px) rotate(8deg); }
-.deckCardBack:nth-child(3) { grid-template-rows:1fr auto 1fr; padding:9px; transform:rotate(-1deg); }
-.deckCardBack:nth-child(3)::before { position:absolute; inset:5px; border:1px solid rgba(255,221,161,.62); border-radius:9px; content:""; }
-.backRosette { color:#f6c56f; font-size:15px; }
-.backOrb { display:grid; place-items:center; width:47px; height:47px; border:1px solid rgba(255,223,168,.75); border-radius:50%; color:#ffe0a1; font-size:25px; box-shadow:0 0 23px rgba(243,190,92,.18); }
-.shuffleDeck { animation:shuffle 760ms ease-in-out both; }
+.deckCardBack:nth-child(3) { transform:rotate(-1deg); }
+.shuffleDeck { animation:shuffle 560ms ease-in-out both; }
 .shuffleDeck .deckCardBack:nth-child(1) { animation:cardLeft 430ms ease-in-out infinite alternate; }
 .shuffleDeck .deckCardBack:nth-child(2) { animation:cardRight 430ms ease-in-out infinite alternate; }
 .shuffleDeck .deckCardBack:nth-child(3) { animation:cardLift 360ms ease-in-out infinite alternate; }
-.shuffleStatus { position:absolute; bottom:12px; z-index:1; padding:5px 10px; border-radius:999px; background:rgba(255,255,255,.92); color:var(--green-text); font-size:11px; font-weight:700; }
 .readingCards { display:grid; place-items:center; width:100%; gap:10px; padding:9px; }
 .threeCards { grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; gap:5px; }
 .readingSlot { display:grid; align-content:start; justify-items:center; min-width:0; width:100%; gap:5px; animation:dealCard 380ms cubic-bezier(.18,.78,.28,1.13) both; }
@@ -66,9 +59,7 @@
 .threeCards .cardMeaning span { font-size:9px; }
 .localNote { margin:0; color:var(--text-3); font-size:10px; line-height:1.5; text-align:center; }
 .aiPrelude { display:grid; gap:8px; padding:11px; border:1px solid rgba(19,105,82,.16); border-radius:14px; background:rgba(255,255,255,.72); }
-.aiPrelude > div:first-child { display:grid; gap:3px; }
-.aiPrelude > div:first-child b { color:var(--green-text); font-size:13px; }
-.aiPrelude > div:first-child span,.aiDisclosure { margin:0; color:var(--text-2); font-size:11px; line-height:1.5; }
+.aiDisclosure { margin:0; color:var(--text-2); font-size:11px; line-height:1.5; }
 .aiInput { width:100%; min-width:0; min-height:40px; padding:9px; border:1px solid var(--line); border-radius:10px; background:var(--page-mid); color:var(--text); font:inherit; font-size:12px; resize:vertical; }
 .aiConsent { display:flex; align-items:center; gap:7px; color:var(--text-2); font-size:11px; }
 .aiConsent input { width:15px; height:15px; margin:0; accent-color:var(--green); }
@@ -81,33 +72,14 @@
 .aiReply span { color:var(--text); font-size:12px; line-height:1.65; white-space:pre-wrap; }
 .aiReply small { color:var(--text-3); font-size:10px; line-height:1.5; }
 
-.skyMap { position:relative; isolation:isolate; min-height:228px; overflow:hidden; border:1px solid rgba(21,92,73,.22); border-radius:18px; background:radial-gradient(ellipse at 50% 45%,#214b59 0,#153f42 44%,#0d302f 100%); box-shadow:inset 0 0 35px rgba(0,0,0,.18); }
+.skyMap { position:relative; isolation:isolate; overflow:hidden; border:1px solid rgba(21,92,73,.22); border-radius:18px; background:radial-gradient(ellipse at 50% 45%,#214b59 0,#153f42 44%,#0d302f 100%); box-shadow:inset 0 0 35px rgba(0,0,0,.18); }
 .skyMap::before,.skyMap::after { position:absolute; z-index:-1; inset:-18%; border:1px solid rgba(240,214,159,.09); border-radius:50%; content:""; transform:rotate(-24deg) scaleY(.5); }
 .skyMap::after { inset:8%; transform:rotate(23deg) scaleY(.72); }
 .skyDust { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
 .skyDust i { position:absolute; width:2px; height:2px; border-radius:50%; background:#f3dca5; box-shadow:0 0 6px rgba(250,232,190,.8); opacity:.7; }
 .skyDust i:nth-child(3n) { width:3px; height:3px; opacity:.9; }
-.constellations { display:block; width:100%; height:216px; overflow:visible; }
-.constellation { cursor:pointer; outline:none; }
-.starHitArea { fill:transparent; stroke:transparent; transition:fill 160ms ease,stroke 160ms ease; }
-.constellation:hover .starHitArea,.constellation:focus-visible .starHitArea { fill:rgba(255,255,255,.07); stroke:rgba(249,217,155,.4); }
 .constellationStar { fill:#d6e6d7; stroke:#f7e9c0; stroke-width:.55; filter:drop-shadow(0 0 2px rgba(251,228,171,.8)); transition:r 220ms ease,fill 220ms ease; }
-.selectedConstellation .constellationStar { fill:#ffca78; filter:drop-shadow(0 0 4px #ffd889); }
-.starLines { fill:none; stroke:rgba(255,215,141,.38); stroke-width:.85; stroke-dasharray:100; stroke-dashoffset:100; transition:stroke-dashoffset 600ms ease; }
-.connectedLines { stroke:#f7ca79; stroke-dashoffset:0; filter:drop-shadow(0 0 3px rgba(255,216,141,.8)); }
-.signGlyph { fill:#f6ce85; font:14px Georgia,serif; opacity:.76; }
-.signName { fill:rgba(239,243,223,.76); font:7px system-ui,sans-serif; }
-.selectedConstellation .signName,.selectedConstellation .signGlyph { fill:#ffe2a3; opacity:1; }
-.skyCaption { position:absolute; right:11px; bottom:10px; padding:4px 7px; border:1px solid rgba(246,222,171,.2); border-radius:999px; background:rgba(9,35,36,.48); color:rgba(250,239,212,.76); font-size:10px; }
-.selectedSign { display:flex; align-items:center; gap:10px; min-height:57px; padding:9px 12px; border:1px solid rgba(22,104,77,.15); border-radius:13px; background:var(--mint); }
 .selectedGlyph { display:grid; flex:none; place-items:center; width:36px; height:36px; border-radius:11px; background:#f8e6bf; color:#986334; font-family:Georgia,serif; font-size:21px; }
-.signConnected .selectedGlyph { background:#14533f; color:#ffe0a1; box-shadow:0 0 18px rgba(248,184,88,.2); }
-.selectedSign > div { display:grid; gap:2px; }
-.selectedSign b { color:var(--green-text); font-size:13px; }
-.selectedSign span:not(.selectedGlyph) { color:var(--text-2); font-size:11px; }
-.zodiacResult { position:relative; overflow:hidden; border:1px solid rgba(219,153,74,.25); background:linear-gradient(125deg,rgba(255,246,220,.9),rgba(227,239,225,.96)); }
-.resultEyebrow { color:var(--text-3)!important; font-size:10px!important; font-weight:750; letter-spacing:.08em; }
-.zodiacResult > b { font-size:15px; }
 .resetSign { justify-self:start; min-height:38px; padding:5px 8px; border:0; border-radius:9px; background:rgba(19,105,82,.08); color:var(--green-text); font:inherit; font-size:11px; font-weight:750; cursor:pointer; }
 
 @keyframes shuffle { 0% { transform:translateY(0) rotate(0); } 18% { transform:translateX(-6px) rotate(-4deg); } 38% { transform:translateX(7px) rotate(3deg); } 61% { transform:translateX(-5px) rotate(-3deg); } 82% { transform:translateX(4px) rotate(2deg); } 100% { transform:translateY(0) rotate(0); } }
@@ -128,3 +100,216 @@
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
 }
+.fortuneArt,.artFallback { display:block; width:100%; height:auto; min-width:0; aspect-ratio:2 / 3; object-fit:contain; }
+.artFallback { display:grid; place-content:center; justify-items:center; gap:8px; background:#292231; color:#f2d59d; text-align:center; font-size:12px; }
+.artFallback span { font-size:24px; }
+.tarotCard .fortuneArt { align-self:center; }
+.fortuneResult { display:grid; grid-template-columns:minmax(0, .8fr) minmax(0, 1fr); gap:clamp(10px,3vw,18px); align-items:center; padding:10px; border:1px solid var(--warm-line,var(--line)); border-radius:15px; background:var(--card); }
+.fortuneResult > :is(.artPreviewTrigger,.artFallback) { max-width:194px; justify-self:center; }
+.fortuneCopy { display:grid; gap:10px; min-width:0; color:var(--text); }
+.fortuneCopy h2 { margin:0 0 4px; color:var(--green-text); font-size:clamp(18px,5vw,23px); line-height:1.25; overflow-wrap:anywhere; }
+.fortuneCopy div > span { display:block; color:var(--text-2); font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.fortuneCopy p { display:grid; gap:4px; margin:0; font-size:13px; line-height:1.55; }
+.fortuneCopy p b { color:var(--green-text); font-size:11px; }
+.fortuneCopy .resetSign { min-height:44px; text-align:left; }
+.animalPicker { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.animalPicker button { min-height:44px; padding:4px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text); font:inherit; font-size:15px; cursor:pointer; }
+.animalPicker button[aria-pressed='true'] { border-color:#d2ab6c; background:#332737; color:#ffe4a8; font-weight:750; }
+.animalPicker button:active,.artGallery summary:active,.tarotAi summary:active { box-shadow:inset 0 0 0 1px currentColor; }
+.animalPicker button:focus-visible,.artGallery summary:focus-visible,.tarotAi summary:focus-visible { outline:2px solid #d68b3e; outline-offset:2px; }
+.artGallery,.tarotAi { min-width:0; padding:0 10px; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+.artGallery summary,.tarotAi summary { min-height:44px; padding:12px 3px; color:var(--green-text); font-size:13px; font-weight:700; cursor:pointer; }
+.artGallery summary span { margin-inline-start:5px; color:var(--text-3); font-size:11px; }
+.artGalleryGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 8px; padding:2px 0 10px; }
+.artGalleryGrid figure { display:grid; align-content:start; gap:6px; margin:0; }
+.artGalleryGrid figcaption { display:grid; gap:2px; color:var(--text-2); font-size:11px; overflow-wrap:anywhere; }
+.artGalleryGrid figcaption b { color:var(--text); font-size:13px; }
+.tarotAi .aiPrelude { margin-bottom:10px; background:var(--card); }
+.tarotAi .aiDraw { width:100%; margin-top:4px; }
+:global([data-theme='dark']) :is(.cardMeaning,.aiPrelude,.aiReply) { background:var(--card); }
+:global([data-theme='dark']) .drawStage { background:radial-gradient(ellipse at center,#4e3a3d,#26202c 74%); }
+.artPreviewTrigger { display:block; width:100%; min-width:0; padding:0; border:0; background:none; color:inherit; cursor:zoom-in; }
+.artPreviewTrigger:focus-visible { outline:2px solid #d68b3e; outline-offset:3px; }
+.artPreviewTrigger:active { filter:brightness(.87); }
+.artPreviewDialog { display:grid; gap:8px; padding:12px; background:#201a23; color:#f1dfc2; }
+.artPreviewDialog header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.artPreviewDialog h2 { margin:0; color:inherit; font-size:18px; }
+.artPreviewDialog button { min-height:44px; padding:4px 14px; border:1px solid #9d7851; border-radius:10px; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+.artPreviewDialog .fortuneArt { width:min(100%,calc((100dvh - 105px) * 2 / 3),420px); justify-self:center; }
+.visuallyHidden { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.starPicker { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:9px; }
+.starPicker button { display:grid; justify-items:center; gap:2px; min-width:0; min-height:58px; padding:4px 1px; border:1px solid transparent; border-radius:10px; background:transparent; color:#f1e5ca; font:inherit; font-size:clamp(11px,3.1vw,14px); line-height:1.3; cursor:pointer; }
+.starPicker svg { width:36px; height:32px; overflow:visible; }
+.starPicker button[aria-pressed='true'] { border-color:#efc879; background:#416164; color:#fff2cd; }
+.starPicker button:focus-visible,.tarotHand button:focus-visible { outline:2px solid #eebe73; outline-offset:2px; }
+.starPicker button:active { background:#456b6b; }
+.starPicker .starLines { stroke:#ffd48a; stroke-width:1.2; stroke-dasharray:1; stroke-dashoffset:0; animation:traceStars 460ms ease-out both; }
+@keyframes traceStars { from { stroke-dashoffset:1; } }
+.handStatus { display:grid; gap:2px; color:var(--text-2); font-size:13px; line-height:1.4; }
+.handStatus strong,.roundTitle { color:var(--green-text); }
+.tarotHand { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; }
+.tarotHand button { display:grid; place-items:center; min-width:0; min-height:56px; aspect-ratio:2 / 3; padding:0; border:1px solid #d0a768; border-radius:8px; background:linear-gradient(145deg,#1a654f,#103a32 74%); color:#ffe0a1; font:inherit; font-size:15px; cursor:pointer; }
+.tarotHand button[aria-pressed='true'] { background:#f5d391; color:#382a24; box-shadow:0 0 0 2px #bb8659; }
+.tarotHand button[aria-disabled='true'] { opacity:.52; cursor:default; }
+.roundActions { display:flex; flex-wrap:wrap; gap:7px; }
+.roundActions > button { flex:1 1 100px; }
+.roundTitle { margin:0; font-size:17px; }
+.readingNotes { display:grid; gap:7px; margin:0; padding:0; list-style:none; }
+.readingNotes .cardMeaning { padding:9px 10px; }
+.readingNotes .cardMeaning span { font-size:12px; }
+.readingNotes .cardMeaning b { font-size:15px; }
+.readingNotes .cardMeaning p { margin:0; color:var(--text-2); font-size:14px; line-height:1.5; }
+.draw[aria-disabled='true'],.aiDraw[aria-disabled='true'] { opacity:.65; cursor:default; }
+.artPreviewTrigger { position:relative; }
+.zoomMark { position:absolute; right:3px; bottom:3px; display:grid; place-items:center; width:21px; height:21px; border-radius:4px; color:#fff4d7; background:#251c25e6; font-size:16px; line-height:1; }
+.artFallback button { min-height:44px; padding:4px 10px; border:1px solid currentColor; border-radius:8px; background:none; color:inherit; font:inherit; cursor:pointer; }
+.fortuneArt[data-reversed] { transform:rotate(180deg); }
+@media (max-width:360px) { .tarotHand { grid-template-columns:repeat(3,minmax(0,1fr)); } .tarotHand button { aspect-ratio:auto; height:66px; } }
+.crossCards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; align-items:start; }
+.crossCards [data-position='1'] { grid-area:2 / 2; }
+.crossCards [data-position='2'] { grid-area:2 / 3; }
+.crossCards [data-position='3'] { grid-area:3 / 2; }
+.crossCards [data-position='4'] { grid-area:2 / 1; }
+.crossCards [data-position='5'] { grid-area:1 / 2; }
+.crossCards [data-position='6'] { grid-area:2 / 4; }
+.crossCards [data-position='7'] { grid-area:4 / 5; }
+.crossCards [data-position='8'] { grid-area:3 / 5; }
+.crossCards [data-position='9'] { grid-area:2 / 5; }
+.crossCards [data-position='10'] { grid-area:1 / 5; }
+.crossCards .tarotCard { width:100%; padding:2px; border-radius:5px; }
+.crossCards .cardFrame { grid-template-rows:1fr; border-radius:4px; padding:1px; }
+.crossCards .cardGlyph { width:20px; height:20px; font-size:13px; }
+.crossCards :is(.cardRoman,.cardStars,.cardName) { display:none; }
+.crossCards .zoomMark { width:16px; height:16px; font-size:12px; }
+.readingIntro { display:flex; align-items:center; justify-content:space-between; gap:16px; min-width:0; }
+.readingIntro h2 { margin:0; color:var(--fortune-ink,var(--text)); font-family:var(--fortune-serif,var(--display,inherit)); font-size:clamp(22px,6vw,30px); font-weight:750; letter-spacing:.035em; line-height:1.24; }
+.readingIntro p { margin:6px 0 0; color:var(--fortune-copy,var(--text-2)); font-size:13px; line-height:1.65; }
+.readingIntro img { display:block; flex:none; width:clamp(49px,14vw,72px); height:auto; aspect-ratio:2 / 3; object-fit:contain; border:1px solid var(--fortune-line,var(--line)); border-radius:6px; }
+.roundProgress { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; margin:0; padding:0; list-style:none; }
+.roundProgress li { display:grid; gap:5px; justify-items:center; color:var(--fortune-copy,var(--text-2)); font-size:11px; line-height:1.3; }
+.roundProgress li::before { width:100%; height:2px; border-radius:2px; background:var(--fortune-line,var(--line)); content:""; }
+.roundProgress [aria-current='step'] { color:var(--fortune-accent,var(--green-text)); font-weight:750; }
+.roundProgress :is([aria-current='step'],[data-done])::before { background:var(--fortune-accent,var(--green)); }
+
+:global([data-fortune-workbench]) .tool {
+  gap:14px;
+  padding:clamp(12px,3.6vw,20px);
+  overflow:visible;
+  border-color:var(--fortune-line);
+  border-radius:20px;
+  background:var(--fortune-panel);
+}
+:global([data-fortune-workbench]) .tool::before { display:none; }
+:global([data-fortune-workbench]) .disclaimer,
+:global([data-fortune-workbench]) .handStatus,
+:global([data-fortune-workbench]) .localNote { margin:0; color:var(--fortune-copy); font-size:12px; }
+:global([data-fortune-workbench]) :is(.handStatus strong,.roundTitle) { color:var(--fortune-ink); }
+:global([data-fortune-workbench]) .roundTitle { font-size:21px; font-family:var(--fortune-serif); }
+:global([data-fortune-workbench]) :is(.draw,.aiDraw,.secondary,.spreadPicker button,.resetSign,.animalPicker button) {
+  min-height:44px;
+  border:1px solid var(--fortune-line);
+  background:var(--fortune-raised);
+  color:var(--fortune-ink);
+  box-shadow:none;
+  font-size:13px;
+}
+:global([data-fortune-workbench]) :is(.draw,.spreadPicker button[aria-pressed='true'],.animalPicker button[aria-pressed='true']) {
+  border-color:var(--fortune-selected);
+  background:var(--fortune-selected);
+  color:var(--fortune-on-selected);
+}
+:global([data-fortune-workbench]) .draw:not(:disabled) { min-height:48px; }
+:global([data-fortune-workbench]) :is(.draw:disabled,.draw[aria-disabled='true'],.aiDraw[aria-disabled='true']) {
+  opacity:1;
+  background:var(--fortune-soft);
+  color:var(--fortune-copy);
+  border-color:var(--fortune-line);
+}
+:global([data-fortune-workbench]) :is(.secondary,.aiDraw,.resetSign):active { background:var(--fortune-soft); }
+:global([data-fortune-workbench]) :is(button,summary):focus-visible { outline:2px solid var(--fortune-focus); outline-offset:2px; }
+:global([data-fortune-workbench]) .starPicker button:focus-visible,
+:global([data-fortune-workbench]) .tarotHand button:focus-visible { outline-color:var(--fortune-gold); }
+
+:global([data-fortune-workbench]) :is(.skyMap,.drawStage,.tarotHand) {
+  background:radial-gradient(ellipse at 53% 4%,#433359,transparent 67%),var(--fortune-board);
+  border:1px solid var(--fortune-board-edge);
+  border-radius:15px;
+}
+:global([data-fortune-workbench]) .skyMap::after { border-color:#edc38e25; }
+:global([data-fortune-workbench]) .starPicker { padding:7px; gap:5px; }
+:global([data-fortune-workbench]) .starPicker button {
+  min-height:58px;
+  border-color:#e6c1a043;
+  background:#241c39a6;
+  color:#f9e8d6;
+}
+:global([data-fortune-workbench]) .starPicker button[aria-pressed='true'] { background:#684c60; color:#fff3d5; border-color:var(--fortune-gold); }
+:global([data-fortune-workbench]) .constellationStar { fill:#f9e0a4; stroke:#fff0ce; }
+:global([data-fortune-workbench]) .animalPicker { gap:7px; }
+:global([data-fortune-workbench]) .animalPicker button { min-height:51px; font-family:var(--fortune-serif); font-size:18px; }
+:global([data-fortune-workbench]) .drawStage { min-height:189px; padding:9px; }
+:global([data-fortune-workbench]) .drawStage::after { border-color:#f3cc8d3b; inset:7px; }
+:global([data-fortune-workbench]) .deckCardBack { border-color:#d6ab73; background:radial-gradient(ellipse at 50% 33%,#463560,#241c39 76%); }
+:global([data-fortune-workbench]) .tarotHand { padding:9px; gap:6px; }
+:global([data-fortune-workbench]) .tarotHand button { border-color:#cda774; background:#3c2d51; color:#f9dda6; }
+:global([data-fortune-workbench]) .tarotHand button[aria-pressed='true'] { background:#f4d399; color:#302139; box-shadow:inset 0 0 0 1px #8f5d3d; }
+:global([data-fortune-workbench]) .cardPosition { color:#fae5b7; font-size:11px; }
+:global([data-fortune-workbench]) .fortuneResult {
+  grid-template-columns:minmax(0,.85fr) minmax(0,1fr);
+  gap:clamp(10px,3vw,22px);
+  padding:clamp(10px,3.2vw,16px);
+  border-color:var(--fortune-line);
+  background:var(--fortune-raised);
+}
+:global([data-fortune-workbench]) .fortuneResult .artPreviewTrigger { padding:3px; border:1px solid var(--fortune-line); border-radius:7px; }
+:global([data-fortune-workbench]) .fortuneCopy h2 { color:var(--fortune-ink); font-family:var(--fortune-serif); font-size:clamp(20px,6vw,28px); }
+:global([data-fortune-workbench]) .fortuneCopy div > span { color:var(--fortune-copy); }
+:global([data-fortune-workbench]) .fortuneCopy p { color:var(--fortune-ink); font-size:14px; }
+:global([data-fortune-workbench]) .fortuneCopy p b { color:var(--fortune-accent); font-size:12px; }
+:global([data-fortune-workbench]) .readingNotes .cardMeaning {
+  border:1px solid var(--fortune-line);
+  border-inline-start:3px solid var(--fortune-accent);
+  background:var(--fortune-raised);
+}
+:global([data-fortune-workbench]) .readingNotes :is(span,p) { color:var(--fortune-copy); }
+:global([data-fortune-workbench]) .readingNotes b { color:var(--fortune-ink); }
+:global([data-fortune-workbench]) :is(.artGallery,.tarotAi,.aiPrelude,.aiReply,.aiInput) { border-color:var(--fortune-line); background:var(--fortune-panel); color:var(--fortune-ink); }
+:global([data-fortune-workbench]) :is(.artGallery,.tarotAi) summary { color:var(--fortune-ink); font-size:14px; }
+:global([data-fortune-workbench]) :is(.artGallery summary span,.artGalleryGrid figcaption,.aiDisclosure,.aiConsent,.label,.aiReply small) { color:var(--fortune-copy); }
+:global([data-fortune-workbench]) :is(.artGalleryGrid figcaption b,.aiReply b,.aiReply span) { color:var(--fortune-ink); }
+:global([data-fortune-workbench]) .aiConsent input { accent-color:var(--fortune-selected); }
+:global([data-fortune-workbench]) .artPreviewDialog { background:#231a33; color:#fff0d5; }
+:global([data-fortune-workbench]) .artPreviewDialog button { background:#392b4a; color:#fff0d5; }
+@media (min-width:560px) {
+  :global([data-fortune-workbench]) .artGalleryGrid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  :global([data-fortune-workbench]) .starPicker button { min-height:68px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .readingSlot,.tarotCard,.starLines,.shuffleDeck,.shuffleDeck .deckCardBack { animation:none !important; }
+}
+.tarotBackArt {
+  position:relative; display:grid; place-items:center; width:100%; height:100%;
+  min-height:0; overflow:hidden; border-radius:inherit;
+}
+.tarotBackArt img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.tarotBackArt img[hidden] { display:none; }
+.tarotBackArt > span { color:#f4d59c; font-size:clamp(12px,4vw,21px); }
+.tarotHand button { position:relative; }
+.tarotHand button[aria-pressed='true'] { outline:2px solid #eebe73; outline-offset:1px; }
+.handIndex {
+  position:absolute; right:3px; bottom:3px; display:grid; place-items:center;
+  min-width:20px; height:20px; padding-inline:3px; border-radius:5px;
+  color:#302139; background:#fff1cf; font-size:12px; font-weight:750;
+}
+.galleryFilters { display:flex; flex-wrap:wrap; gap:5px; padding:2px 0 12px; }
+.galleryFilters button {
+  min-height:44px; padding:5px 10px; border:1px solid var(--fortune-line,var(--line));
+  border-radius:9px; color:var(--fortune-ink,var(--text)); background:var(--fortune-raised,var(--card));
+  font:inherit; font-size:12px; cursor:pointer;
+}
+.galleryFilters button[aria-pressed='true'] {
+  color:var(--fortune-on-selected,var(--on-primary)); background:var(--fortune-selected,var(--green));
+  border-color:var(--fortune-selected,var(--green));
+}
+.galleryFilters button:focus-visible { outline:2px solid var(--fortune-focus,var(--green)); outline-offset:2px; }

@@ -130,7 +130,16 @@ export async function runAutoSync(opts?: {
   }
 
   try {
-    const data = await autoQueryAcademic({ username: stuid, password })
+    let data: Awaited<ReturnType<typeof autoQueryAcademic>>
+    try {
+      data = await autoQueryAcademic({ username: stuid, password })
+    } catch (error) {
+      // 1006=上游超时/网络失败：请求本身没有产生结果，自动重试一次。
+      // 每次 /auto 请求服务端都会取新验证码会话（换 captcha 会话），仍 1006 才交回统一错误处理。
+      const err = error as TimetableError
+      if (err.code !== '1006' || !isAcademicSyncCurrent(run)) throw error
+      data = await autoQueryAcademic({ username: stuid, password })
+    }
     if (!isAcademicSyncCurrent(run)) return emptyFail({ message: '较早的同步结果已忽略，请使用最近一次同步结果。' })
     const persisted = await persistAll(run, stuid, data.rows, data.grades, data.exams, data)
     if (!persisted.saved) return emptyFail({ message: '教务数据已读取，但本机保存失败，可能只有部分内容已保存；请检查存储空间后重试。' })

@@ -1,9 +1,0 @@
-{
-  "name": "agnesAi",
-  "version": "1.0.0",
-  "description": "Authenticated Agnes AI proxy for Ohhu student learning tools",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "3.18.3"
-  }
-}

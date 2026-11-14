@@ -10,8 +10,7 @@ import { puSummaryFromJson, puSummaryToJson, type PuSummary } from './pocketuni-
 const STORAGE_PREFIX = 'ohu.pocketuni.v1'
 export const PU_STORAGE_EVENT = 'ohu-pocketuni-change'
 
-export const PU_HOME_URL = 'https://class.pocketuni.net/r'
-export const PU_SCORE_DETAIL_URL = 'https://class.pocketuni.net/r#/score/detail'
+export const PU_HOME_URL = 'https://class.pocketuni.net/'
 
 const storageKey = (uid: string) => `${STORAGE_PREFIX}:${uid ? `uid:${encodeURIComponent(uid)}` : 'guest'}`
 

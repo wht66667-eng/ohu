@@ -158,10 +158,14 @@ def parse_exams_html(html: str) -> list[dict]:
         return []
 
     rows_out: list[dict] = []
-    trs = table.find_all("tr")
+    # 只取直接子 tr，避免末行 colspan 套的说明小表被当成考试记录（与 parse_grades_html 一致）
+    body = table.find("tbody") or table
+    trs = [tr for tr in body.find_all("tr", recursive=False)] or table.find_all("tr")
     if len(trs) < 2:
         return []
-    header_cells = [_clean_text(c.get_text()) for c in trs[0].find_all(["td", "th"])]
+    header_cells = [_clean_text(c.get_text()) for c in trs[0].find_all(["td", "th"], recursive=False)]
+    if len(header_cells) < 3:
+        header_cells = [_clean_text(c.get_text()) for c in trs[0].find_all(["td", "th"])]
     hmap = _header_map(header_cells)
     if "name" not in hmap:
         hmap = {
@@ -177,7 +181,7 @@ def parse_exams_html(html: str) -> list[dict]:
         }
 
     for tr in trs[1:]:
-        cols = [_clean_text(c.get_text()) for c in tr.find_all(["td", "th"])]
+        cols = [_clean_text(c.get_text()) for c in tr.find_all(["td", "th"], recursive=False)]
         if len(cols) < 3:
             continue
         name = _cell(cols, hmap.get("name"))

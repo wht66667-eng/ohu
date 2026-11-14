@@ -26,6 +26,8 @@ const shapes: Record<string, ReactNode> = {
  key: <><circle cx="8" cy="8" r="5"/><path d="m11.5 11.5 9 9m-3-3 3-3m-6 0 3-3"/></>,
  logout: <><path d="M9 4H4v16h5m-1-8h13m-4-4 4 4-4 4"/></>,
  grid: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
+ share: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></>,
+ sound: <><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16 9.5a4 4 0 0 1 0 5m2.5-8a8 8 0 0 1 0 11"/></>,
 }
 shapes.store=shapes.shop
 /** 同一线宽的校园服务图标，已有文字时不重复朗读。 */

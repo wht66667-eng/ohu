@@ -1,12 +1,21 @@
 /**
  * 学号本机身份：不注册手机号，也能用「学号」隔离本机的课表 / 成绩 / 体测 / PU 数据。
  *
- * uid 形如 `local:zhd-2023120448`。云端手机账号登录后仍以云端 uid 为准；
+ * uid 形如 `local:zhd-2023000000`。云端手机账号登录后仍以云端 uid 为准；
  * 未登录云端时，`qbank.effectiveQbankUid()` 会退回到这里。
  */
 import { captureQbankSession, setQbankUid } from './qbank'
 
 const KEY = 'ohu.local-identity.v1'
+
+/** 本机身份写入/清除后广播的事件名；auth 层订阅它把游客态即时刷新，门禁通过后不再要求二次登录。 */
+export const LOCAL_IDENTITY_EVENT = 'ohu.local-identity.v1'
+
+function announceIdentityChange() {
+  try {
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(LOCAL_IDENTITY_EVENT))
+  } catch { /* 非 DOM 环境（node 测试）忽略 */ }
+}
 
 export type LocalIdentity = {
   studentId: string
@@ -43,6 +52,7 @@ export function ensureLocalIdentity(studentId: string): LocalIdentity | null {
   }
   const session = captureQbankSession()
   if (!session.uid || session.uid.startsWith('local:')) setQbankUid(identity.uid)
+  announceIdentityChange()
   return identity
 }
 
@@ -62,4 +72,5 @@ export function clearLocalIdentity(): void {
   }
   const session = captureQbankSession()
   if (session.uid.startsWith('local:')) setQbankUid(null)
+  announceIdentityChange()
 }

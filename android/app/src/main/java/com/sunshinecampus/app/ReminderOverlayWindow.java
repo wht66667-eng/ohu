@@ -59,7 +59,7 @@ final class ReminderOverlayWindow {
         Button open = action(context, "/schedule".equals(ReminderOverlayStore.route(route).split("[?#]", 2)[0]) ? "查看课表" : "查看详情");
         open.setOnClickListener(view -> {
             if (!ReminderOverlayStore.enabled(context) || !owner.equals(ReminderOverlayStore.owner(context)) || !screenAvailable(context)) { dismiss(); return; }
-            Intent launch = new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            Intent launch = new Intent(context, SecurityEntryActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             launch.putExtra(OPEN_ROUTE, ReminderOverlayStore.route(route)); launch.putExtra(OPEN_OWNER, owner); launch.putExtra(OPEN_PREVIEW, preview);
             try { context.startActivity(launch); } catch (RuntimeException failure) { ReminderOverlayStore.error(context, "打开提醒详情失败，请从 App 查看课表"); }
             dismiss();

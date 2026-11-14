@@ -9,3 +9,6 @@
 .close { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--text-2, #4c6154); font-size: 20px; line-height: 1; cursor: pointer; }
 .close:hover { background: rgba(22, 115, 91, .1); }
 @media (max-width: 380px) { .banner { flex-wrap: wrap; } .actions { width: 100%; justify-content: flex-end; } }
+.fallback { display:grid; gap:4px; min-width:0; margin-top:4px; }
+.fallback input { width:100%; min-width:0; min-height:36px; padding:4px 7px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--text); font:inherit; font-size:12px; }
+.fallback button { justify-self:start; min-height:38px; padding:4px 8px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--green-text); font:inherit; font-size:12px; cursor:pointer; }

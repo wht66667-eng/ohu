@@ -15,13 +15,50 @@ import { fetchCampusPois, fetchCampuses, type Campus, type CampusPoi } from '../
 import { mergeCampusPois, readLocalPins } from '../lib/campus-map-local'
 import { ensureAlarmChannel } from '../lib/alarm-notify'
 import { IS_NATIVE, PLATFORM } from '../lib/platform'
-import { openPerfectCampusApp } from '../lib/express-app-probe'
-import { openExternalUrl } from '../lib/campus-links'
+import { openPerfectCampusApp, launchScheme, shareTextToWeChat } from '../lib/express-app-probe'
+import { tryOpenLibraryMiniProgram } from '../lib/wechat-miniprogram'
+import { openExternalUrl, LIBRARY_WECHAT_URL as LIBRARY_WECHAT, DORM_POWER_URL as DORM_POWER } from '../lib/campus-links'
+import { copyText } from '../lib/campus-account'
 import styles from './CampusServicePages.module.css'
 
 const CARD_OFFICIAL = 'https://xxzx.jou.edu.cn/info/1131/2481.htm'
 const PERFECT_CAMPUS = 'https://app.59wanmei.com/new/index.html'
 const LIBRARY_GUIDE = 'https://lib.jou.edu.cn/info/1105/1791.htm'
+
+type ServiceToast = ReturnType<typeof useToast>
+
+/**
+ * 微信内才能打开的学校页面（电费公众号 OAuth / 我去图书馆）统一打开流程：
+ * 优先原生分享链接到微信，选「文件传输助手」发送后点开即在微信内完成授权；
+ * 旧原生包无分享方法时降级为复制链接 + 拉起微信手动粘贴；
+ * 微信无法拉起时不假装浏览器可用，明确提示需安装微信。
+ */
+async function openInsideWeChat(url: string, label: string, toast: ServiceToast) {
+  if (await shareTextToWeChat(url)) {
+    toast.ok(`已拉起微信：选择「文件传输助手」发送链接，再点开消息中的链接即可在微信内打开${label}`)
+    return
+  }
+  const copied = await copyText(url)
+  if (await launchScheme('weixin://')) {
+    toast.ok(copied ? `已打开微信；${label}链接已复制，粘贴到「文件传输助手」发送后点开即可` : `已打开微信；请手动复制${label}链接，粘贴到聊天发送后点开`)
+    return
+  }
+  toast.err(`未检测到微信。${label}只能在微信内打开，请先安装微信；也可用下方按钮复制链接后手动发送`)
+}
+
+/** 图书馆选座：学校配置小程序 Scheme 后一键直达；未配置或失败自动走微信内打开兜底。 */
+async function openLibrarySeat(toast: ServiceToast) {
+  if (await tryOpenLibraryMiniProgram()) {
+    toast.ok('已打开微信「我去图书馆」小程序')
+    return
+  }
+  await openInsideWeChat(LIBRARY_WECHAT, '我去图书馆', toast)
+}
+
+async function copyServiceLink(url: string, label: string, toast: ServiceToast) {
+  if (await copyText(url)) toast.ok(`${label}链接已复制，到微信「文件传输助手」粘贴发送后点开即可`)
+  else toast.err(`复制失败，请长按手动复制：${url}`)
+}
 
 type BusStop = { name: string; time: string | null }
 type BusTrip = { vehicle: string; driver: string; phone: string; direction: 'outbound' | 'inbound'; stops: BusStop[] }
@@ -396,9 +433,19 @@ export function CampusCardPage() {
 }
 
 export function LibraryPage() {
+  const toast = useToast()
   return <main className={styles.page}><PageHeader title="图书馆座位" />
     <section className={styles.resourceHero}><span className={styles.resourceIcon}>▤</span><span className={styles.eyebrow}>江苏海洋大学图书馆</span><h2>从官方入口预约座位</h2><p>座位预约、现场签到和使用规则由“我去图书馆”系统管理。哦狐不模拟登录，也不代替你选座。</p><FoxSheetPose pose="reading" className={styles.heroFox} /><small className={styles.foxLine}>阿狐陪你找个安静座位</small></section>
-    <section className={styles.panel}><h2>预约前先了解</h2><ol className={styles.steps}><li>用手机打开图书馆公布的预约指引。</li><li>按指引扫描页面二维码，进入“我去图书馆”。</li><li>选择江苏海洋大学与校区，再按规则选座。</li><li>到馆后按要求完成蓝牙或二维码签到。</li></ol><button type="button" className={styles.primaryLink} onClick={() => void openExternalUrl(LIBRARY_GUIDE)}>打开图书馆官方预约指引 <span>↗</span></button><button type="button" className={styles.secondaryLink} onClick={() => void openExternalUrl("https://lib.jou.edu.cn/")}>访问江苏海洋大学图书馆 ↗</button><span className={styles.panelFox}><FoxSheetPose pose="studying" /><small>选座和签到请按图书馆规则操作</small></span></section>
+    <section className={styles.panel}><h2>我去图书馆 · 选座</h2><button type="button" className={styles.primaryLink} onClick={() => void openLibrarySeat(toast)}>在微信中打开我去图书馆 <span>↗</span></button><p className={styles.infoLine}>选座页只能在微信内打开：学校开通小程序直达后点击即自动打开；否则点击后选择「文件传输助手」发送链接，再点开消息中的链接即进入选座页；若自动分享不可用，会改为复制链接并拉起微信，粘贴发送后点开即可。</p><button type="button" className={styles.secondaryLink} onClick={() => void copyServiceLink(LIBRARY_WECHAT, '选座', toast)}>复制选座链接</button><button type="button" className={styles.secondaryLink} onClick={() => void openExternalUrl(LIBRARY_GUIDE)}>图书馆官方预约指引 ↗</button><span className={styles.panelFox}><FoxSheetPose pose="studying" /><small>选座和签到请按图书馆规则操作</small></span></section>
     <p className={styles.source}>预约入口与签到方式参考江苏海洋大学图书馆于 2024-04-16 发布的操作说明。若学校更新了指引，请以图书馆最新通知为准。</p>
+  </main>
+}
+
+export function DormPowerPage() {
+  const toast = useToast()
+  return <main className={styles.page}><PageHeader title="寝室电费" />
+    <section className={styles.resourceHero}><span className={styles.resourceIcon}>▣</span><span className={styles.eyebrow}>江苏海洋大学 · 官方服务</span><h2>寝室电费充值与查询</h2><p>电费余额、充值与用电明细由学校电费系统管理。哦狐不代收费用，也不保存缴费账号。</p><FoxSheetPose pose="phone" className={styles.heroFox} /><small className={styles.foxLine}>阿狐带你去官方入口</small></section>
+    <section className={styles.panel}><h2>官方电费入口</h2><button type="button" className={styles.primaryLink} onClick={() => void openInsideWeChat(DORM_POWER, '电费充值', toast)}>在微信中打开电费充值与查询 <span>↗</span></button><p className={styles.infoLine}>电费系统是学校的微信公众号网页，只能在微信内打开：点击后选择「文件传输助手」发送链接，再点开消息中的链接，按页面选择宿舍楼与房间即可查询余额并充值。缴费与金额操作请在学校官方系统内完成。</p><button type="button" className={styles.secondaryLink} onClick={() => void copyServiceLink(DORM_POWER, '电费', toast)}>复制电费链接</button><span className={styles.panelFox}><FoxSheetPose pose="waving" /><small>充值请认准学校官方电费系统</small></span></section>
+    <p className={styles.source}>入口为江苏海洋大学寝室电费系统（dfcz.jou.edu.cn）。账号与金额操作以官方页面为准。</p>
   </main>
 }

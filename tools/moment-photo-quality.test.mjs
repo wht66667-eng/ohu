@@ -24,3 +24,23 @@ test('Haar小波保持常量和透明度，非幂次和单像素可逆',()=>{for
 test('小波降噪降低高频方差，细节增强放大低对比细节',()=>{const data=image(83,85,(x,y)=>[128+((x+y)%2?12:-12),100,100,255]);assert.ok(variance(process(data,83,85,settings('wavelet-denoise')))<variance(data)*.2);assert.ok(variance(process(data,83,85,settings('wavelet-detail')))>variance(data)*2)})
 test('专业调节真实改像素，拒绝越界和非数参数',()=>{const data=image(4,4,()=>[60,60,60,77]);const out=process(data,4,4,{...settings('none'),adjustments:{exposure:1}});assert.ok(out[0]>data[0]);assert.equal(out[3],77);for(const adjustments of [{gamma:0},{contrast:NaN},{exposure:99}])assert.throws(()=>process(data,4,4,{...settings('none'),adjustments}))})
 test('中值滤波去除孤立亮点，Sobel边缘保留alpha',()=>{const data=image(9,9,(x,y)=>[x===4&&y===4?255:70,70,70,33]);const out=process(data,9,9,settings('median',100));assert.ok(out[(4*9+4)*4]<100);const edge=process(data,9,9,settings('edges'));for(let i=3;i<edge.length;i+=4)assert.equal(edge[i],33)})
+
+test('校园滤镜强度独立，零强度不改原色，黑白预设满强度保留 alpha', () => {
+  const pixels = image(5, 7, () => [120, 70, 35, 99])
+  const base = { ...settings('none', 0), preset: 'whiteboard' }
+  assert.deepEqual(process(pixels, 5, 7, { ...base, filterStrength: 0 }), pixels)
+  const full = process(pixels, 5, 7, { ...base, filterStrength: 100 })
+  const half = process(pixels, 5, 7, { ...base, filterStrength: 50 })
+  assert.equal(full[0], full[1])
+  assert.equal(full[1], full[2])
+  assert.equal(full[3], 99)
+  assert.ok(Math.abs(half[0] - (full[0] + pixels[0]) / 2) <= 1)
+})
+
+test('自适应小波保留常量与 alpha，并降低合成棋盘噪声', () => {
+  const config = { ...settings('wavelet-denoise', 100), adaptiveWavelet: true, waveletLevels: 2, waveletThreshold: .8 }
+  const constant = image(17, 9, () => [50, 100, 125, 91])
+  assert.deepEqual(process(constant, 17, 9, config), constant)
+  const noise = image(32, 32, (x, y) => [100 + ((x + y) % 2 ? 15 : -15), 100, 100, 91])
+  assert.ok(variance(process(noise, 32, 32, config)) < variance(noise) * .2)
+})

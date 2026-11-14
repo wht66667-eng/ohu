@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FoxSheetPose } from './FoxSheetPose'
+import { playSound, SoundEvent } from '../../lib/sound'
 import type { FoxPoseId } from '../../lib/fox-sheet'
 import styles from './FoxTap.module.css'
 
@@ -17,6 +18,7 @@ export function FoxTap({ pose, frames, message, className, defaultSrc }: {
   useEffect(() => () => { timers.current.forEach(window.clearTimeout); timers.current = [] }, [])
 
   const tap = () => {
+    playSound(SoundEvent.FoxHappy)
     timers.current.forEach(window.clearTimeout)
     setShowTip(true)
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

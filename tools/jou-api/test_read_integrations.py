@@ -8,7 +8,10 @@ from physical_read import parse_scores, PhysicalReadError
 
 class ReadIntegrations(unittest.TestCase):
     def test_no_external_redirect_or_plaintext_chaoxing(self):
-        for url in ("http://mooc1.chaoxing.com/", "https://chaoxing.com.evil.invalid/", "https://127.0.0.1/", "https://a:b@mooc1.chaoxing.com/", "https://mooc1.chaoxing.com:8443/"):
+        # safe_url 把 http:// 升级为 https://（仍限定 *.chaoxing.com），实际请求绝不走明文；
+        # 外部主机、内嵌凭据、非 443 端口与非学习通域名一律拒绝。
+        self.assertEqual(safe_url("http://mooc1.chaoxing.com/"), "https://mooc1.chaoxing.com/")
+        for url in ("https://chaoxing.com.evil.invalid/", "https://127.0.0.1/", "https://a:b@mooc1.chaoxing.com/", "https://mooc1.chaoxing.com:8443/", "http://evil.invalid/"):
             with self.subTest(url=url), self.assertRaises(ChaoxingReadError): safe_url(url)
         self.assertEqual(safe_url("https://mooc1.chaoxing.com/task"), "https://mooc1.chaoxing.com/task")
 
@@ -18,6 +21,26 @@ class ReadIntegrations(unittest.TestCase):
         data = parse_courses('<a href="/visit/stucoursemiddle?courseid=1&clazzid=2&cpi=3"></a><span class="course-name" title="示例课程"></span><p class="line2 color3" title="示例教师"></p>')
         self.assertEqual(data[0]["key"], "1:2:3")
         self.assertEqual(data[0]["name"], "示例课程")
+
+    def test_course_name_window_does_not_steal_next_course(self):
+        # 第一门课卡片缺名称时，固定 2500 窗口会越过下一链接窃取下一门课名（静默误标）。
+        # 应按下一课程链接界定范围：缺名称则显式报错保留原记录，而不是误标成功。
+        page = ('<a href="/visit/stucoursemiddle?courseid=1&clazzid=2&cpi=3"></a>'
+                '<a href="/visit/stucoursemiddle?courseid=4&clazzid=5&cpi=6"></a>'
+                '<span class="course-name" title="课程乙"></span>')
+        with self.assertRaises(ChaoxingReadError):
+            parse_courses(page)
+
+    def test_long_course_card_and_duplicate_links_still_parse(self):
+        # 卡片正文超过 2500 字时固定窗口会漏读名称；重复链接不应截断本卡片范围。
+        page = ('<a href="/visit/stucoursemiddle?courseid=1&clazzid=2&cpi=3"></a>'
+                + "x" * 3000
+                + '<span class="course-name" title="课程甲"></span>'
+                + '<a href="/visit/stucoursemiddle?courseid=1&clazzid=2&cpi=3"></a>'
+                + '<a href="/visit/stucoursemiddle?courseid=4&clazzid=5&cpi=6"></a>'
+                + '<span class="course-name" title="课程乙"></span>')
+        courses = parse_courses(page)
+        self.assertEqual([(c["key"], c["name"]) for c in courses], [("1:2:3", "课程甲"), ("4:5:6", "课程乙")])
 
     def test_homework_urls_are_checked_and_ambiguous_deadlines_stay_unknown(self):
         page = '<li onclick="goTask(this);" data="https://mooc1.chaoxing.com/task?workId=4"><p class="overHidden2 fl">示例作业</p><p class="status fl">未交</p></li>'
@@ -49,16 +72,16 @@ class ReadIntegrations(unittest.TestCase):
 
     def test_server_features_are_disabled_by_default(self):
         import app
-        with patch.dict(os.environ, {'CHAOXING_READ_ENABLED': '', 'PHYSICAL_READ_ENABLED': '', 'PHYSICAL_ALLOW_HTTP': ''}):
+        with patch.dict(os.environ, {'CHAOXING_READ_ENABLED': ''}):
             client = app.app.test_client()
             caps = client.get('/api/integrations/capabilities').get_json()
             self.assertFalse(caps['physical']['enabled'])
+            self.assertEqual(caps['physical']['note'], 'device-sync-only')
             self.assertFalse(caps['chaoxing']['enabled'])
-            self.assertEqual(client.post('/api/physical/query', json={}).status_code, 503)
+            # 体测改为设备侧同步，服务端查询/验证码路由已移除（404），不再接受学校凭据。
+            self.assertEqual(client.post('/api/physical/query', json={}).status_code, 404)
+            self.assertEqual(client.post('/api/physical/captcha', json={}).status_code, 404)
             self.assertEqual(client.post('/api/learning/chaoxing/query', json={}).status_code, 503)
-        with patch.dict(os.environ, {'PHYSICAL_READ_ENABLED': '1', 'PHYSICAL_ALLOW_HTTP': '1'}), patch('physical_read.query') as read:
-            self.assertEqual(client.post('/api/physical/query', json={'consent': False}).status_code, 400)
-            read.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()

@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
-import { loadAcademicMeta } from '../lib/academic-cache'
+import { ACADEMIC_CACHE_EVENT, loadAcademicMeta } from '../lib/academic-cache'
 import { listPhysicalTestResults } from '../lib/physical-test-results'
 import { readPocketUni } from '../lib/pocketuni-store'
 import { CourseGradesPage } from './study/CourseGradesPage'
@@ -34,17 +34,26 @@ export function GradesHubPage() {
   const [params, setParams] = useSearchParams()
   const raw = params.get('tab')
   const tab: TabKey = TABS.some(([key]) => key === raw) ? (raw as TabKey) : 'courses'
-  const updatedText = useMemo(() => {
-    if (tab === 'courses') return timeText(loadAcademicMeta('grades')?.savedAt)
-    if (tab === 'elective') return timeText(loadAcademicMeta('grades')?.savedAt)
-    if (tab === 'tice') return timeText(listPhysicalTestResults()[0]?.updatedAt)
-    return timeText(readPocketUni()?.syncedAt)
-  }, [tab])
+  const [, setSyncTick] = useState(0)
+  useEffect(() => {
+    const bump = () => setSyncTick(value => value + 1)
+    window.addEventListener(ACADEMIC_CACHE_EVENT, bump)
+    window.addEventListener('ohu-background-sync-done', bump)
+    return () => {
+      window.removeEventListener(ACADEMIC_CACHE_EVENT, bump)
+      window.removeEventListener('ohu-background-sync-done', bump)
+    }
+  }, [])
+  const updatedText = tab === 'courses' || tab === 'elective'
+    ? timeText(loadAcademicMeta('grades')?.savedAt)
+    : tab === 'tice'
+      ? timeText(listPhysicalTestResults()[0]?.updatedAt)
+      : timeText(readPocketUni()?.syncedAt)
 
   return <div style={{ minHeight: '100vh', background: 'var(--bg,#f6f7f4)' }}>
     <PageHeader title="成绩" />
     <div style={{ padding: '0 14px' }}>
-      <div role="tablist" aria-label="成绩分类" style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '4px 0 10px' }}>
+      <div role="tablist" aria-label="成绩分类" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '4px 0 10px' }}>
         {TABS.map(([key, label]) => <button
           key={key}
           type="button"
@@ -52,14 +61,14 @@ export function GradesHubPage() {
           aria-selected={tab === key}
           onClick={() => setParams({ tab: key }, { replace: true })}
           style={{
-            flex: 'none', padding: '9px 15px', borderRadius: 12, border: 0, cursor: 'pointer', fontSize: 13,
+            flex: 'none', minHeight: 44, padding: '9px 15px', borderRadius: 12, border: 0, cursor: 'pointer', fontSize: 14,
             background: tab === key ? 'var(--card,#fff)' : 'transparent',
             color: 'var(--text,#222)', fontWeight: tab === key ? 700 : 450,
             boxShadow: tab === key ? '0 2px 10px rgba(0,0,0,.06)' : 'none',
           }}
         >{label}</button>)}
       </div>
-      <p role="status" style={{ margin: '0 0 10px', fontSize: 11.5, color: 'var(--text-3,#777)' }}>
+      <p role="status" style={{ margin: '0 0 10px', fontSize: 13, lineHeight: 1.6, color: 'var(--text-2,#555)' }}>
         {updatedText} · 同步失败时保留旧数据，不会写成 0
       </p>
     </div>

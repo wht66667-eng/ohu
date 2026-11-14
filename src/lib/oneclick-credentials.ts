@@ -62,6 +62,8 @@ export function saveOneClickCredentials(input: OneClickCredentials): boolean {
       ...(input.remember && input.casPassword ? { casBlob: sealSecret(input.casPassword) } : {}),
       ...(input.remember && input.ticePassword ? { ticeBlob: sealSecret(input.ticePassword) } : {}),
     }
+    if (input.remember && ((input.vpnPassword && !value.vpnBlob)
+      || (input.casPassword && !value.casBlob) || (input.ticePassword && !value.ticeBlob))) return false
     localStorage.setItem(storageKey(session.uid), JSON.stringify(value))
     return isQbankSessionCurrent(session)
   } catch {

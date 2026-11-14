@@ -55,6 +55,7 @@
 .error { color:#a43f24; background:#fff0e8; }
 .success { color:var(--green-text); background:var(--green-soft); }
 .empty { padding:12px 0 4px; text-align:center; }
+.emptyFox { display:block; width:72px; height:auto; margin:0 auto 8px; object-fit:contain; }
 .empty p { margin:0 0 14px; color:var(--text-3); font-size:13px; line-height:1.6; }
 .roomList { display:grid; gap:8px; }
 .roomCard { min-width:0; min-height:68px; display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:14px; color:var(--text); text-decoration:none; background:var(--page-mid); }
@@ -86,4 +87,12 @@
 .calendarAction { min-height:44px; margin-top:12px; padding:8px 14px; border:1px solid var(--green); border-radius:12px; background:var(--card); color:var(--green-text); font:inherit; font-size:13px; font-weight:750; cursor:pointer; }
 .calendarAction:focus-visible { outline:3px solid var(--green); outline-offset:3px; }
 .close { display:block; min-height:44px; margin:8px auto 0; padding:8px 16px; border:0; background:transparent; color:var(--text-3); font:inherit; font-size:13px; cursor:pointer; }
+.heroCta { position:relative; z-index:2; display:inline-flex; align-items:center; justify-content:center; min-height:44px; margin-top:2px; padding:0 18px; border-radius:999px; background:var(--green); color:var(--on-primary,#fff); font-size:14px; font-weight:750; text-decoration:none; }
+.heroCta:focus-visible { outline:3px solid var(--orange,#ff8a3d); outline-offset:3px; }
+.progress { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.step,.stepDone { display:inline-flex; align-items:center; gap:6px; color:var(--text-3); font-size:12px; }
+.stepDone { color:var(--green-text); }
+.step i,.stepDone i { display:grid; place-items:center; width:22px; height:22px; border:1px solid var(--line); border-radius:50%; font-size:11px; font-style:normal; }
+.stepDone i { border-color:var(--green); background:var(--green); color:var(--on-primary,#fff); }
+.privacyTip { margin:4px 0 8px; padding:10px 12px; border:1px dashed var(--line); border-radius:12px; color:var(--text-2); font-size:12px; line-height:1.6; }
 @media(max-width:350px) { .page { padding-inline:12px; }.hero { padding:17px; }.hero h2 { font-size:23px; }.heroFox { width:108px; }.section { padding:15px 12px; }.activityGrid { gap:6px; }.activity strong { font-size:11px; }.fields2 { gap:7px; } }

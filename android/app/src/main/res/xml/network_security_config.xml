@@ -12,6 +12,16 @@
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
+    <!-- 自有云端服务仅信任系统证书，避免用户安装的代理根证书读取账号与业务流量。 -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">tcloudbase.com</domain>
+        <domain includeSubdomains="true">tcloudbaseapp.com</domain>
+        <domain includeSubdomains="true">tcb.qcloud.la</domain>
+        <domain includeSubdomains="true">myqcloud.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">localhost</domain>
         <domain includeSubdomains="false">127.0.0.1</domain>

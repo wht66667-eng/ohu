@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { IconBack, IconSend } from '../components/Icons'
 import { DialogLayer } from '../components/ui/DialogLayer'
 import { askSunshine, tidyReplyText, type ChatMsg } from '../lib/ai-chat'
@@ -10,9 +10,23 @@ import { useAuth } from '../lib/auth'
 import { avatar, resolveAvatar } from '../data/images'
 import { isFoxFreeVariant, useUiVariant } from '../lib/ui-variant'
 import { submitMessageKey } from '../lib/keyboard-viewport'
+import { goBack } from '../lib/back'
+import { birthDateInfo, fortuneChatIntent, readFortunePreferences, saveFortunePreferences, type FortuneChatIntent, type FortunePreferences, type FortuneWorkbenchMode } from '../lib/chat-fortune'
+import { DailyFortune, FortuneSettings } from './ChatFortune'
 import styles from './ChatPage.module.css'
 
-type Msg = { id: number; from: 'ai' | 'me'; text: string }
+const FortuneWorkbench = lazy(() => import('./TodayFortunePage').then(module => ({ default: module.FortuneWorkbench })))
+const FORTUNE_REPLY = {
+  tarot: '塔罗牌桌准备好了。选一个牌阵，就可以洗牌和翻牌。',
+  stars: '打开星图，点亮一个星座看看。',
+  animals: '挑一张生肖牌，看看插画和今日提示。',
+  daily: '每日解读由生日和各自的开关决定。',
+  'daily-stars': '可以查看你的每日星座解读，或到设置里开启。',
+  'daily-animals': '可以查看你的每日生肖解读，或到设置里开启。',
+  settings: '可以在这里填写生日，分别开启星座和生肖解读。',
+} satisfies Record<FortuneChatIntent, string>
+
+type Msg = { id: number; from: 'ai' | 'me'; text: string; local?: boolean; fortune?: FortuneChatIntent }
 
 const GREETING = '你好！我是小海阿狐，很高兴认识你！\n我可以帮你查课表、解答问题、提供校园生活与学习建议。陪你度过美好的大学生活！'
 const MESSAGE_LIMIT = 4000
@@ -46,6 +60,12 @@ const STYLE_RULE = [
 
 export function ChatPage() {
   const nav = useNavigate()
+  const [params] = useSearchParams()
+  const initial = params.get('fortune')
+  const initialMode = initial === 'tarot' || initial === 'stars' || initial === 'animals' ? initial : null
+  const [workspace, setWorkspace] = useState<FortuneWorkbenchMode | null>(initialMode)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const scrollList = useRef<HTMLDivElement>(null)
   const toast = useToast()
   const auth = useAuth()
   const foxfree = isFoxFreeVariant(useUiVariant())
@@ -62,6 +82,35 @@ export function ChatPage() {
   const sessionKey = auth.user?.uid || (auth.isSigned ? 'signed' : 'guest')
   const sessionKeyRef = useRef(sessionKey)
   sessionKeyRef.current = sessionKey
+  const [savedFortune, setSavedFortune] = useState(() => ({ owner: sessionKey, value: readFortunePreferences(sessionKey) }))
+  const fortune = savedFortune.owner === sessionKey ? savedFortune.value : readFortunePreferences(sessionKey)
+  const birth = useMemo(() => birthDateInfo(fortune.birthday), [fortune.birthday])
+  const hasDaily = !!birth && (fortune.stars || (fortune.animals && birth.animalIndex !== null))
+
+  function saveFortune(value: FortunePreferences) {
+    if (sessionKey !== sessionKeyRef.current || !saveFortunePreferences(sessionKey, value)) return false
+    setSavedFortune({ owner: sessionKey, value })
+    if (value.birthday && (value.stars || value.animals)) {
+      scrollList.current?.scrollTo({ top: 0, behavior: 'instant' })
+    }
+    return true
+  }
+
+  function dailyTarget(intent: FortuneChatIntent) {
+    if (intent === 'daily-stars' && birth && fortune.stars) return 'chat-daily-stars'
+    if (intent === 'daily-animals' && birth?.animalIndex != null && fortune.animals) return 'chat-daily-animals'
+    return intent === 'daily' && hasDaily ? 'chat-daily-fortune' : null
+  }
+
+  function openFortune(intent: FortuneChatIntent) {
+    if (intent === 'tarot' || intent === 'stars' || intent === 'animals') {
+      setWorkspace(intent)
+      return
+    }
+    const target = dailyTarget(intent)
+    if (target) document.getElementById(target)?.focus()
+    else setSettingsOpen(true)
+  }
 
   useEffect(() => {
     requestSeq.current++
@@ -73,7 +122,17 @@ export function ChatPage() {
     setThinking(false)
     setApprovedService(null)
     setConfirmation(null)
-  }, [sessionKey])
+    setWorkspace(initialMode)
+    setSettingsOpen(false)
+    setSavedFortune({ owner: sessionKey, value: readFortunePreferences(sessionKey) })
+  }, [sessionKey, initialMode])
+
+  useEffect(() => {
+    const last = list.at(-1)
+    if (last?.id !== 1 && scrollList.current) {
+      scrollList.current.scrollTop = scrollList.current.scrollHeight
+    }
+  }, [list, thinking])
 
   useEffect(() => () => {
     requestSeq.current++
@@ -92,6 +151,16 @@ export function ChatPage() {
       toast(`单条消息最多 ${MESSAGE_LIMIT} 字，请分段发送`)
       return
     }
+    const intent = fortuneChatIntent(question)
+    if (intent) {
+      setText('')
+      const messageId = nextId()
+      const responseId = nextId()
+      setList(items => [...items, { id: messageId, from: 'me', text: question, local: true },
+        { id: responseId, from: 'ai', text: FORTUNE_REPLY[intent], local: true, fortune: intent }])
+      if (!dailyTarget(intent)) openFortune(intent)
+      return
+    }
     const service = auth.isSigned || hasCloudIdentity() ? 'agnes' : 'guest'
     if (approvedService !== service && confirmedService !== service) {
       setConfirmation({ question, owner: sessionKey, service })
@@ -100,6 +169,7 @@ export function ChatPage() {
     setText('')
 
     const history: ChatMsg[] = list
+      .filter(message => !message.local)
       .map((m) => ({ role: m.from === 'ai' ? ('assistant' as const) : ('user' as const), content: m.text }))
       .concat({ role: 'user', content: question })
 
@@ -166,7 +236,7 @@ export function ChatPage() {
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <button className={styles.back} onClick={() => nav(-1)} aria-label="返回">
+        <button className={styles.back} onClick={() => goBack(nav, '/services')} aria-label="返回">
           <IconBack />
         </button>
         <img className={styles.avatarLg} src={avatar.sun} alt="小海阿狐" width="40" height="40" />
@@ -174,9 +244,11 @@ export function ChatPage() {
           <b>小海阿狐</b>
           <span>你的校园生活助手</span>
         </div>
+        <button type="button" className={styles.fortuneSettingsEntry} onClick={() => setSettingsOpen(true)}>每日解读设置</button>
       </header>
 
-      <div className={`${styles.list} hide-scroll`}>
+      <div ref={scrollList} className={`${styles.list} hide-scroll`}>
+        {hasDaily ? <DailyFortune preferences={fortune} /> : null}
         {list.map((m) => (
           <div key={m.id} className={`${styles.row} ${m.from === 'me' ? styles.me : ''}`}>
             {m.from === 'ai' ? <img className={`${styles.avatarSm} ${styles.assistantAvatar}`} src={avatar.sun} alt="" width="32" height="32" /> : null}
@@ -186,6 +258,9 @@ export function ChatPage() {
                   {line}
                 </span>
               ))}
+              {m.fortune ? <button type="button" className={styles.fortuneAction} onClick={() => openFortune(m.fortune!)}>
+                {m.fortune === 'tarot' ? '打开塔罗牌桌' : m.fortune === 'stars' ? '打开星图' : m.fortune === 'animals' ? '打开生肖牌' : dailyTarget(m.fortune) ? '查看每日解读' : '打开每日解读设置'}
+              </button> : null}
             </div>
             {m.from === 'me' ? <img className={styles.avatarSm} src={myAvatar} alt="" /> : null}
           </div>
@@ -200,6 +275,7 @@ export function ChatPage() {
       </div>
 
       <div className={`${styles.chips} hide-scroll`}>
+        <button type="button" className={styles.chip} disabled={thinking} onClick={() => void send('我想抽塔罗')}>抽塔罗</button>
         {CHIPS.map((c) => (
           <button key={c.label} type="button" className={styles.chip} disabled={thinking} onClick={() => setText(c.text)}>
             {c.label}
@@ -220,6 +296,14 @@ export function ChatPage() {
         </button>
       </form>
       <small id="chat-message-count" className={styles.composerCount}>{text.length}/{MESSAGE_LIMIT} 字 · 长通知请分段粘贴</small>
+      {settingsOpen ? <DialogLayer title="每日解读设置" onClose={() => setSettingsOpen(false)}>
+        <FortuneSettings key={sessionKey} preferences={fortune} onSave={saveFortune} onClose={() => setSettingsOpen(false)} />
+      </DialogLayer> : null}
+      {workspace ? <DialogLayer title="今日天机" full className={styles.fortuneWorkspace} onClose={() => setWorkspace(null)}>
+        <Suspense fallback={<p role="status" className={styles.fortuneLoading}>正在打开牌桌…</p>}>
+          <FortuneWorkbench initialReading={workspace} onClose={() => setWorkspace(null)} />
+        </Suspense>
+      </DialogLayer> : null}
       {confirmation?.owner === sessionKey ? <DialogLayer title="发送给小海阿狐" onClose={() => setConfirmation(null)}>
         <div className={styles.confirmation}>
           <h2>发送给小海阿狐</h2>

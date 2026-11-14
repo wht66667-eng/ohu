@@ -1,7 +1,9 @@
 /** NON-PRODUCTION. Imported only by vite.ui-review.config.ts on the isolated 43127 origin. */
 import { useSyncExternalStore } from 'react'
 import { selectImSession } from '../src/lib/im-session'
-import { saveScheduleCache } from '../src/lib/schedule-cache'
+// 注意：不要静态导入 schedule-cache——它会经 ScheduleHome→qbank(本文件)→schedule-cache→
+// schedule-calendar(模块顶层调用 subscribeQbank) 的循环在半初始化态触发 TDZ（2026-11-14 TASK-A6）。
+// 本文件对 schedule-cache 只在 seedSchedule() 里动态导入。
 import { chatBubbleTime, chatTopicLabel, chatTopicPath, normMessage } from '../src/lib/chat'
 import type { ChatMessageItem } from '../src/lib/chat'
 
@@ -13,12 +15,30 @@ let uid = 'local:ui-review-a', revision = 1, delayMs = 180
 let auth = authFor(uid)
 function authFor(owner: string) {
   return { isSigned: !!owner, phase: owner ? 'signed' : 'guest', user: owner ? { uid: owner, isAnonymous: false, name: owner.endsWith('b') ? '样例乙' : '样例甲' } : null,
-    ensureSignedIn: async () => !!uid }
+    ensureSignedIn: async () => !!uid,
+    sendEmailCode: async () => null, sendPhoneCode: async () => null,
+    submitEmailCode: async () => null, submitPhoneCode: async () => null }
 }
-export const subscribeQbank = (notify: () => void) => { listeners.add(notify); return () => { listeners.delete(notify) } }
-export const getQbankRevision = () => revision
-export const captureQbankSession = () => ({ uid, revision })
-export const isQbankSessionCurrent = (session: { uid: string; revision: number }) => session.uid === uid && session.revision === revision
+// 用函数声明而非 const 箭头：schedule-calendar 等真实模块在模块顶层调用 subscribeQbank，
+// 经 ScheduleHome→qbank→fixture→schedule-cache→schedule-calendar 的循环导入时 const 存在
+// TDZ（Cannot access before initialization）；函数声明提升后循环导入安全。2026-11-14 TASK-A6。
+export function subscribeQbank(notify: () => void) { listeners.add(notify); return () => { listeners.delete(notify) } }
+export function getQbankRevision() { return revision }
+export function captureQbankSession() { return { uid, revision } }
+export function isQbankSessionCurrent(session: { uid: string; revision: number }) { return session.uid === uid && session.revision === revision }
+// 2026-11-14（TASK-A6 修复）：local-identity 导入 setQbankUid，fixture 缺失导出会使样例入口断链。
+export function setQbankUid(value: string | null) {
+  const next = value || ''
+  if (uid === next) return
+  selectImSession(next || null)
+  uid = next; revision++
+  auth = authFor(uid)
+  listeners.forEach((notify) => notify())
+}
+// 2026-11-14（TASK-A6 修复）：内置插件 StudyTools 导入 listQuestionsLocal（题库本地题），样例返回空题库。
+export function listQuestionsLocal() {
+  return [] as Array<{ id: string; [key: string]: unknown }>
+}
 export const useAuth = () => useSyncExternalStore(subscribeQbank, () => auth, () => auth)
 export function selectPreviewIdentity(owner: string) {
   if (uid === owner) return
@@ -44,7 +64,10 @@ export function seedSchedule() {
     { day: 5, sections: [7, 8], name: '校园实践 · 本地样例', room: '样例活动中心', teacher: '样例教师己' },
     { day: 7, sections: [9, 10], name: '周末选修 · 本地样例', room: '样例教学楼 E203', teacher: '样例教师庚' },
   ]
-  saveScheduleCache(Array.from({ length: 20 }, (_, i) => sample.map(row => ({ ...row, week: i + 1 }))).flat(), 'UI-REVIEW', captureQbankSession())
+  // 动态导入（见文件头注释）：打断 fixture→schedule-cache→schedule-calendar→qbank 的循环。
+  void import('../src/lib/schedule-cache').then(({ saveScheduleCache }) => {
+    saveScheduleCache(Array.from({ length: 20 }, (_, i) => sample.map(row => ({ ...row, week: i + 1 }))).flat(), 'UI-REVIEW', captureQbankSession())
+  })
 }
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="540" height="300" viewBox="0 0 540 300"><rect width="540" height="300" fill="#e6f2ed"/><path d="M0 240L130 130L260 210L380 90L540 200V300H0Z" fill="#96c7b1"/><text x="270" y="55" text-anchor="middle" fill="#164e3c" font-size="26">本地样例图片</text></svg>`
@@ -55,6 +78,10 @@ export const queryAcademic = async () => { throw new Error('这是本地 UI 样�
 export const queryTimetable = queryAcademic
 export const queryAcademicAuto = queryAcademic
 export const runAutoSync = async () => ({ ok: false, needCaptcha: false, passwordWrong: false, message: '本地 UI 样例禁止教务同步，请勿填写真实凭据。', rows: [], grades: [], exams: [] })
+// 2026-11-14 补齐（TASK-A6 修复）：B4/B5 改造后 ScheduleHome 直接导入 beginAcademicSync/isAcademicSyncCurrent，fixture 缺失导出会让整个样例入口断链（dev 白屏）。
+let academicSyncRunId = 0
+export const beginAcademicSync = (session = captureQbankSession()) => ({ id: ++academicSyncRunId, session })
+export const isAcademicSyncCurrent = () => true
 export const loadSavedStuid = () => uid ? 'UI-REVIEW' : ''
 export const loadSavedPassword = () => ''
 export const hasUnboundCampusCredentials = () => false
@@ -140,8 +167,35 @@ export const addSticker = (_owner: string, url: string, text = '') => [{ url, te
 export const removeSticker = () => {}
 
 // Fails closed if an unmocked component accidentally tries to reach a CloudBase client.
+// 社工端门（SocialGate）排版样例（TASK-A6）：可先 setSocialRpcHandler 注入合成返回；
+// 未注入（null）时保持 fail-closed，其余样例页行为不变。
 export const cbAuth = () => ({ currentUser: auth.user })
-export const cbRdb = () => { throw new Error('NON-PRODUCTION UI fixture: remote database disabled') }
+type SocialRpcResult = { data?: unknown; error?: unknown }
+let socialRpcHandler: ((name: string, params: Record<string, unknown>) => SocialRpcResult | null) | null = null
+let socialShareRows: unknown[] = []
+export function setSocialRpcHandler(handler: ((name: string, params: Record<string, unknown>) => SocialRpcResult | null) | null) { socialRpcHandler = handler }
+export function setSocialShareRows(rows: unknown[]) { socialShareRows = rows }
+export const cbRdb = () => {
+  if (!socialRpcHandler) throw new Error('NON-PRODUCTION UI fixture: remote database disabled')
+  const chain: Record<string, unknown> = {}
+  const pending = () => Promise.resolve({ data: socialShareRows, error: null })
+  chain.select = () => chain
+  chain.eq = () => chain
+  chain.order = () => chain
+  chain.limit = () => chain
+  chain.upsert = async () => ({ error: null })
+  chain.insert = async () => ({ error: null })
+  chain.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) => pending().then(resolve, reject)
+  chain.catch = (reject: (reason: unknown) => unknown) => pending().catch(reject)
+  return {
+    rpc: async (name: string, params: Record<string, unknown> = {}) => socialRpcHandler(name, params) ?? { data: null, error: null },
+    from: () => chain,
+  }
+}
 export const cbStorage = () => { throw new Error('NON-PRODUCTION UI fixture: remote storage disabled') }
 
 selectImSession(uid)
+
+// 2026-11-14（TASK-A6 修复）：schedule-prefs 新增历史作息导入判定，fixture 缺失导出会使整个样例入口断链。
+export const getLegacyPeriodsImportStatus = () => ({ count: 0, alreadyImported: true })
+export const claimLegacyPeriodsForCurrentAccount = () => ({ ok: true, periods: null })

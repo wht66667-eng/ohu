@@ -123,9 +123,11 @@ function routeFeedback(reduce = false) {
       useState: () => [slow, (value) => { slow = value }],
       useEffect: (effect) => { if (!effectMounted) { effectMounted = true; cleanup = effect() } },
       useLayoutEffect: (effect) => effect(),
-    } : name === 'react/jsx-runtime' ? { jsx: (type, props) => ({ type, props }) } : {},
+    } : name === 'react/jsx-runtime' ? { jsx: (type, props) => ({ type, props }) }
+      : name === 'react-router-dom' ? { useLocation: () => ({ pathname: '/home', search: '' }), useNavigationType: () => 'PUSH' } : {},
     window: { setTimeout: (callback, delay) => { scheduled = { callback, delay }; return 7 }, clearTimeout: (id) => { assert.equal(id, 7); cleared = true }, matchMedia: () => ({ matches: reduce }) },
-    document: { getElementById: () => ({ animate: (frames, timing) => { animated++; assert.equal(timing.duration, 180); assert.equal(frames[0].opacity, 0); return { cancel() {} } } }) },
+    document: { activeElement: null, getElementById: () => ({ animate: (frames, timing) => { animated++; assert.equal(timing.duration, 260); assert.equal(frames[0].opacity, .75); return { cancel() {} } } }) },
+    getComputedStyle: () => ({ getPropertyValue: (name) => name === '--turn-ms' ? '260ms' : '' }),
   })
   return { api: module.exports, timer: () => scheduled, unmount: () => cleanup(), cleared: () => cleared, animated: () => animated }
 }

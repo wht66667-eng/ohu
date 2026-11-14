@@ -92,3 +92,7 @@ export async function fetchChatThreads() {
   await wait()
   return { data: { items: [], total: 0, unread_total: !signed || mode === 'empty' || mode === 'error' ? 0 : 3, has_more: false, next_cursor: null }, error: mode === 'error' ? '本地合成错误：会话读取失败' : null }
 }
+
+// 2026-11-14（TASK-A6 修复）：B4/B5 改造后 todo 模块新增以下导入，fixture 缺失导出会使整个样例入口断链。
+export const fetchOpenTodosForHome = async () => ({ rows: [], error: null, hasMore: false })
+export const fetchTodoReminderCandidates = async () => ({ rows: [], error: null, hasMore: false })

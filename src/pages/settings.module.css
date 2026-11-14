@@ -1,6 +1,8 @@
 .page { background: var(--page-mid); padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
 .intro { margin: 0 18px 18px; color: var(--text-2); font-size: 14px; line-height: 1.6; }
 .menu { margin: 0 16px 20px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+.groupTitle { margin: 0; padding: 16px 0 2px; color: var(--green-text); font-family: var(--hand, inherit); font-size: 13px; line-height: 1.5; font-weight: 750; letter-spacing: .04em; }
+:global(:root[data-ui-variant='handdrawn']) .groupTitle { font-family: var(--hand); }
 .menuRow { display: flex; align-items: center; width: 100%; min-height: 80px; gap: 14px; padding: 14px 0; text-align: left; color: var(--text); }
 .menuRow + .menuRow { border-top: 1px solid var(--line); }
 .menuIcon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--mint); color: var(--green-text); font-size: 23px; font-weight: 500; }

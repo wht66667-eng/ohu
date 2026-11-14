@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { Link, useLocation } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { SOFT, SPRING, uiTransition } from '../lib/animations'
-import { IconGrid, IconHome, IconBell, IconUser, IconPlus, IconPlaza, IconMegaphone, IconCal } from './Icons'
+import { IconGrid, IconHome, IconBell, IconUser, IconPlus, IconPlaza, IconMegaphone } from './Icons'
 import { getAppShell, isWorkShell, type AppShell } from '../lib/app-shell'
 import styles from './TabBar.module.css'
 import { FoxPaw } from './fox/FoxMarks'
@@ -36,24 +36,25 @@ function StudentTabBar({
 }) {
   const variant = useUiVariant()
   const plainHome = pathname === '/'
+  const handdrawn = variant === 'handdrawn'
   const fox = variant === 'classic' || variant === 'fox' || variant === 'cute' || variant === 'immersive'
   const cute = !plainHome && (variant === 'cute' || variant === 'immersive')
   const minimal = plainHome || variant === 'minimal'
-  const scheduleTab = pathname === '/schedule'
   const [publishing, setPublishing] = useState(false)
   return (
     <motion.nav
       className={`${styles.wrap} ${plainHome ? styles.homeWrap : ''}`}
-      initial={reduce ? false : { y: minimal ? 6 : 24, opacity: 0 }}
+      initial={false}
       animate={{ y: 0, opacity: 1 }}
       transition={reduce ? { duration: 0 } : minimal ? SOFT : SPRING}
       aria-label="主导航"
+      data-shell="student"
     >
-      <Tab to="/" label="首页" icon={fox ? <img src={variant === 'classic' ? '/ohu-v7-assets/fox-mascot.webp' : foxAssetUrl('avatar')} className={styles.foxTab} width="28" height="28" alt="" /> : <IconHome size={22} />} active={pathname === '/'} plain={plainHome} />
+      <Tab to="/" label="首页" icon={handdrawn ? <img src="/brand/handdrawn/fox-avatar.png" className={styles.foxTab} width="28" height="28" alt="" /> : fox ? <img src={variant === 'classic' ? '/ohu-v7-assets/fox-mascot.webp' : foxAssetUrl('avatar')} className={styles.foxTab} width="28" height="28" alt="" /> : <IconHome size={22} />} active={pathname === '/'} plain={plainHome} />
       <Tab
-        to={scheduleTab ? '/schedule' : '/services'}
-        label={scheduleTab ? '课程' : '服务'}
-        icon={scheduleTab ? <IconCal size={22} /> : fox ? <FoxPaw size={23} /> : <IconGrid size={22} />}
+        to="/services"
+        label="服务"
+        icon={fox ? <FoxPaw size={23} /> : <IconGrid size={22} />}
         active={[...SERVICE_ROUTES].some(path => pathname === path || pathname.startsWith(`${path}/`))}
         plain={plainHome}
       />
@@ -79,7 +80,7 @@ function StudentTabBar({
         </motion.button>
         <span className={styles.plusLabel}>发布</span>
       </div>
-      <Tab to="/plaza" label="广场" icon={<IconPlaza size={22} />} active={pathname === '/plaza' || pathname.startsWith('/plaza/')} plain={plainHome} />
+      <Tab to="/campus-life" label="校园生活" icon={<IconPlaza size={22} />} active={['/campus-life', '/plaza', '/moments'].includes(pathname) || pathname.startsWith('/plaza/')} plain={plainHome} />
       <Tab to="/profile" label="我的" icon={<IconUser size={22} />} active={pathname === '/profile' || pathname.startsWith('/profile/') || pathname.startsWith('/settings')} plain={plainHome} />
     </motion.nav>
   )
@@ -94,7 +95,6 @@ function WorkTabBar({
   pathname: string
   search: string
 }) {
-  const reduce = useReducedMotion()
   const auth = useAuth()
   const ownerKey = shellBadgeOwnerKey(auth.isSigned ? auth.user?.uid || '' : '', shell)
   const badge = useSyncExternalStore(subscribeShellBadge, () => getShellBadgeCount(ownerKey), () => 0)
@@ -108,9 +108,9 @@ function WorkTabBar({
   }, [ownerKey, badge])
   const wrapProps = {
     className: `${styles.wrap} ${styles.workWrap}`,
-    initial: reduce ? false : ({ y: 24, opacity: 0 } as const),
+    initial: false as const,
     animate: { y: 0, opacity: 1 },
-    transition: reduce ? { duration: 0 } : SPRING,
+    transition: { duration: 0 },
     'aria-label': '管理导航',
   }
   const msgOn = pathname === '/messages' || pathname.startsWith('/chats') || pathname.startsWith('/im/')

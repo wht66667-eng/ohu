@@ -19,6 +19,7 @@ import { listFocusMusic, type FocusMusic } from '../../lib/focus-music'
 import { fetchTodos, updateTodo, type TodoRow } from '../../lib/todo'
 import { PLATFORM } from '../../lib/platform'
 import { useAuth } from '../../lib/auth'
+import { saveSnapshotToJournal, journalOwnerOf } from '../../lib/journal-snapshot'
 import { FoxSheetPose } from '../../components/fox/FoxSheetPose'
 import { isFoxFreeVariant, useUiVariant } from '../../lib/ui-variant'
 import ui from '../../components/focus/focus-interactions.module.css'
@@ -84,6 +85,7 @@ export function StudyFocusPage() {
   const [foxSpriteReady, setFoxSpriteReady] = useState(false)
   const [range, setRange] = useState(7)
   const [details, setDetails] = useState(false)
+  const [savingJournal, setSavingJournal] = useState(false)
   const alive = useRef(true)
   const todoRequest = useRef(0)
   const uidRef = useRef(user?.uid)
@@ -183,6 +185,17 @@ export function StudyFocusPage() {
     return { days, week, today: todayMinutes(), streak: streakDays(), total: totalStats(), todaySessions: week.find((day) => day.isToday)?.sessions || 0, weekMinutes: week.reduce((sum, day) => sum + day.minutes, 0), best: days.reduce((best, day) => Math.max(best, day.minutes), 0) }
   }, [statsTick, range, user?.uid])
 
+  async function saveTodayToJournal() {
+    if (savingJournal) return
+    setSavingJournal(true)
+    try {
+      const body = stats.today
+        ? `今日专注 ${stats.today} 分钟，完成 ${stats.todaySessions} 轮，连续 ${stats.streak} 天。`
+        : '今天还没有完整结束的专注，先安排一轮吧。'
+      await saveSnapshotToJournal(journalOwnerOf(signed, user?.uid), '专注 · 今日摘要', body)
+    } catch { toast.err('保存失败，请重试。') } finally { setSavingJournal(false) }
+  }
+
   function choosePlan(row: TodoRow) {
     const next = { id: row.id, title: row.title }
     setPlan(next); storePlan(planKey, next); setOptions((old) => ({ ...old, title: row.title })); setTab('timer')
@@ -268,7 +281,7 @@ export function StudyFocusPage() {
           {!signed ? <div className={css.emptyState}><p>登录后连接你的待办</p><span>本地任务与已有统计仍保存在当前设备。</span><Link to="/profile" className={ui.secondaryButton}>去登录</Link></div> : todoState === 'loading' ? <p className={css.helper} role="status">正在加载待办…</p> : todoState === 'error' ? <div className={css.emptyState}><p role="alert">{todoError}</p><button type="button" className={ui.secondaryButton} onClick={() => void refreshTodos()}>重新加载</button></div> : todos.length ? <div className={css.todoList}>{todos.map((row) => <button type="button" key={row.id} className={css.todoRow} disabled={busy} onClick={() => choosePlan(row)}><span><strong>{row.title}</strong><small>{dueLabel(row.due_at)}</small></span><span className={css.todoSelect}>{plan?.id === row.id ? '已选择' : '选为目标'}<FocusIcon name={plan?.id === row.id ? 'check' : 'plus'} size={16} /></span></button>)}</div> : <div className={css.emptyState}><p>今天没有待处理事项</p><span>在待办里记下任务，再安排一段专注时间。</span><Link to="/todo" className={ui.secondaryButton}>添加待办</Link></div>}
         </div>
       </> : showTab === 'stats' ? <>
-        <div className={ui.sectionHead}><h2>专注记录</h2><button type="button" className={ui.copyButton} onClick={() => setDetails(true)}>每日明细</button></div><p className={css.helper}>统计来自当前设备上完整结束的专注。</p>
+        <div className={ui.sectionHead}><h2>专注记录</h2><button type="button" className={ui.copyButton} disabled={savingJournal} onClick={() => void saveTodayToJournal()}>{savingJournal ? '正在保存…' : '记入手账'}</button><button type="button" className={ui.copyButton} onClick={() => setDetails(true)}>每日明细</button></div><p className={css.helper}>统计来自当前设备上完整结束的专注。</p>
         <div className={css.statsGrid}><div><span>本周累计</span><strong>{fmtDuration(stats.weekMinutes)}</strong></div><div><span>累计时长</span><strong>{fmtDuration(stats.total.minutes)}</strong></div><div><span>累计次数</span><strong>{stats.total.sessions}<small>次</small></strong></div><div><span>专注天数</span><strong>{stats.total.days}<small>天</small></strong></div></div>
         <div className={css.chartCard}><div className={css.chartHead}><h3>每日专注时长</h3><div className={css.rangeChoices}>{[7, 14, 30].map((days) => <button type="button" key={days} aria-pressed={range === days} onClick={() => setRange(days)}>{days} 天</button>)}</div></div><div className={css.chart} role="img" aria-label={`近 ${range} 天专注时长，最高 ${stats.best} 分钟`}><div className={css.chartColumns}>{stats.days.map((day) => <div key={day.key} className={css.chartColumn} title={`${day.label}：${day.minutes} 分钟，${day.sessions} 次`}><span className={css.chartValue}>{day.minutes || ''}</span><div className={css.chartTrack}><i className={day.isToday ? css.chartToday : ''} style={{ transform: `scaleY(${day.minutes / Math.max(1, stats.best)})` }} /></div><span className={css.chartLabel}>{range <= 14 ? day.isToday ? '今天' : day.label : day.date.getDate()}</span></div>)}</div></div>{!stats.days.some((day) => day.minutes) ? <p className={css.helper}>这段时间还没有记录。完成第一轮专注后，数据会显示在这里。</p> : null}</div>
       </> : <>

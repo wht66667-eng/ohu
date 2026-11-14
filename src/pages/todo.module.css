@@ -504,7 +504,7 @@
 }
 
 .historyButton {
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 18px;
   border: 1px solid var(--line, #dce7df);
   border-radius: 999px;
@@ -1077,4 +1077,8 @@
 :global([data-ui-variant='cute']) .check, :global([data-ui-variant='minimal']) .check, :global([data-ui-variant='cute']) .dragHandle, :global([data-ui-variant='minimal']) .dragHandle { position: relative; }
 :global([data-ui-variant='cute']) .check::after, :global([data-ui-variant='minimal']) .check::after, :global([data-ui-variant='cute']) .dragHandle::after, :global([data-ui-variant='minimal']) .dragHandle::after { content: ''; position: absolute; width: 44px; height: 44px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 @media (prefers-reduced-motion: reduce) { :global([data-ui-variant='cute']) .item, :global([data-ui-variant='cute']) .fab, :global([data-ui-variant='cute']) .check { transition-property: opacity; transform: none; } }
-.noticeEntry{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--green-soft);color:var(--green-text);text-align:left}.noticeEntry strong{font-size:15px}.noticeEntry span{font-size:12px;color:var(--text-3)}.noticeLink{color:var(--green-text);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;padding:12px 5px}
+.noticeEntry{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--green-soft);color:var(--green-text);text-align:left}.noticeEntry strong{font-size:15px}.noticeEntry span{font-size:12px;color:var(--text-3)}.noticeLink{display:inline-flex;align-items:center;min-height:44px;color:var(--green-text);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;padding:0 8px}
+
+.todayActions { display: flex; justify-content: flex-end; margin-top: -8px; padding: 0 4px 6px; }
+.todayActions button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.todayActions button:disabled { opacity: .6; cursor: default; }

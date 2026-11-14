@@ -18,8 +18,10 @@ import { StudyFoxCompanion } from '../components/fox/StudyFoxCompanion'
 import { ConfirmSheet } from '../components/ConfirmSheet'
 import { NoticeTodoSheet, safeTodoLink } from '../components/NoticeTodoSheet'
 import { useAuth } from '../lib/auth'
+import { saveSnapshotToJournal, journalOwnerOf } from '../lib/journal-snapshot'
 import { usePollingRows } from '../lib/hooks'
 import { useToast } from '../context/ToastContext'
+import { playSound, SoundEvent } from '../lib/sound'
 import { createTodo, deleteTodo, deleteTodoConfirmed, fetchTodoReminderCandidates, fetchTodos, fetchTodosPage, updateTodo, type TodoPageRes, type TodoRow } from '../lib/todo'
 import {
   CAP_MAX,
@@ -213,7 +215,8 @@ function TodoAccountPage() {
   async function loadOlderTodos() {
     if (olderBusy || !olderHasMore || !rows.length) return
     const session = captureQbankSession()
-    const beforeId = rows.reduce((min, row) => Math.min(min, row.id), Number.POSITIVE_INFINITY)
+    const beforeId = rows.reduce((min, row) => row.id > 0 ? Math.min(min, row.id) : min, Number.POSITIVE_INFINITY)
+    if (!Number.isFinite(beforeId)) return
     setOlderBusy(true)
     setOlderError(null)
     const page = await fetchTodosPage(beforeId, 100)
@@ -324,6 +327,17 @@ function TodoAccountPage() {
   }, [rows, order])
 
   /** 今日负荷：未完成且（今天到期 / 已逾期 / 没设到期）的负荷之和 */
+  const [savingToday, setSavingToday] = useState(false)
+  async function saveTodayToJournal() {
+    if (savingToday) return
+    setSavingToday(true)
+    try {
+      const open = (groups?.today ?? []).filter(item => !item.done).slice(0, 3).map(item => `· ${item.title || '待办'}`)
+      const doneN = groups?.doneCount ?? 0
+      const body = `今日待办：已完成 ${doneN} 项${open.length ? `，待办：\n${open.join('\n')}` : '，全部完成 🎉'}`
+      await saveSnapshotToJournal(journalOwnerOf(auth.isSigned, auth.user?.uid), '待办 · 今日摘要', body)
+    } catch { toast.err('保存失败，请重试。') } finally { setSavingToday(false) }
+  }
   const load = useMemo(() => computeLoad(rows, cap), [rows, cap])
   const board = useMemo(() => buildBoard(rows, 7), [rows, boardTick])
   const poolOpen = useMemo(
@@ -336,6 +350,8 @@ function TodoAccountPage() {
   )
 
   const list = tab === 'today' ? groups.today : tab === 'open' ? groups.open : groups.done
+  // M2-②：今日待办一键快照进手账
+
   const canDrag = tab === 'today' || tab === 'open'
 
   function onChangeCap(next: number) {
@@ -552,6 +568,7 @@ function TodoAccountPage() {
       : item))
     syncOrderAfterMutation()
     reload()
+    if (nextDone) playSound(SoundEvent.TaskComplete)
     if (nextDone && cute) setCelebrate(true)
   }
 
@@ -720,6 +737,9 @@ function TodoAccountPage() {
                 <p>{groups.todayCount ? `今天与逾期共 ${groups.todayCount} 项待处理，按自己的节奏来。` : '今天没有到期任务，给自己留一点好心情。'}</p>
               </div>
               <img src="/brand/ohu-original/fox-todo-transparent.png" alt="" width="112" height="112" />
+            </div>
+            <div className={s.todayActions}>
+              <button type="button" disabled={savingToday} onClick={() => void saveTodayToJournal()}>{savingToday ? '保存中…' : '记入手账'}</button>
             </div>
 
             <div className={s.seg}>
@@ -1015,7 +1035,7 @@ function TodoAccountPage() {
                           {row.done ? '✓' : ''}
                         </button>
                         <button type="button" className={s.body} onClick={() => openEdit(row)}>
-                          <span className={row.done ? s.titleDone : s.title}>{row.title}</span>
+                          <span className={row.done ? s.titleDone : s.title}>{row.title}</span>{row.id < 0 ? <small>本机</small> : null}
                           {row.note && !safeTodoLink(row.note) ? <span className={s.note}>{row.note}</span> : null}
                           <span className={s.dueRow}>
                             <span className={s.loadTag}>

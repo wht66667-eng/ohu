@@ -62,3 +62,23 @@ html.boot-lock, html.boot-lock body { overflow: hidden; }
 :root[data-ui-variant='pure'] .boot-story { display:none; }
 :root[data-ui-variant='pure'] .boot-content { min-height:0; }
 :root[data-ui-variant='pure'] .boot-foot { margin:0 auto; }
+
+/* 微绿与手绘首页各自接续开场，等待页面就绪时只显示静态状态。 */
+:root[data-ui-variant='companion'] #boot-splash:not([data-preview]) {
+  --boot-bg: #f5fbf7; --boot-green: #185a35; --boot-text: #1c392b; --boot-muted: #4f685a;
+}
+:root[data-theme='dark'][data-ui-variant='companion'] #boot-splash:not([data-preview]) {
+  --boot-bg: #102018; --boot-green: #a5e1b9; --boot-text: #ecf8ef; --boot-muted: #b9cfc0;
+}
+:root[data-ui-variant='handdrawn'] #boot-splash:not([data-preview]) {
+  --boot-bg: #fffaf0; --boot-green: #254d38; --boot-muted: #57665b;
+}
+:root[data-theme='dark'][data-ui-variant='handdrawn'] #boot-splash:not([data-preview]) {
+  --boot-bg: #24251c; --boot-green: #c2dab2; --boot-muted: #d3cbb7;
+}
+:root:is([data-ui-variant='companion'],[data-ui-variant='handdrawn']) #boot-splash:not([data-preview]) :is(.boot-story,.boot-brand > p) {
+  display: none;
+}
+:root:is([data-ui-variant='companion'],[data-ui-variant='handdrawn']) #boot-splash:not([data-preview]) .boot-foot {
+  margin: 0 auto;
+}

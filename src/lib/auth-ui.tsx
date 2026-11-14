@@ -16,6 +16,7 @@ import { avatar } from '../data/images'
 import { toast } from './toast'
 import { PasswordInput } from '../components/PasswordInput'
 import { AvatarCropper } from '../components/AvatarCropper'
+import { DialogLayer } from '../components/ui/DialogLayer'
 import { FoxPosePicker } from '../components/fox/FoxPosePicker'
 import { FoxRequestIndicator } from '../components/fox/FoxRequestIndicator'
 import { foxV1StickerFile, type FoxV1StickerId } from './fox-v1-assets'
@@ -37,9 +38,14 @@ export function AuthSheets() {
       {auth.loginOpen && <LoginSheet />}
       {auth.credOpen && auth.isSigned && <CredSheet key={auth.user?.uid} />}
       {auth.profileOpen && <ProfileSheet key={auth.user?.uid} />}
-      {auth.editOpen && auth.isSigned && <EditSheet key={auth.user?.uid} />}
+      <ProfileEditHost />
     </>
   )
+}
+
+export function ProfileEditHost() {
+  const auth = useAuth()
+  return auth.editOpen && auth.isSigned && auth.user ? <EditSheet key={auth.user.uid} /> : null
 }
 
 function Mask({ onClick, children }: { onClick?: () => void; children: ReactNode }) {
@@ -560,8 +566,7 @@ function EditSheet() {
 
   return (
     <>
-      <Mask onClick={() => !busy && auth.closeEdit()}>
-      <div className="sheet-card" onMouseDown={(e) => e.stopPropagation()}>
+      <DialogLayer title="编辑资料" onClose={auth.closeEdit} allowClose={!busy && !pending}>
         <div className="sheet-head">
           <div>
             <b className="sheet-title">编辑资料</b>
@@ -647,10 +652,10 @@ function EditSheet() {
           </button>
           {err ? <p className="auth-err" role="alert">{err}</p> : null}
         </form>
-      </div>
-      </Mask>
+      </DialogLayer>
       {pending ? (
         <AvatarCropper
+          topLayer
           file={pending}
           busy={busy}
           onCancel={() => setPending(null)}

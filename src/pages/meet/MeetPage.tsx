@@ -11,6 +11,7 @@ import { buildMeetIcs } from '../../lib/meet-calendar'
 import { downloadIcs } from '../../lib/schedule-cache'
 import { captureQbankSession } from '../../lib/qbank'
 import { useQbankRevision } from '../../lib/useQbankRevision'
+import { useUiVariant } from '../../lib/ui-variant'
 import {
   closeMeet, confirmMeet, createMeet, discoverMeets, getMeet, leaveMeet, listMyMeets, readMeetReply,
   recommendedMeetSlots, respondMeet, suggestMeetTimesFromSchedule,
@@ -87,6 +88,7 @@ function RoomCard({ room }: { room: MeetRoomPreview }) {
 function MeetHome() {
   const auth = useAuth()
   const navigate = useNavigate()
+  const handdrawn = useUiVariant() === 'handdrawn'
   const [mode, setMode] = useState<'find' | 'create' | 'mine'>('find')
   const [activity, setActivity] = useState<MeetActivity>('study')
   const [title, setTitle] = useState('')
@@ -174,7 +176,7 @@ function MeetHome() {
     <PageHeader title="碰个空" />
     <section className={styles.hero}>
       <div><span className={styles.eyebrow}>OHU · MEET UP</span><h2>有空，就一起！</h2><p>找同校搭子，约一场想做的事。</p></div>
-      <FoxSheetPose pose="waving" className={styles.heroFox} />
+      <FoxSheetPose pose={handdrawn ? 'reading' : 'waving'} className={styles.heroFox} />
     </section>
     <div className={styles.nav} role="group" aria-label="选择碰个空功能">
       {([['find', '找搭子'], ['create', '发起活动'], ['mine', '我的活动']] as const).map(([id, label]) =>
@@ -182,12 +184,12 @@ function MeetHome() {
     </div>
     {mode === 'mine' ? <section className={styles.section}>
       <div className={styles.sectionTitle}><div><span>YOUR MEETUPS</span><h2>我的活动</h2></div></div>
-      {!auth.isSigned ? <div className={styles.empty}><p>登录后查看你发起和参与的活动。</p><button className={styles.primary} type="button" onClick={() => void signed('登录哦狐后查看我的活动')}>登录查看</button></div>
+      {!auth.isSigned ? <div className={styles.empty}>{handdrawn ? <img className={styles.emptyFox} src="/brand/handdrawn/fox-greeting.png" alt="" aria-hidden="true" /> : null}<p>登录后查看你发起和参与的活动。</p><button className={styles.primary} type="button" onClick={() => void signed('登录哦狐后查看我的活动')}>登录查看</button></div>
         : mineOwner !== (auth.user?.uid || '') ? <p className={styles.state} role="status">正在加载活动…</p>
           : mineError ? <div className={styles.empty}><p className={styles.error} role="alert">{mineError}</p><button className={styles.secondary} type="button" onClick={() => setMineLoadAttempt((value) => value + 1)}>重试加载</button></div>
           : mine === null ? <p className={styles.state} role="status">正在加载活动…</p>
           : mine.length ? <div className={styles.roomList}>{mine.map((room) => <RoomCard key={room.id} room={room} />)}</div>
-            : <div className={styles.empty}><p>还没有活动，找同学一起碰个空吧。</p><button className={styles.secondary} type="button" onClick={() => setMode('create')}>发起活动</button></div>}
+            : <div className={styles.empty}>{handdrawn ? <img className={styles.emptyFox} src="/brand/handdrawn/fox-greeting.png" alt="" aria-hidden="true" /> : null}<p>还没有活动，找同学一起碰个空吧。</p><button className={styles.secondary} type="button" onClick={() => setMode('create')}>发起活动</button></div>}
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
     </section> : <form className={styles.form} onSubmit={(event) => void (mode === 'find' ? submitFind(event) : submitCreate(event))}>
       <section className={styles.section}>
@@ -226,7 +228,7 @@ function MeetHome() {
       <button className={styles.primary} type="submit" disabled={busy}>{busy ? (mode === 'find' ? '正在找搭子…' : '正在发起…') : (mode === 'find' ? '看看谁也有空' : '发起碰个空')}</button>
       {mode === 'find' && results !== null ? <section className={styles.section} aria-live="polite">
         <div className={styles.sectionTitle}><div><span>FOUND FOR YOU</span><h2>合适的活动</h2></div><small>{results.length} 个</small></div>
-        {results.length ? <div className={styles.roomList}>{results.map((room) => <RoomCard key={room.id} room={room} />)}</div> : <div className={styles.empty}><p>暂时没有符合时间的活动。换个时间，或自己发起一个吧。</p><button type="button" className={styles.secondary} onClick={() => { setMode('create'); setError('') }}>我来发起</button></div>}
+        {results.length ? <div className={styles.roomList}>{results.map((room) => <RoomCard key={room.id} room={room} />)}</div> : <div className={styles.empty}>{handdrawn ? <img className={styles.emptyFox} src="/brand/handdrawn/fox-greeting.png" alt="" aria-hidden="true" /> : null}<p>暂时没有符合时间的活动。换个时间，或自己发起一个吧。</p><button type="button" className={styles.secondary} onClick={() => { setMode('create'); setError('') }}>我来发起</button></div>}
       </section> : null}
     </form>}
   </div>
@@ -234,6 +236,7 @@ function MeetHome() {
 
 function MeetDetail({ code }: { code: string }) {
   const auth = useAuth()
+  const handdrawn = useUiVariant() === 'handdrawn'
   const [room, setRoom] = useState<MeetRoom | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -329,19 +332,20 @@ function MeetDetail({ code }: { code: string }) {
             <div className={styles.detailTop}><span>{activityName(room.activity)} · {room.visibility === 'public' ? '同校公开' : '好友邀请'}</span><span>{room.closedAt ? '已结束' : room.confirmedStart ? '已定时间' : '正在组队'}</span></div>
             <h2>{room.title}</h2><p>{room.detailsVisible && room.organizerName ? `由 ${room.organizerName} 发起` : '填写参加时间后即可查看队伍详情'}{room.campus ? ` · ${room.campus}` : ''}</p>
             <div className={styles.detailMeta}><strong>{room.participantCount}<small> / {room.targetSize} 人</small></strong><span>计划 {room.durationMinutes} 分钟</span></div>
-            <FoxSheetPose pose="waving" className={styles.detailFox} />
+            {!room.closedAt && !room.confirmedStart ? <a className={styles.heroCta} href="#met-join-time">填写时间，加入活动</a> : null}
+            <FoxSheetPose pose={handdrawn ? 'reading' : 'waving'} className={styles.detailFox} />
           </section>
           {notice ? <p className={styles.success} role="status">{notice}</p> : null}
           {actionError ? <p className={styles.error} role="alert">{actionError}</p> : null}
           <section className={styles.section}>
-            <div className={styles.sectionTitle}><div><span>THE GROUP</span><h2>一起参加的人</h2></div><small>{room.participantCount}/{room.targetSize}</small></div>
+            <div className={styles.sectionTitle}><div><span>THE GROUP</span><h2>成员确认状态</h2></div><small>已加入 {room.participantCount} · 目标 {room.targetSize}</small></div>
             {!room.detailsVisible ? <p className={styles.hint}>提交参加时间后，可查看已加入的同学。</p>
               : room.participants.length ? <div className={styles.people}>{room.participants.map((person, index) => {
                 const similarity = personalityType && person.personalityType ? meetPersonalitySimilarity(personalityType, person.personalityType) : null
                 return <span key={`${person.name}-${index}`}><i aria-hidden="true">{person.name.slice(0, 1)}</i><span className={styles.personCopy}><b>{person.name}</b><small>{person.personalityType ? `${person.personalityType} · ${meetPersonalityName(person.personalityType)}` : person.vibe === 'any' ? '' : vibeName(person.vibe)}</small>{similarity !== null ? <small className={styles.personalityMatchScore}>与你相似 {similarity}/4</small> : null}</span></span>
               })}</div> : <p className={styles.hint}>还没有同学填写时间。</p>}
           </section>
-          {room.confirmedStart && room.confirmedEnd ? <section className={`${styles.section} ${styles.confirmed}`}><span>时间定啦</span><h2>{slotLabel(room.confirmedStart, room.confirmedEnd)}</h2><p>集合地点还没有记录，请在活动里和成员确认。</p>{calendar ? <button type="button" className={styles.calendarAction} onClick={() => { downloadIcs('哦狐碰个空活动.ics', calendar); setNotice('已发起日历文件下载。打开文件可导入系统日历；集合地点仍需与成员确认。') }}>下载日历文件</button> : <p className={styles.hint}>活动时间格式暂不可导出，请刷新活动信息。</p>}</section>
+          {room.confirmedStart && room.confirmedEnd ? <section className={`${styles.section} ${styles.confirmed}`}><span>时间定啦</span><h2>{slotLabel(room.confirmedStart, room.confirmedEnd)}</h2><p>时间已确定，地点与提醒见下方「见面信息」。</p></section>
             : <section className={styles.section}>
               <div className={styles.sectionTitle}><div><span>COMMON TIME</span><h2>大家都方便的时间</h2></div></div>
               {!room.detailsVisible ? <p className={styles.hint}>加入活动后可查看大家都方便的时间。</p>
@@ -349,7 +353,7 @@ function MeetDetail({ code }: { code: string }) {
                 : <p className={styles.hint}>{room.participantCount < 2 ? '等至少两位同学填好时间，就能找共同空档。' : '暂时没有共同时间，可以调整各自选择。'}</p>}
               {room.mine && room.participantCount < room.targetSize && !room.closedAt ? <p className={styles.hint}>人数达到 {room.targetSize} 人后，发起人可以确定时间。</p> : null}
             </section>}
-          {!room.closedAt && !room.confirmedStart ? <section className={styles.section}>
+          {!room.closedAt && !room.confirmedStart ? <section className={styles.section} id="met-join-time">
             <div className={styles.sectionTitle}><div><span>YOUR TIME</span><h2>{saved ? '你填写的时间' : '你什么时候有空？'}</h2></div>{saved && !editing ? <button type="button" className={styles.textButton} onClick={() => setEditing(true)}>修改</button> : null}</div>
             {!editing && saved ? <p className={styles.hint}>已选择 {saved.slots.length} 个半小时时段，可随时修改。</p> : <form onSubmit={(event) => void submit(event)}>
               <label className={styles.field}><span>怎么称呼你</span><input maxLength={24} value={name} onChange={(event) => setName(event.target.value)} placeholder="填写昵称" required /></label>
@@ -363,12 +367,30 @@ function MeetDetail({ code }: { code: string }) {
             </form>}
           </section> : null}
           <section className={styles.section}>
+            <div className={styles.sectionTitle}><div><span>PLACE &amp; REMINDER</span><h2>见面信息</h2></div></div>
+            <p className={styles.hint}>{room.campus ? `校区：${room.campus}。具体集合地点还没有记录，请在活动里和成员确认。` : '具体集合地点还没有记录，请在活动里和成员确认。'}</p>
+            <p className={styles.hint}>建议提前 5–10 分钟到达；校园活动请保持安静，遵守场地规则。</p>
+            {calendar ? <button type="button" className={styles.calendarAction} onClick={() => { downloadIcs('哦狐碰个空活动.ics', calendar); setNotice('已发起日历文件下载。打开文件可导入系统日历；集合地点仍需与成员确认。') }}>导出日历（.ics）</button> : <p className={styles.hint}>活动时间格式暂不可导出，请刷新活动信息。</p>}
+          </section>
+          <section className={styles.section}>
+            <div className={styles.sectionTitle}><div><span>PROGRESS</span><h2>活动进度</h2></div></div>
+            <div className={styles.progress}>
+              {[
+                { label: '邀请中', done: true },
+                { label: '时间已确认', done: !!room.confirmedStart || !!room.closedAt },
+                { label: '已结束', done: !!room.closedAt },
+              ].map((stage, index) => <span key={stage.label} className={stage.done ? styles.stepDone : styles.step}><i>{index + 1}</i><b>{stage.label}</b></span>)}
+            </div>
+            <p className={styles.hint}>{room.closedAt ? '活动已结束，记录仍可查看。' : room.confirmedStart ? '时间已确认，可以分享邀请或导出日历。' : '还差一起方便的时间，邀请更多同学填一下吧。'}</p>
+          </section>
+          <section className={styles.section}>
             <div className={styles.sectionTitle}><div><span>INVITE YOUR FRIENDS</span><h2>喊朋友一起来</h2></div></div>
             <p className={styles.hint}>分享链接或二维码，朋友打开网页就能查看邀请。</p>
             {share.url ? <MeetShareCode url={share.url} title={room.title} activity={activityName(room.activity)} targetSize={room.targetSize} dateLabel={room.startsOn} /> : <p className={styles.state}>{share.reason}</p>}
           </section>
           {saved && !room.mine && !room.closedAt && !room.confirmedStart ? <button type="button" className={styles.close} onClick={() => void leave()} disabled={busy}>退出活动</button> : null}
           {room.mine && !room.closedAt && !room.confirmedStart ? <button type="button" className={styles.close} onClick={() => void close()} disabled={busy}>结束活动</button> : null}
+          <p className={styles.privacyTip}>小贴士：请尊重同学隐私，组局仅在校园范围内活动，不要发布或询问私人宿舍等敏感位置信息。</p>
         </>}
   </div>
 }

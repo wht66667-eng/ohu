@@ -1,0 +1,14 @@
+.panel { padding: 16px; color: var(--text); background: var(--card); min-height: 100%; }
+.panel header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel h2 { margin: 0; font-size: 21px; }
+.panel p { margin-block: 8px 12px; line-height: 1.5; }
+.panel button, .panel select { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; color: var(--text); background: var(--bg); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button[aria-pressed="true"] { color: #fff; background: #1f5b3a; }
+.scene { margin-block: 12px; height: clamp(250px, 47dvh, 500px); overflow: hidden; border-radius: 14px; background: #eaf1e8; color: #1f3d2b; }
+.scene canvas { display: block; touch-action: none; }
+.scene p { padding: 16px; }
+.panel label { display: grid; gap: 6px; }
+.panel select { width: 100%; }
+.detail { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
+.detail h3 { margin: 0; }

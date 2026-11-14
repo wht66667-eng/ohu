@@ -22,8 +22,8 @@ export function readChaoxingCourses(): ChaoxingCourses | null {
   }
 }
 
-export function saveChaoxingCourses(courses: ChaoxingCourse[]): ChaoxingCourses {
-  const session = captureQbankSession()
+export function saveChaoxingCourses(courses: ChaoxingCourse[], session = captureQbankSession()): ChaoxingCourses {
+  if (!isQbankSessionCurrent(session)) throw new Error('账号已切换，课程没有保存。')
   const key = storageKey(session.uid)
   const normalized = chaoxingFromJson({ courses, syncedAt: Date.now() })
   if (!normalized) throw new Error('课程数据格式不正确，未保存。')

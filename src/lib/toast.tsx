@@ -11,12 +11,15 @@
  * ============================================================ */
 
 import { useEffect, useState } from 'react'
+import { playSound, SoundEvent } from './sound'
 
 export type ToastType = 'ok' | 'err' | 'warn'
 export type ToastOptions = {
   type?: ToastType
   /** 展示时长（ms），下限 800ms */
   duration?: number
+  /** 成功提示音默认跟随；已有专属提示音的场景（如专注完成铃声）可显式关闭 */
+  sound?: boolean
 }
 
 type ToastPayload = { text: string; type?: ToastType; duration?: number }
@@ -27,6 +30,7 @@ const DEFAULT_MS = 1800
 const LEAVE_MS = 240 // 与 motion.css xToastOut 0.22s 对齐
 
 function show(text: string, opts: ToastOptions = {}) {
+  if (opts.type === 'ok' && opts.sound !== false) playSound(SoundEvent.Success)
   window.dispatchEvent(
     new CustomEvent<ToastPayload>('app-toast', {
       detail: { text, type: opts.type, duration: opts.duration },

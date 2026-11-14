@@ -50,10 +50,17 @@ test('each shell chooses only its own HTTPS download', () => {
 })
 test('bundled fallback never claims the online latest version was verified', async () => {
   const { api, replies } = fixture()
-  replies.push(new Error('offline'), { latestVersion: '1.2.19', latestBuild: 34 })
+  replies.push(new Error('offline'), new Error('offline'), { latestVersion: '1.2.19', latestBuild: 34 })
   const result = await api.checkAppUpdate()
   assert.equal(result.status, 'up_to_date')
   assert.equal(result.verifiedRemote, false)
+})
+test('student shell reads the student-only APK manifest before the shared one', async () => {
+  const { api, replies, fetches } = fixture()
+  replies.push({ latestVersion: '1.2.36', latestBuild: 51 })
+  assert.equal((await api.checkAppUpdate()).status, 'up_to_date')
+  assert.ok(fetches[0].endsWith('/update-user.json'))
+  assert.equal(fetches.length, 1)
 })
 test('real remote response can confirm up-to-date and lower builds do not downgrade', async () => {
   const { api, replies } = fixture()
@@ -102,6 +109,6 @@ test('native info is cached after success and can retry a synchronous bridge fai
 })
 test('noninteger remote builds are rejected in both remote and bundled manifests', async () => {
   const { api, replies } = fixture()
-  replies.push({ latestVersion: '1.2.123', latestBuild: 123.5 }, { latestVersion: '1.2.123', latestBuild: 123.5 })
+  replies.push({ latestVersion: '1.2.123', latestBuild: 123.5 }, { latestVersion: '1.2.123', latestBuild: 123.5 }, { latestVersion: '1.2.123', latestBuild: 123.5 })
   assert.equal((await api.checkAppUpdate()).status, 'error')
 })

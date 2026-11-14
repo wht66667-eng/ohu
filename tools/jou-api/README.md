@@ -166,7 +166,7 @@ pip-audit2.10.1；Gitleaks8.30.1用于独立源码／Git扫描。工具仅安装
 - 教务密码仅在本次请求内存中用于生成 RSA 密文，**不写日志、不落盘、不入缓存**，请求结束即清引用
 - 日志只记录：短请求 id、**掩码学号**（`2025***01`）、掩码 IP、错误码、reason、耗时；
   密码与验证码原文永不入日志，验证码会话 id 只打印前 8 位
-- 验证码会话：3 分钟 TTL、总上限 800、单 IP 未消费上限 40，均带锁清理
+- 验证码会话：5 分钟 TTL（300 秒）、总上限 800、单 IP 未消费上限 40，均带锁清理
 - 限流分层：全站 → 来源 IP → 学号；被限流返回 1004 并带 `Retry-After`
 - 并发闸门：即使被恶意并发冲击，最多 `MAX_UPSTREAM_CONCURRENCY` 个请求打到教务系统
 - CORS 由 CloudBase 网关按「Web 安全域名」白名单统一处理（应用层不写 CORS 头，
@@ -192,11 +192,11 @@ curl -s -X POST $BASE/api/timetable/auto \
 
 ## 与 H5 站点对接
 
-新增外部只读适配（默认关闭）：`GET /api/integrations/capabilities`、
-`POST /api/learning/chaoxing/query`、`POST /api/physical/captcha`、`POST /api/physical/query`。
-学习通使用 `CHAOXING_READ_ENABLED=1` 启用；体测需要源站连通/表单验证后，再设置
-`PHYSICAL_READ_ENABLED=1` 与 `PHYSICAL_ALLOW_HTTP=1`。体测旧源站使用 HTTP，页面有独立的连接方式确认。
-这些适配未进行真实账号验收；网关需配置新增路由，不能仅上传 H5。
+外部只读适配：`GET /api/integrations/capabilities`、`POST /api/learning/chaoxing/query`（默认关闭，
+学习通需 `CHAOXING_READ_ENABLED=1` 且容器装有 pycryptodome 才启用）。体测已改为**设备侧同步**
+（capabilities 返回 `physical.enabled=false`、`note="device-sync-only"`），服务端不再提供
+`/api/physical/captcha`、`/api/physical/query`；个人成绩由用户在设备本机手动录入/粘贴留档。
+这些适配未进行真实账号验收；网关需配置对应路由，不能仅上传 H5。
 详见 `docs/architecture/EXTERNAL-SERVICE-INTEGRATIONS.md`（项目根目录）。
 离线测试：在本目录运行 `python -m unittest -v test_read_integrations`；不访问真实账号。
 
@@ -209,4 +209,4 @@ curl -s -X POST $BASE/api/timetable/auto \
 
 ### 2026-11-04 演示页面隔离
 
-生产默认不提供本地查询演示页与通配静态文件。只有人工联调时设置 `ENABLE_QUERY_DEMO=1` 才启用；真实教务、体测、学习通 API 与健康检查不受影响。`/api/schedule` 仍为受限流和输入校验保护的兼容入口，不在无旧客户端调用证据时删除。
+生产默认不提供本地查询演示页与通配静态文件。只有人工联调时设置 `ENABLE_QUERY_DEMO=1` 才启用；真实教务、学习通 API 与健康检查不受影响。旧 `/api/schedule` 兼容入口已移除，当前前端只调用 `/api/timetable/captcha`、`/api/timetable/query`、`/api/timetable/auto`；体测为设备侧同步，无服务端查询路由。（注：此前文档曾告诫无旧客户端调用证据时不删 `/api/schedule`，移除与旧 APK 的兼容性需单独核验。）

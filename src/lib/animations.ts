@@ -9,12 +9,13 @@ export const FLUID = SPRING
 export const BOUNCE = SPRING
 export const uiTransition = (reduce = false) => reduce ? { duration: 0 } : getUiVariant() === 'minimal' ? { duration: 0.24, ease: [0.16, 1, 0.3, 1] as const } : SOFT
 
+/** 默认无进场动画：页面/内容直接出现；需要动效的位置自行使用 uiTransition。 */
 export function fadeUp(reduce = false) {
   return {
-    initial: reduce ? false as const : { opacity: 0, y: 8 },
+    initial: false as const,
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: reduce ? 0 : -4 },
-    transition: uiTransition(reduce),
+    transition: { duration: 0 },
   }
 }
 

@@ -53,7 +53,7 @@ export function StudentLoginSheet() {
       const identity = ensureLocalIdentity(id)
       if (!identity) throw new Error('本机身份保存失败，请检查存储空间。')
       setStage('登录成功')
-      auth.completeStudentLogin()
+      await auth.completeStudentLogin()
       toast.ok('已登录')
     } catch (cause) {
       const message = (cause as { message?: string })?.message || '登录失败，请检查学号与密码。'

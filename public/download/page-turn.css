@@ -1,0 +1,68 @@
+/* Use the browser's page snapshots so links and downloads keep their native behavior. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition {
+    background: #fff8eb;
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  ::view-transition-group(root) {
+    animation: none;
+  }
+
+  ::view-transition-image-pair(root) {
+    isolation: isolate;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+    transform-origin: left center;
+    backface-visibility: hidden;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 2;
+    animation: ohu-turn-page 460ms cubic-bezier(.34, .02, .2, 1) both;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 1;
+    animation: ohu-reveal-page 460ms ease-out both;
+  }
+
+  @keyframes ohu-turn-page {
+    0% {
+      opacity: 1;
+      transform: perspective(1800px) rotateY(0);
+      filter: brightness(1);
+      box-shadow: 0 0 0 #23453300;
+    }
+    58% {
+      opacity: 1;
+      filter: brightness(.9);
+      box-shadow: 22px 8px 28px #2345334a;
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1800px) rotateY(-88deg);
+      filter: brightness(.78);
+      box-shadow: 10px 4px 18px #23453328;
+    }
+  }
+
+  @keyframes ohu-reveal-page {
+    from {
+      transform: translateX(12px) scale(.985);
+      filter: brightness(.92);
+    }
+    to {
+      transform: none;
+      filter: brightness(1);
+    }
+  }
+}

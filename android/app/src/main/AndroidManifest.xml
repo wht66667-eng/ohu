@@ -18,12 +18,21 @@
         android:networkSecurityConfig="@xml/network_security_config">
 
         <activity
+            android:name=".SecurityEntryActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SecurityBlockedActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <!-- LAUNCHER 改由 activity-alias 承担，便于变脸切换 -->
@@ -37,81 +46,81 @@
             android:icon="@mipmap/ic_mood_default"
             android:roundIcon="@mipmap/ic_mood_default"
             android:label="@string/app_name"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
 
-        <activity-alias android:name=".LauncherStreak1" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_1" android:roundIcon="@mipmap/ic_streak_1" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherStreak1" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_1" android:roundIcon="@mipmap/ic_streak_1" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherStreak3" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_3" android:roundIcon="@mipmap/ic_streak_3" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherStreak3" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_3" android:roundIcon="@mipmap/ic_streak_3" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherStreak7" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_7" android:roundIcon="@mipmap/ic_streak_7" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherStreak7" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_7" android:roundIcon="@mipmap/ic_streak_7" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherStreak14" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_14" android:roundIcon="@mipmap/ic_streak_14" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherStreak14" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_streak_14" android:roundIcon="@mipmap/ic_streak_14" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
 
-        <activity-alias android:name=".LauncherAway2" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_2" android:roundIcon="@mipmap/ic_away_2" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway2" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_2" android:roundIcon="@mipmap/ic_away_2" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway5" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_5" android:roundIcon="@mipmap/ic_away_5" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway5" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_5" android:roundIcon="@mipmap/ic_away_5" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway8" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_8" android:roundIcon="@mipmap/ic_away_8" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway8" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_8" android:roundIcon="@mipmap/ic_away_8" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway12" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_12" android:roundIcon="@mipmap/ic_away_12" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway12" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_12" android:roundIcon="@mipmap/ic_away_12" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway15" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_15" android:roundIcon="@mipmap/ic_away_15" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway15" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_15" android:roundIcon="@mipmap/ic_away_15" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway20" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_20" android:roundIcon="@mipmap/ic_away_20" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway20" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_20" android:roundIcon="@mipmap/ic_away_20" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway25" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_25" android:roundIcon="@mipmap/ic_away_25" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway25" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_25" android:roundIcon="@mipmap/ic_away_25" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity-alias android:name=".LauncherAway30" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_30" android:roundIcon="@mipmap/ic_away_30" android:label="@string/app_name" android:targetActivity=".MainActivity">
+        <activity-alias android:name=".LauncherAway30" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_away_30" android:roundIcon="@mipmap/ic_away_30" android:label="@string/app_name" android:targetActivity=".SecurityEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -234,6 +243,8 @@
         <package android:name="com.ss.android.ugc.aweme" />
         <package android:name="com.ss.android.ugc.aweme.lite" />
         <package android:name="com.jingdong.app.mall" />
+        <!-- 微信内才能打开的学校页面（电费公众号 / 图书馆选座）：原生分享文本到微信选择聊天 -->
+        <package android:name="com.tencent.mm" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="cainiao" />

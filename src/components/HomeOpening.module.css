@@ -1,0 +1,112 @@
+@media (prefers-reduced-motion: no-preference) {
+  .active[data-home-opening='companion'] :global([data-home-heading]) {
+    position: relative;
+  }
+
+  .active[data-home-opening='companion'] :global([data-home-heading])::after {
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-end: -5px;
+    width: min(68%, 108px);
+    height: 2px;
+    border-radius: 2px;
+    background: var(--green);
+    content: '';
+    pointer-events: none;
+    transform-origin: left center;
+    animation: greenLine 1000ms ease-out both;
+  }
+
+  .active[data-home-opening='companion'] :global([data-home-shortcut]) {
+    animation: shortcutIn 430ms cubic-bezier(.22, 1, .36, 1) 100ms both;
+  }
+
+  .active[data-home-opening='companion'] :global([data-home-shortcut]:nth-child(n+4)) {
+    animation-delay: 280ms;
+  }
+
+  .active[data-home-opening='companion'] :global([data-home-shortcut]:nth-child(n+7)) {
+    animation-delay: 460ms;
+  }
+
+  .active[data-home-opening='classic'] :global([data-home-fox]) {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .active[data-home-opening='classic'] :global([data-home-fox])::after {
+    position: absolute;
+    inset: 0;
+    background: url('/brand/ohu-original/fox-opening-wave.webp') center / contain no-repeat;
+    content: '';
+    pointer-events: none;
+    transform-origin: 56% 88%;
+    animation: foxPeek 1000ms cubic-bezier(.2, .7, .3, 1) both;
+  }
+
+  .active[data-home-opening='classic'] :global([data-home-fox] > img) {
+    animation: readingFoxReturn 1000ms ease-out both;
+  }
+
+  .active[data-home-opening='handdrawn'] :global([data-home-stamp]) {
+    transform-origin: 50% 68%;
+    animation: foxStamp 360ms cubic-bezier(.21, .65, .32, 1) 650ms both;
+  }
+
+  .active[data-home-opening='handdrawn'] :global([data-journal-leaf]),
+  .journalLeaf[data-replay='true'] {
+    visibility: visible;
+    animation: journalLeafTurn 780ms cubic-bezier(.44, .1, .24, 1) both;
+  }
+}
+
+.journalLeaf {
+  position: absolute;
+  inset: 0 0 0 5px;
+  z-index: 1;
+  pointer-events: none;
+  visibility: hidden;
+  border: 1px solid var(--warm-line, var(--line));
+  border-radius: inherit;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 25px, color-mix(in srgb, var(--warm-line, var(--line)) 52%, transparent) 25px 26px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 16%, var(--card)), var(--card) 14%, var(--card) 82%, var(--page-mid));
+}
+
+@keyframes greenLine {
+  0% { opacity: 0; transform: scaleX(0); }
+  45%, 72% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+
+@keyframes shortcutIn {
+  from { opacity: .55; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes foxPeek {
+  0% { opacity: 0; transform: translateY(24px) rotate(-6deg); }
+  34% { opacity: 1; transform: translateY(0) rotate(-4deg); }
+  55% { transform: rotate(5deg); }
+  72% { opacity: 1; transform: rotate(-3deg); }
+  100% { opacity: 0; transform: translateY(4px) rotate(0); }
+}
+
+@keyframes readingFoxReturn {
+  0%, 76% { opacity: .12; }
+  100% { opacity: 1; }
+}
+
+@keyframes journalLeafTurn {
+  0% { opacity: 1; transform: perspective(680px) rotateY(0deg); box-shadow: 2px 4px 7px #0002; }
+  52% { opacity: 1; box-shadow: 9px 12px 20px #0005; }
+  100% { opacity: 0; transform: perspective(680px) rotateY(-96deg); box-shadow: 0 0 0 transparent; }
+}
+
+@keyframes foxStamp {
+  0% { opacity: .45; transform: translateY(-6px) rotate(-7deg) scale(1.07); }
+  58% { opacity: 1; transform: translateY(1px) rotate(-2deg) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}

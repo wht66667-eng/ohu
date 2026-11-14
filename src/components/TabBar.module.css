@@ -45,6 +45,7 @@
   color: var(--green-text);
   font-weight: 650;
 }
+:global(:root[data-ui-variant='handdrawn']) .item { color: var(--text-2); }
 
 .plusSlot {
   display: flex;
@@ -187,8 +188,22 @@
 .homeWrap .item{border-radius:17px;min-height:49px;font-size:12px}
 .homeWrap .item.on{background:var(--green-soft);color:var(--green-text)}
 .homeWrap .plus{width:50px;height:50px;background:#1f5b3a;color:#fff;box-shadow:0 3px 8px #1f5b3a20}
-:global([data-ui-variant='pure']) .homeWrap .plus { background:var(--green); color:var(--on-primary); box-shadow:none; }
+:global(:is([data-ui-variant='pure'],[data-ui-variant='ink'])) .homeWrap .plus { background:var(--green); color:var(--on-primary); box-shadow:none; }
 
 :global(html[data-ui-variant='companion']) .wrap.homeWrap:not(.workWrap) { background:var(--card); border-radius:0; border-top:1px solid var(--line); box-shadow:none; }
 :global(html[data-ui-variant='companion']) .homeWrap .item.on { background:transparent; color:var(--green-text); }
 :global(html[data-ui-variant='companion']) .homeWrap .plus { background:var(--green); color:var(--on-primary); border-radius:12px; box-shadow:none; }
+
+/* 学生端底栏的文字与图标保持不透明，模糊仅作用于薄背景层。 */
+@supports (backdrop-filter:blur(1px)) {
+  :global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'])) .wrap[data-shell='student']:not(.workWrap) {
+    background:color-mix(in srgb,var(--card) 94%,transparent);
+    backdrop-filter:blur(6px);
+  }
+}
+:global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'],[data-ui-variant='pure'])) .wrap[data-shell='student'] .item { color:var(--text-2); }
+:global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'],[data-ui-variant='pure'])) .wrap[data-shell='student'] .item.on { color:var(--green-text); }
+@media (prefers-reduced-motion:no-preference) {
+  :global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'],[data-ui-variant='pure'])) .wrap[data-shell='student'] :is(.item,.plus) { transition:transform 120ms ease-out; }
+  :global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'],[data-ui-variant='pure'])) .wrap[data-shell='student'] :is(.item,.plus):active { transform:scale(.985); }
+}

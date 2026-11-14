@@ -4,7 +4,7 @@ import { PageHeader } from '../../components/PageHeader'
 import { ChaoxingSyncPanel } from '../../components/ChaoxingSyncPanel'
 import { ChaoxingCoursesPanel } from '../../components/ChaoxingCoursesPanel'
 import { ChaoxingTodoPanel } from '../../components/ChaoxingTodoPanel'
-import { openChaoxing } from '../../lib/chaoxing'
+import { CHAOXING_OFFICIAL_URL, openChaoxing } from '../../lib/chaoxing'
 import s from './chaoxing-bridge.module.css'
 
 export function ChaoxingBridgePage() {
@@ -35,6 +35,7 @@ export function ChaoxingBridgePage() {
         <button type="button" className={s.openButton} onClick={() => void openLearningApp()} disabled={opening}>
           {opening ? '正在打开…' : '打开手机学习通'} <span aria-hidden="true">↗</span>
         </button>
+        <a href={CHAOXING_OFFICIAL_URL} target="_blank" rel="noopener noreferrer">学习通官方网页</a>
         {status ? <p className={s.status} role="status">{status}</p> : null}
       </section>
 

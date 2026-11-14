@@ -1,3 +1,5 @@
+import { loadFontFile } from './font-assets'
+
 export const MOMENT_FONTS = [
   { id: 'system', label: '系统黑体', family: 'sans-serif' },
   { id: 'serif', label: '系统宋体', family: 'serif' },
@@ -7,15 +9,19 @@ export const MOMENT_FONTS = [
 ] as const
 const loading = new Map<string, Promise<void>>()
 
-/** 字库随包分发，只有用户选用时才解码，不从第三方CDN获取照片或字体。 */
+/** 字库不随包分发：首次选用时按需下载并缓存，不从第三方 CDN 获取照片或字体。 */
 export async function loadMomentFont(family: string): Promise<void> {
   const font = MOMENT_FONTS.find(item => item.family === family)
   if (!font || font.id === 'system' || font.id === 'serif') return
   if (!loading.has(family)) {
     loading.set(family, (async () => {
-      const face = new FontFace(family, `url("${import.meta.env.BASE_URL}moment-editor/fonts/${font.id}/font.woff2")`)
       let timeout: ReturnType<typeof setTimeout> | undefined
-      try { await Promise.race([face.load(), new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('字体加载超时')), 15000) })]); document.fonts.add(face) }
+      try {
+        await Promise.race([
+          loadFontFile(family, `moment-editor/fonts/${font.id}/font.woff2`),
+          new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('字体加载超时')), 20000) }),
+        ])
+      }
       finally { clearTimeout(timeout) }
     })().catch(() => { loading.delete(family); throw new Error('字体加载失败，请重试或选择系统字体。') }))
   }

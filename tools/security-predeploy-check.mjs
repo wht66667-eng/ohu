@@ -7,6 +7,7 @@
  * 不扫描公网、不改服务器；云安全组 / 端口扫描见 SECURITY_CHECKLIST.md
  */
 import { execSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -72,6 +73,29 @@ const SECRET_KEY_RE =
 const HARDCODE_RE =
   /(?:sk-[a-zA-Z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[a-zA-Z0-9]{30,}|xox[baprs]-[a-zA-Z0-9-]{20,})/
 
+// Unmodified tesseract.js-core 5.1.1 WASM loaders contain token-shaped text
+// inside the embedded WASM. A different file must be reviewed and scanned.
+const PINNED_OCR_SHA256 = [
+  ['tesseract-core-lstm.wasm.js', '8f04aa0cc81e7bde33f80e92fa01a7a665f0b4884d098acf5de9c7104a11dfaa'],
+  ['tesseract-core-simd-lstm.wasm.js', 'ce20eda9533cbed1e6c2b4276fbae1e0adc61b6754b5513084be601787b457cf'],
+]
+
+function verifiedOcrFiles(dir) {
+  const verified = new Set()
+  for (const [filename, expected] of PINNED_OCR_SHA256) {
+    const file = join(dir, 'ocr', filename)
+    if (!existsSync(file)) continue
+    try {
+      const actual = createHash('sha256').update(readFileSync(file)).digest('hex')
+      if (actual === expected) verified.add(file)
+      else fail(`${relative(ROOT, file)} 与固定版本的 OCR 资源校验值不一致`)
+    } catch {
+      fail(`${relative(ROOT, file)} 无法读取并核对 OCR 资源校验值`)
+    }
+  }
+  return verified
+}
+
 const DANGEROUS_DOCKER_RE =
   /privileged\s*:\s*true|network_mode\s*:\s*['"]?host|\/:\/host|cap_add\s*:\s*\[[^\]]*SYS_ADMIN/i
 
@@ -90,6 +114,8 @@ function checkGitignore() {
 
 /** 2) 被 git 跟踪的 env / 凭证文件 */
 function checkTrackedSecrets() {
+  const campusAuthKey = join(ROOT, 'cloudfunctions', 'campusAuth', 'key.json')
+  if (existsSync(campusAuthKey)) fail('campusAuth/key.json 仍在项目目录，可能被打入云函数包')
   let tracked = ''
   try {
     tracked = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
@@ -106,6 +132,7 @@ function checkTrackedSecrets() {
       /\.jks$/i.test(f) ||
       /keystore\/.+\.(jks|keystore)$/i.test(f) ||
       /local-secret/i.test(f) ||
+      /(^|\/)cloudfunctions\/[^/]+\/key\.json$/i.test(f) ||
       /\.capgo-credentials/i.test(f),
   )
   if (bad.length) fail(`疑似密钥文件已被 git 跟踪：${bad.join(', ')}`)
@@ -240,6 +267,7 @@ function checkCors() {
 
 /** 7) 打包产物抽查 */
 function checkDistLeak() {
+  verifiedOcrFiles(join(ROOT, 'public'))
   const distDirs = ['dist', 'dist-app', 'dist-deploy'].map((d) => join(ROOT, d)).filter(existsSync)
   if (!distDirs.length) {
     warn('无 dist* 目录，跳过打包产物抽查（可先 build 再跑）')
@@ -247,7 +275,7 @@ function checkDistLeak() {
   }
   const secretNames = ['CAPGO_API_KEY', 'CLOUDBASE_API_KEY', 'TIM_SECRET', 'JWT_SECRET', 'DATABASE_URL']
   for (const dir of distDirs) {
-    const files = walk(dir, (full, name) => /\.(js|mjs|css|html|json|map)$/i.test(name), [], 0)
+    const verifiedOcr = verifiedOcrFiles(dir)
     // walk skips dist — search manually
     const stack = [dir]
     const found = []
@@ -267,6 +295,7 @@ function checkDistLeak() {
     }
     let leak = 0
     for (const f of found.slice(0, 400)) {
+      if (verifiedOcr.has(f)) continue
       const text = read(f)
       for (const name of secretNames) {
         if (text.includes(name + '=') || text.includes(`"${name}"`) || text.includes(`'${name}'`)) {

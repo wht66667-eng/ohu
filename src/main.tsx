@@ -2,18 +2,18 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './skins.css'
+import './paper.css'
+import './fonts.css'
 import './sheet.css'
 import App from './App.tsx'
 import { applyNativeStatusBar } from './lib/native'
 import { applyTheme, getStoredTheme, watchSystemTheme } from './lib/theme'
 import { warmCampusDb } from './lib/campus-db'
-import { initAppSecurity } from './lib/app-security'
+import { initAppSecurity, isAppSecurityBlocked } from './lib/app-security'
 import { initLiveUpdate } from './lib/live-update'
 import { initAppShell } from './lib/app-shell'
 import { applyStoredLocalIdentity } from './lib/local-identity'
-
-/* 学号本机身份要在任何数据读取前生效（手机号账号登录后会覆盖）。 */
-applyStoredLocalIdentity()
+import { initCredentialProtection } from './lib/credential-storage'
 
 /* 主题须在首帧前应用，避免闪白/闪黑 */
 applyTheme(getStoredTheme())
@@ -26,16 +26,17 @@ watchSystemTheme(() => {
    不该拖慢首屏与启动屏淡出。H5 下该调用直接返回。 */
 void applyNativeStatusBar()
 
-/* 原生安全与热更新：异步，不挡首屏 */
-void initAppSecurity()
-void initLiveUpdate()
-
-/* 校园入口专用库：目录种子写入 IndexedDB */
-warmCampusDb()
-
 /* Resolve the local native package before any route or consent reads its shell. */
 async function mountApp() {
+  await initAppSecurity()
+  if (isAppSecurityBlocked()) return
+  await initCredentialProtection()
+  /* 校验完成后才恢复账号、启动热更新和校园入口缓存。 */
+  applyStoredLocalIdentity()
+  void initLiveUpdate()
+  warmCampusDb()
   await initAppShell()
+  if (isAppSecurityBlocked()) return
   createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

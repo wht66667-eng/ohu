@@ -1,20 +1,17 @@
 /**
- * 本机敏感串的存储封装（教务密码 / WebVPN 密码）；本文件不包含实际凭据。
- *
- * 以前 schedule-credentials.ts 和 campus-account.ts 各写了一份「硬编码 SALT + 可逆 XOR」，
- * SALT 是打进包里的常量，拿到包加一条 localStorage 记录就能离线还原明文，等于没加密。
- * 这里收敛成一处：密钥每台机器随机生成（crypto.getRandomValues，32 字节），
- * 每次写入随机 16 字节 nonce（同一密码两次落盘密文不同），
- * localStorage 读写统一 try/catch 兜住（无痕模式 / 存储被禁会直接抛）。
- *
- * 需要说明的是：密钥和密文都在同一个 localStorage 里，能读存储的人理论上仍能还原，
- * 这是纯前端的固有上限，真要防护只能不存密码。本模块只是抬高门槛 ——
- * 光拿到某条记录、或光看源码，都解不开。调用方仍应保持「默认只记学号」。
+ * 本机校园密码封装。新记录使用 AES-256-GCM，修改过的密文会被拒绝。
+ * Android 密钥在启动时由系统 Keystore 解封，浏览器端只能把密钥留在浏览器存储。
+ * 旧 v2 记录仍可读取；启动时尽可能迁移到 v3，失败则保留原记录。
  */
 
+import { Capacitor, registerPlugin } from '@capacitor/core'
+import { gcm } from '@noble/ciphers/aes.js'
+
 const LS_KEY = 'sc.localSecret.v1'
+const LS_KEY_V3 = 'ohu.localAesKey.v3'
 const KEY_LEN = 32
 const NONCE_LEN = 16
+const GCM_NONCE_LEN = 12
 /** 明文前插一个魔法字节：解开后对不上就说明密钥变了，直接当没存过，绝不返回乱码 */
 const MAGIC = 0xa5
 
@@ -61,6 +58,34 @@ function b64ToBytes(text: string): Uint8Array | null {
 }
 
 let cachedKey: Uint8Array | null = null
+let activeKey: Uint8Array | null = null
+const nativeKey = registerPlugin<{ getKey(): Promise<{ key: string }> }>('CredentialKey')
+
+/** 启动 React 之前装入本机密钥；安卓读取失败时绝不退回浏览器密钥。 */
+export async function initCredentialProtection(): Promise<boolean> {
+  if (activeKey) return true
+  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+    try {
+      const bytes = b64ToBytes((await nativeKey.getKey()).key)
+      if (!bytes || bytes.length !== KEY_LEN) return false
+      activeKey = bytes
+    } catch { return false }
+  } else {
+    const stored = lsGet(LS_KEY_V3)
+    const existing = stored ? b64ToBytes(stored) : null
+    if (stored && (!existing || existing.length !== KEY_LEN)) return false
+    if (existing && existing.length === KEY_LEN) activeKey = existing
+    else {
+      try {
+        const fresh = crypto.getRandomValues(new Uint8Array(KEY_LEN))
+        if (!lsSet(LS_KEY_V3, bytesToB64(fresh))) return false
+        activeKey = fresh
+      } catch { return false }
+    }
+  }
+  migrateLegacyCredentialRecords()
+  return true
+}
 
 /** 本机密钥：首次使用时随机生成并落盘，之后复用 */
 function localKey(): Uint8Array | null {
@@ -72,6 +97,7 @@ function localKey(): Uint8Array | null {
       cachedKey = bytes
       return cachedKey
     }
+    return null
   }
   try {
     const fresh = new Uint8Array(KEY_LEN)
@@ -94,19 +120,16 @@ function xorWithKeystream(data: Uint8Array, key: Uint8Array, nonce: Uint8Array):
   return out
 }
 
-/** 写入：返回 `v2.<nonce>.<密文>`，失败返回空串（调用方据此决定是否提示用户） */
+/** 写入：返回 `v3.<nonce>.<AES-GCM 密文与标签>`，失败返回空串。 */
 export function sealSecret(plain: string): string {
   if (!plain) return ''
-  const key = localKey()
+  const key = activeKey
   if (!key) return ''
   try {
-    const nonce = new Uint8Array(NONCE_LEN)
+    const nonce = new Uint8Array(GCM_NONCE_LEN)
     crypto.getRandomValues(nonce)
-    const text = new TextEncoder().encode(plain)
-    const data = new Uint8Array(text.length + 1)
-    data[0] = MAGIC
-    data.set(text, 1)
-    return `v2.${bytesToB64(nonce)}.${bytesToB64(xorWithKeystream(data, key, nonce))}`
+    const encrypted = gcm(key, nonce).encrypt(new TextEncoder().encode(plain))
+    return `v3.${bytesToB64(nonce)}.${bytesToB64(encrypted)}`
   } catch {
     return ''
   }
@@ -116,7 +139,16 @@ export function sealSecret(plain: string): string {
 export function openSecret(blob: string | null | undefined): string {
   if (!blob) return ''
   const parts = String(blob).split('.')
-  if (parts.length !== 3 || parts[0] !== 'v2') return ''
+  if (parts.length !== 3) return ''
+  if (parts[0] === 'v3') {
+    if (!activeKey) return ''
+    const nonce = b64ToBytes(parts[1] || '')
+    const data = b64ToBytes(parts[2] || '')
+    if (!nonce || nonce.length !== GCM_NONCE_LEN || !data || data.length < 17) return ''
+    try { return new TextDecoder().decode(gcm(activeKey, nonce).decrypt(data)) }
+    catch { return '' }
+  }
+  if (parts[0] !== 'v2') return ''
   const key = localKey()
   if (!key) return ''
   const nonce = b64ToBytes(parts[1] || '')
@@ -129,4 +161,38 @@ export function openSecret(blob: string | null | undefined): string {
   } catch {
     return ''
   }
+}
+
+/** 仅迁移已知、按账号隔离的旧记录；任何一条失败都保留原文，供用户重新输入。 */
+function migrateLegacyCredentialRecords(): void {
+  if (!activeKey) return
+  const prefixes = ['campus.credentials.v3:uid:', 'ohu.oneclick.v1:uid:', 'ohu.pocketuni-credentials.v1:uid:']
+  const fields = ['passwordBlob', 'vpnPasswordBlob', 'vpnBlob', 'casBlob', 'ticeBlob']
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i))
+    for (const key of keys) {
+      if (!key || !prefixes.some(prefix => key.startsWith(prefix))) continue
+      try {
+        const raw = localStorage.getItem(key)
+        if (!raw) continue
+        const value: unknown = JSON.parse(raw)
+        if (!value || typeof value !== 'object' || Array.isArray(value)) continue
+        const record = value as Record<string, unknown>
+        let changed = false
+        for (const field of fields) {
+          const blob = record[field]
+          if (typeof blob !== 'string' || !blob.startsWith('v2.')) continue
+          const plain = openSecret(blob)
+          if (!plain) continue
+          const replacement = sealSecret(plain)
+          if (!replacement) continue
+          record[field] = replacement
+          changed = true
+        }
+        if (changed) localStorage.setItem(key, JSON.stringify(record))
+      } catch {
+        // 单条损坏或写入失败时不影响其他账号的迁移。
+      }
+    }
+  } catch { /* 无痕模式或存储不可用时保留原数据 */ }
 }

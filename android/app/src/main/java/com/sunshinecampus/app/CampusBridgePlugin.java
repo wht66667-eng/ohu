@@ -2,6 +2,7 @@ package com.sunshinecampus.app;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +53,76 @@ public class CampusBridgePlugin extends Plugin {
     private Button closeButton;
     private boolean visible = false;
     private final List<String> capturedRequests = new ArrayList<>();
-    private boolean captureEnabled = false;
+    private WebView captureView;
+    private final RequestBudget pageLoads = new RequestBudget(12, 2);
+    private final RequestBudget scriptReads = new RequestBudget(32, 8);
+
+    // Budgets live for the plugin lifetime, across embedded browser resets.
+    static final class RequestBudget {
+        private final double capacity;
+        private final double perMillisecond;
+        private double available;
+        private long lastRefill;
+
+        RequestBudget(int capacity, int perSecond) {
+            this.capacity = capacity;
+            perMillisecond = perSecond / 1000.0;
+            available = capacity;
+        }
+
+        boolean tryAcquire(long now) {
+            available = Math.min(capacity, available + (now - lastRefill) * perMillisecond);
+            lastRefill = now;
+            if (available < 1) return false;
+            available--;
+            return true;
+        }
+    }
+
+    static boolean sameOrigin(String trustedUrl, String currentUrl) {
+        if (trustedUrl == null || currentUrl == null) return false;
+        try {
+            URI trusted = URI.create(trustedUrl);
+            URI current = URI.create(currentUrl);
+            String scheme = trusted.getScheme();
+            if (!"https".equalsIgnoreCase(scheme) && !"http".equalsIgnoreCase(scheme)) return false;
+            return scheme.equalsIgnoreCase(current.getScheme())
+                && trusted.getHost() != null && trusted.getHost().equalsIgnoreCase(current.getHost())
+                && current.getUserInfo() == null
+                && effectivePort(trusted) == effectivePort(current);
+        } catch (IllegalArgumentException error) {
+            return false;
+        }
+    }
+
+    private static int effectivePort(URI url) {
+        if (url.getPort() != -1) return url.getPort();
+        return "https".equalsIgnoreCase(url.getScheme()) ? 443 : 80;
+    }
+
+    private boolean isAppOrigin() {
+        // 主 WebView url 在冷启动极早期可能为 null：此时主视图尚未离开本地 origin，
+        // 按「在 App 内」处理（拒绝外部页面的判定由 sameOrigin 的 host 校验兜底）。
+        String current = getBridge().getWebView().getUrl();
+        if (current == null || current.isEmpty()) return true;
+        return sameOrigin(getBridge().getLocalUrl(), current);
+    }
+
+    private void runFromApp(PluginCall call, Runnable action) {
+        getActivity().runOnUiThread(() -> {
+            if (!isAppOrigin()) {
+                call.reject("Campus bridge is only available to the app origin", "ORIGIN_DENIED");
+                return;
+            }
+            action.run();
+        });
+    }
+
+    private boolean allowRequest(PluginCall call, RequestBudget budget) {
+        if (budget.tryAcquire(SystemClock.elapsedRealtime())) return true;
+        call.reject("校园数据操作太频繁，请稍后重试。", "LOCAL_RATE_LIMIT");
+        return false;
+    }
 
     @Override
     protected void handleOnDestroy() {
@@ -61,7 +132,7 @@ public class CampusBridgePlugin extends Plugin {
 
     @PluginMethod
     public void open(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             ensureWebView();
             call.resolve();
         });
@@ -74,7 +145,7 @@ public class CampusBridgePlugin extends Plugin {
             call.reject("url required");
             return;
         }
-        if (!allowed(url)) {
+        if (!allowed(url) || url.trim().regionMatches(true, 0, "javascript:", 0, 11)) {
             call.reject("host not allowed");
             return;
         }
@@ -89,7 +160,8 @@ public class CampusBridgePlugin extends Plugin {
             }
         }
         final Map<String, String> finalHeaders = headers;
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
+            if (!allowRequest(call, pageLoads)) return;
             ensureWebView();
             if (finalHeaders == null || finalHeaders.isEmpty()) {
                 webView.loadUrl(url);
@@ -107,13 +179,19 @@ public class CampusBridgePlugin extends Plugin {
             call.reject("js required");
             return;
         }
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             if (webView == null) {
                 call.reject("webview not open");
                 return;
             }
+            if (!allowRequest(call, scriptReads)) return;
+            WebView activeView = webView;
             try {
-                webView.evaluateJavascript(js, value -> {
+                activeView.evaluateJavascript(js, value -> {
+                    if (!isAppOrigin() || webView != activeView) {
+                        call.reject("Campus bridge session changed", "SESSION_CHANGED");
+                        return;
+                    }
                     JSObject result = new JSObject();
                     result.put("value", value == null ? "null" : value);
                     call.resolve(result);
@@ -126,7 +204,7 @@ public class CampusBridgePlugin extends Plugin {
 
     @PluginMethod
     public void show(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             ensureWebView();
             visible = true;
             container.setVisibility(View.VISIBLE);
@@ -143,7 +221,7 @@ public class CampusBridgePlugin extends Plugin {
 
     @PluginMethod
     public void hide(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             visible = false;
             if (container != null) {
                 container.setTranslationX(dp(OFFSCREEN_X));
@@ -157,7 +235,7 @@ public class CampusBridgePlugin extends Plugin {
 
     @PluginMethod
     public void close(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             destroyWebView();
             call.resolve();
         });
@@ -165,7 +243,7 @@ public class CampusBridgePlugin extends Plugin {
 
     @PluginMethod
     public void currentUrl(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             JSObject result = new JSObject();
             String url = webView == null ? null : webView.getUrl();
             result.put("url", url == null ? "" : url);
@@ -175,15 +253,27 @@ public class CampusBridgePlugin extends Plugin {
     }
 
     @PluginMethod
-    public void cookies(PluginCall call) {
+    public void hasVpnSession(PluginCall call) {
         String url = call.getString("url", "");
         if (!allowed(url)) {
             call.reject("host not allowed");
             return;
         }
-        JSObject result = new JSObject();
-        result.put("cookie", String.valueOf(CookieManager.getInstance().getCookie(url)));
-        call.resolve(result);
+        runFromApp(call, () -> {
+            String cookies = CookieManager.getInstance().getCookie(url);
+            boolean hasSession = false;
+            if (cookies != null) {
+                for (String cookie : cookies.split(";")) {
+                    if (cookie.trim().startsWith("wengine_vpn_ticket=")) {
+                        hasSession = true;
+                        break;
+                    }
+                }
+            }
+            JSObject result = new JSObject();
+            result.put("hasSession", hasSession);
+            call.resolve(result);
+        });
     }
 
     @PluginMethod
@@ -198,30 +288,40 @@ public class CampusBridgePlugin extends Plugin {
             call.reject("cookie required");
             return;
         }
-        CookieManager manager = CookieManager.getInstance();
-        manager.setAcceptCookie(true);
-        manager.setCookie(url, cookie);
-        manager.flush();
-        call.resolve();
+        runFromApp(call, () -> {
+            CookieManager manager = CookieManager.getInstance();
+            manager.setAcceptCookie(true);
+            manager.setCookie(url, cookie);
+            manager.flush();
+            call.resolve();
+        });
     }
 
     @PluginMethod
     public void setCapture(PluginCall call) {
-        captureEnabled = call.getBoolean("enabled", false);
-        if (!captureEnabled) capturedRequests.clear();
-        call.resolve();
+        runFromApp(call, () -> {
+            synchronized (capturedRequests) {
+                captureView = call.getBoolean("enabled", false) ? webView : null;
+                if (captureView == null) capturedRequests.clear();
+            }
+            call.resolve();
+        });
     }
 
     @PluginMethod
     public void requests(PluginCall call) {
-        JSObject result = new JSObject();
-        result.put("requests", new com.getcapacitor.JSArray(capturedRequests));
-        call.resolve(result);
+        runFromApp(call, () -> {
+            JSObject result = new JSObject();
+            synchronized (capturedRequests) {
+                result.put("requests", new com.getcapacitor.JSArray(capturedRequests));
+            }
+            call.resolve(result);
+        });
     }
 
     @PluginMethod
     public void clearData(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        runFromApp(call, () -> {
             CookieManager.getInstance().removeAllCookies(null);
             CookieManager.getInstance().flush();
             if (webView != null) webView.clearCache(true);
@@ -287,10 +387,16 @@ public class CampusBridgePlugin extends Plugin {
 
             @Override
             public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                if (captureEnabled) {
-                    String url = request.getUrl() == null ? "" : request.getUrl().toString();
-                    if (!url.isEmpty() && !capturedRequests.contains(url) && capturedRequests.size() < 400) {
-                        capturedRequests.add(url);
+                synchronized (capturedRequests) {
+                    if (view == captureView && request.getUrl() != null) {
+                        String url = request.getUrl().toString();
+                        String query = request.getUrl().getEncodedQuery();
+                        // Only token URLs are consumed by the practice-system sync.
+                        if (query != null && query.toLowerCase(java.util.Locale.ROOT).contains("token=")
+                            && allowed(url) && capturedRequests.size() < 32
+                            && !capturedRequests.contains(url)) {
+                            capturedRequests.add(url);
+                        }
                     }
                 }
                 return null;
@@ -341,6 +447,10 @@ public class CampusBridgePlugin extends Plugin {
     }
 
     private void destroyWebView() {
+        synchronized (capturedRequests) {
+            captureView = null;
+            capturedRequests.clear();
+        }
         if (webView != null) {
             try {
                 webView.stopLoading();
@@ -377,7 +487,7 @@ public class CampusBridgePlugin extends Plugin {
         if (!url.startsWith("http://") && !url.startsWith("https://")) return false;
         String host;
         try {
-            host = new java.net.URI(url).getHost();
+            host = new URI(url).getHost();
         } catch (Throwable error) {
             return false;
         }

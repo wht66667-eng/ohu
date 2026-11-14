@@ -38,6 +38,7 @@ export function savePuCredentials(input: PuCredentials): boolean {
       remember: input.remember,
       ...(input.remember && input.password ? { passwordBlob: sealSecret(input.password) } : {}),
     }
+    if (input.remember && input.password && !value.passwordBlob) return false
     localStorage.setItem(keyFor(session.uid), JSON.stringify(value))
     return isQbankSessionCurrent(session)
   } catch {

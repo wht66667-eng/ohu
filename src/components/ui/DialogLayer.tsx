@@ -20,7 +20,10 @@ export function DialogLayer({ title, onClose, children, className = '', full = f
   closeRef.current = onClose
   const [closing, setClosing] = useState(false)
   const reduce = useUiMotion()
-  const requestClose = useCallback(() => { if (allowClose && (!beforeClose || beforeClose())) setClosing(true) }, [allowClose, beforeClose])
+  const requestClose = useCallback(() => {
+    if (!allowClose || dialog.current?.dispatchEvent(new Event('app-dismiss-composer-keyboard', { cancelable: true })) === false) return
+    if (!beforeClose || beforeClose()) setClosing(true)
+  }, [allowClose, beforeClose])
 
   useEffect(() => {
     const element = dialog.current
@@ -29,20 +32,50 @@ export function DialogLayer({ title, onClose, children, className = '', full = f
     const host = document.querySelector<HTMLElement>('[data-app-body]')
     const resize = () => {
       const bounds = host?.getBoundingClientRect()
-      if (bounds) Object.assign(element.style, { left: `${bounds.left}px`, top: `${bounds.top}px`, width: `${bounds.width}px`, height: `${bounds.height}px` })
+      // 管理端未登录时没有 app-body；此时弹窗仍须占据整个可见窗口。
+      if (bounds) {
+        const shellBounds = host?.closest('[data-app-viewport]')?.getBoundingClientRect()
+        const top = shellBounds
+          ? 'calc(var(--app-viewport-top, 0px) + ' + (bounds.top - shellBounds.top) + 'px)'
+          : bounds.top + 'px'
+        Object.assign(element.style, { left: bounds.left + 'px', top, width: bounds.width + 'px', height: bounds.height + 'px' })
+      } else {
+        const root = getComputedStyle(document.documentElement)
+        const viewport = window.visualViewport
+        const visual = viewport && Math.abs(viewport.scale - 1) < .05 ? viewport : null
+        Object.assign(element.style, {
+          left: '0px',
+          top: root.getPropertyValue('--app-viewport-top').trim() || (visual?.offsetTop ?? 0) + 'px',
+          width: window.innerWidth + 'px',
+          height: root.getPropertyValue('--app-viewport-height').trim() || (visual?.height ?? window.innerHeight) + 'px',
+        })
+      }
     }
     resize()
     element.showModal()
     const observer = host ? new ResizeObserver(resize) : null
     if (host) observer?.observe(host)
-    window.addEventListener('resize', resize)
+    const viewport = window.visualViewport
+    let boundsFrame = 0
+    const queueResize = () => {
+      cancelAnimationFrame(boundsFrame)
+      boundsFrame = requestAnimationFrame(resize)
+    }
+    window.addEventListener('resize', queueResize)
+    window.addEventListener('app-native-insets', queueResize)
+    viewport?.addEventListener('resize', queueResize)
+    viewport?.addEventListener('scroll', queueResize)
     const frame = requestAnimationFrame(() => {
       element.querySelector<HTMLElement>('[autofocus], button:not([disabled]), input:not([disabled]), [tabindex="0"]')?.focus()
     })
     return () => {
       cancelAnimationFrame(frame)
       observer?.disconnect()
-      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(boundsFrame)
+      window.removeEventListener('resize', queueResize)
+      window.removeEventListener('app-native-insets', queueResize)
+      viewport?.removeEventListener('resize', queueResize)
+      viewport?.removeEventListener('scroll', queueResize)
       element.close()
       if (previous?.isConnected) previous.focus({ preventScroll: true })
     }

@@ -163,6 +163,17 @@ def _clean_text(s: str) -> str:
     return re.sub(r"\s+", " ", s or "").strip()
 
 
+def _html_text(resp: requests.Response) -> str:
+    """正方页面多为 GBK/GB2312；部分响应不在 HTTP 头声明 charset，requests 会按
+    ISO-8859-1 解码导致中文乱码，使课表表头、菜单关键字与 alert 提示全部解析失败。
+    与 physical_read / chaoxing_read 一致：编码缺失或为 ISO-8859-1 时回退到探测编码。
+    已声明 charset（gb2312/utf-8 等）的响应保持不变，不影响当前可用页面。"""
+    enc = (resp.encoding or "").lower()
+    if not enc or enc == "iso-8859-1":
+        resp.encoding = resp.apparent_encoding or "utf-8"
+    return resp.text
+
+
 _SECTION_RANGE_RE = re.compile(r"第?\s*(\d+)\s*[-~—]\s*(\d+)\s*节|第?\s*(\d+)\s*节")
 _WEEKS_ONLY_RE = re.compile(r"\d+\s*-\s*\d+\s*周|\d+\s*周")
 _ROOM_HINT_RE = re.compile(r"\d{2,}|楼|馆|场|室|房|厅|中心|基地|广场")
@@ -474,7 +485,7 @@ class ZfsoftSession:
             raise NetworkTimeoutError("教务系统连接超时，请稍后重试") from e
         except requests.exceptions.RequestException as e:
             raise NetworkTimeoutError("教务系统暂不可达") from e
-        soup = BeautifulSoup(resp.text, "html.parser")
+        soup = BeautifulSoup(_html_text(resp), "html.parser")
         vs = soup.find("input", {"name": "__VIEWSTATE"})
         if vs is None:
             raise LoginFailedError("教务系统登录页异常，可能正在维护")
@@ -540,7 +551,7 @@ class ZfsoftSession:
         finally:
             self._password = ""        # 密码即刻清除
 
-        text = resp.text
+        text = _html_text(resp)
         if MAIN_PAGE_HINT in text or MAIN_PAGE_HINT in resp.url or "xskbcx" in resp.url:
             self.logged_in = True
             return
@@ -566,8 +577,9 @@ class ZfsoftSession:
                 headers={"Referer": f"{BASE_URL}/default2.aspx"},
             )
             resp.raise_for_status()
-            self._main_soup = BeautifulSoup(resp.text, "html.parser")
-            self._main_html = resp.text
+            html = _html_text(resp)
+            self._main_soup = BeautifulSoup(html, "html.parser")
+            self._main_html = html
             return self._main_soup
         except requests.exceptions.RequestException as e:
             raise NetworkTimeoutError("打开教务主页失败") from e
@@ -623,7 +635,7 @@ class ZfsoftSession:
             raise NetworkTimeoutError("获取课表失败，教务系统暂不可达") from e
         if "default2.aspx" in resp.url and MAIN_PAGE_HINT not in resp.url:
             raise LoginFailedError("登录会话失效，请重新登录")
-        html = resp.text
+        html = _html_text(resp)
         # 若该页面不是课表页（比如需要再带学号参数访问），尝试补一次 xh 参数
         if "Table1" not in html and "xh=" not in url and "gnmkdm" in url:
             sep = "&" if "?" in url else "?"
@@ -631,8 +643,9 @@ class ZfsoftSession:
                 resp2 = self.session.get(f"{url}{sep}xh={username}", timeout=self.timeout,
                                          headers={"Referer": f"{BASE_URL}/xs_main.aspx"})
                 resp2.raise_for_status()
-                if "Table1" in resp2.text:
-                    html = resp2.text
+                resp2_html = _html_text(resp2)
+                if "Table1" in resp2_html:
+                    html = resp2_html
             except requests.exceptions.RequestException:
                 pass
         return html
@@ -791,7 +804,7 @@ class ZfsoftSession:
                 continue
 
             post_url = resp.url or url
-            html = resp.text or ""
+            html = _html_text(resp) or ""
             if "default2.aspx" in (resp.url or "") and MAIN_PAGE_HINT not in (resp.url or ""):
                 raise LoginFailedError("登录会话失效，请重新登录")
             alert = extract_asp_alert(html)
@@ -844,11 +857,11 @@ class ZfsoftSession:
                     except Exception:
                         logger.warning("grades POST 编码/提交异常")
                         continue
-                    alert2 = extract_asp_alert(r2.text or "")
+                    alert2 = extract_asp_alert(_html_text(r2) or "")
                     if alert2:
                         last_alert = alert2
                     try:
-                        grades = parse_grades_html(r2.text or "")
+                        grades = parse_grades_html(_html_text(r2) or "")
                     except Exception:
                         logger.warning("grades: POST 页解析异常")
                         continue
@@ -902,32 +915,68 @@ class ZfsoftSession:
             resp.raise_for_status()
         except requests.exceptions.RequestException as e:
             raise NetworkTimeoutError("获取考试安排失败") from e
-        exams = parse_exams_html(resp.text)
+        exams = parse_exams_html(_html_text(resp))
         if exams:
             return exams
-        # 部分学期需选学年学期后再查；尝试 POST 查询
-        soup = BeautifulSoup(resp.text, "html.parser")
+        # 考试安排页默认空表，必须提交查询 postback 才有数据（与成绩页同型）。
+        # 旧版只试 3 个固定按钮名，页面实际按钮名不同时永远查不到 —— 改为
+        # 通用扫描：页面上所有 submit/button 全试，并分别尝试 清空学年学期 与
+        # 保留默认两种下拉口径（成绩页同款策略，生产已验证有效）。
+        soup = BeautifulSoup(_html_text(resp), "html.parser")
         payload = self._form_hidden(soup)
         if "__VIEWSTATE" not in payload:
             return []
-        for btn_name, btn_val in (
+        attempts = 0
+        for btn_name, btn_val in self._query_buttons(soup):
+            for variant in ("asis", "clear_term"):
+                if attempts >= 8:
+                    break
+                attempts += 1
+                data = dict(payload)
+                if variant == "clear_term":
+                    data["ddlXN"] = ""
+                    data["ddlXQ"] = ""
+                data[btn_name] = btn_val
+                try:
+                    r2 = self._post_form_gbk(self.session, url, data, self.timeout)
+                    r2.raise_for_status()
+                    exams = parse_exams_html(_html_text(r2))
+                    if exams:
+                        return exams
+                except requests.exceptions.RequestException:
+                    continue
+                except Exception:
+                    logger.warning("exams: POST 编码/提交异常 btn=%s", btn_name)
+                    continue
+        return []
+
+    @classmethod
+    def _query_buttons(cls, soup: BeautifulSoup) -> list[tuple[str, str]]:
+        """考试页查询按钮通用扫描：页面真实 submit 优先，回退正方常见名。"""
+        found: list[tuple[str, str]] = []
+        seen: set[str] = set()
+        for inp in soup.find_all("input"):
+            itype = (cls._attr_str(inp.get("type")) or "").lower()
+            if itype not in ("submit", "button"):
+                continue
+            name = cls._attr_str(inp.get("name"))
+            val = cls._attr_str(inp.get("value"))
+            if not name or name in seen:
+                continue
+            if val and not any(k in val for k in ("考试", "查询", "学期", "确定", "搜索")):
+                continue
+            seen.add(name)
+            found.append((name, val or "查询"))
+        for name, val in (
+            ("btn_kscx", "考试查询"),
             ("btn_xq", "学期查询"),
             ("Button1", "查询"),
             ("btn_cx", "查询"),
         ):
-            if soup.find("input", {"name": btn_name}) is None and soup.find("input", {"id": btn_name}) is None:
-                continue
-            data = dict(payload)
-            data[btn_name] = btn_val
-            try:
-                r2 = self._post_form_gbk(self.session, url, data, self.timeout)
-                r2.raise_for_status()
-                exams = parse_exams_html(r2.text)
-                if exams:
-                    return exams
-            except requests.exceptions.RequestException:
-                continue
-        return []
+            if name not in seen:
+                found.append((name, val))
+                seen.add(name)
+        return found
 
     def close(self) -> None:
         self.session.close()

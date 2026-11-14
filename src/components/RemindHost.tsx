@@ -286,7 +286,7 @@ function RemindAccountHost() {
       {reminderNotice.includes('课表') ? <Link className={styles.noticeAct} to="/schedule" onClick={() => setReminderNotice('')}>去同步</Link> : null}
       <button type="button" className={styles.noticeClose} onClick={() => setReminderNotice('')} aria-label="关闭提示">×</button>
     </section> : null}
-    {askNotify ? <DialogLayer title="通知权限" onClose={onDenyNotify} allowClose={!busy} className={styles.sheet}>
+    {askNotify && !auth.editOpen ? <DialogLayer title="通知权限" onClose={onDenyNotify} allowClose={!busy} className={styles.sheet}>
       <h2>开启课程与日程提醒</h2>
       <p>允许通知后，可按已保存的课表、考试与待办安排系统提醒。声音和震动可在系统通知设置调整。</p>
       <div className={styles.btns}><button type="button" className={styles.ghost} disabled={busy} onClick={onDenyNotify}>暂不</button><button type="button" className={styles.main} disabled={busy} onClick={() => void onAllowNotify()}>{busy ? '正在请求…' : '允许通知'}</button></div>

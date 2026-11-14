@@ -27,6 +27,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ReminderPlanPlugin.class);
         registerPlugin(SafeAreaPlugin.class);
         registerPlugin(AppProbePlugin.class);
+        registerPlugin(SecurityGatePlugin.class);
+        registerPlugin(CredentialKeyPlugin.class);
         registerPlugin(StudentHapticsPlugin.class);
         registerPlugin(ShareGalleryPlugin.class);
         registerPlugin(HealthPlugin.class);
@@ -56,6 +58,14 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onResume() {
         super.onResume();
+        /* 任务从最近应用恢复时不经过桌面入口，再检查一次明确的 Root 证据。 */
+        if (DeviceIntegrityGate.hasConfirmedRoot()) {
+            Intent blocked = new Intent(this, SecurityBlockedActivity.class);
+            blocked.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(blocked);
+            finish();
+            return;
+        }
         AdminShellReminderCleanup.enforce(this);
         LauncherIconSwitcher.setAppInForeground(true);
         FocusSessionGuard.reconcile(this);
@@ -83,10 +93,15 @@ public class MainActivity extends BridgeActivity {
             String shell = BuildConfig.SC_SHELL;
             if (shell == null || shell.isEmpty()) shell = "user";
             String js = "window.__SC_SHELL__='" + shell.replace("'", "") + "';";
-            boolean openScheduleWidget = "user".equals(shell) && getIntent() != null
-                    && "/schedule".equals(getIntent().getStringExtra("scheduleWidgetRoute"));
-            if (openScheduleWidget && getBridge().getWebView().getProgress() >= 100) {
-                js += "window.__SC_WIDGET_ROUTE__='/schedule';window.dispatchEvent(new Event('native-schedule-widget-open'));";
+            String widgetRoute = "user".equals(shell) && getIntent() != null
+                    ? WidgetLinks.safeRoute(getIntent().getStringExtra(WidgetLinks.ROUTE_EXTRA)) : null;
+            boolean openScheduleWidget = widgetRoute != null;
+            String pageUrl = getBridge().getWebView().getUrl();
+            boolean widgetPageReady = pageUrl != null && !pageUrl.startsWith("about:") && !pageUrl.startsWith("data:")
+                    && getBridge().getWebView().getProgress() >= 100;
+            if (openScheduleWidget && widgetPageReady) {
+                js += "window.__SC_WIDGET_ROUTE__=" + org.json.JSONObject.quote(widgetRoute)
+                        + ";window.dispatchEvent(new Event('native-schedule-widget-open'));";
                 scheduleWidgetRouteAttempts = 0;
             } else if (openScheduleWidget && scheduleWidgetRouteAttempts < 20) {
                 // The launch intent may arrive before the SPA is ready. Retry on
@@ -95,7 +110,7 @@ public class MainActivity extends BridgeActivity {
                 getBridge().getWebView().postDelayed(this::injectShell, 300);
             } else if (openScheduleWidget) {
                 // Do not keep retrying forever if the app page failed to load.
-                getIntent().removeExtra("scheduleWidgetRoute");
+                getIntent().removeExtra(WidgetLinks.ROUTE_EXTRA);
                 scheduleWidgetRouteAttempts = 0;
             }
             if (getIntent() != null && "/study/focus".equals(getIntent().getStringExtra("focusNotificationRoute"))) {
@@ -104,7 +119,7 @@ public class MainActivity extends BridgeActivity {
             // 自检通道：adb / 内部工具可以带 --ei testReminderSeconds 60 排一条测试提醒。
             // 必须等 WebView 真正加载了页面再注入：启动瞬间注入会落在稍后被替换掉的空白文档里，
             // 参数跟着丢失。页面就绪后注入的全局变量会留在同一文档，React 挂载时能读到。
-            if (getIntent() != null && getIntent().hasExtra("testReminderSeconds")) {
+            if (BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("testReminderSeconds")) {
                 String url = getBridge().getWebView().getUrl();
                 boolean pageReady = url != null && !url.startsWith("about:") && !url.startsWith("data:");
                 if (pageReady) {
@@ -114,8 +129,8 @@ public class MainActivity extends BridgeActivity {
                 }
             }
             getBridge().getWebView().evaluateJavascript(js, null);
-            if (openScheduleWidget && getBridge().getWebView().getProgress() >= 100) {
-                getIntent().removeExtra("scheduleWidgetRoute");
+            if (openScheduleWidget && widgetPageReady) {
+                getIntent().removeExtra(WidgetLinks.ROUTE_EXTRA);
             }
         } catch (Throwable ignored) {
             /* WebView 尚未就绪时忽略，onResume 会再试 */

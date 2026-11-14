@@ -24,8 +24,8 @@ test('公选 personalFiles：空响应不误判', () => {
 })
 
 test('公选 personalFiles：请求体必须带 outid', () => {
-  assert.equal(qualityPersonalFilesBody('2023120448'), '{"outid":"2023120448"}')
-  assert.equal(qualityPersonalFilesBody(' 2023120448 '), '{"outid":"2023120448"}')
+  assert.equal(qualityPersonalFilesBody('2023000000'), '{"outid":"2023000000"}')
+  assert.equal(qualityPersonalFilesBody(' 2023000000 '), '{"outid":"2023000000"}')
 })
 
 test('公选：保存/读取不丢分类明细', () => {

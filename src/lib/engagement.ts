@@ -10,6 +10,7 @@ import { getAppShell, type AppShell } from './app-shell'
 import { activityDay, syncLauncherMood, type IconStateKey } from './app-icon'
 import { FOX_LABELS } from './fox-labels'
 import { foxLocalDay } from './fox-calendar'
+import { playSound, SoundEvent } from './sound'
 
 export type { IconStateKey }
 
@@ -263,6 +264,8 @@ export async function checkInToday(uid: string, shell: AppShell = getAppShell())
   const r = resolveIconState(base)
   const eng: Engagement = { uid, shell, ...base, ...r }
   writeLocal(eng)
+  /* 连击里程碑（7/14/21…天）才给一次仪式感和弦；当天幂等进门不重复发声。 */
+  if (prev.lastCheckinDate !== today && streak >= 7 && streak % 7 === 0) playSound(SoundEvent.Achievement)
   dispatchFoxState(eng)
   await syncLauncherMood({
     lastActiveAt: eng.lastActiveAt,

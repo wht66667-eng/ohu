@@ -1,5 +1,6 @@
 /**
- * 站内 /api/* 网关基址（AI 问答 /api/chat、楼栋申请 /api/apply 均挂在云函数上）。
+ * 站内 /api/* 网关基址（AI 入口 /api/agnes、访客聊天 /api/chat 均挂在云函数上；
+ * 楼栋申请 /api/apply 已无前端调用方，路由仅为兼容保留）。
  *
  * 线上函数路由只存在于 CloudBase HTTPSERVICE 网关默认域：
  *   https://jou-d4gq7a3cqf51e6caa-1394316826.ap-shanghai.app.tcloudbase.com

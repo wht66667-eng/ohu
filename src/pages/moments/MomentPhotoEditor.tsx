@@ -1,22 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
 import { Canvas, FabricImage, IText, PencilBrush, type FabricObject } from 'fabric'
+import { ComposerKeyboard } from '../../components/ComposerKeyboard'
+import { FOX_V1_STICKERS, foxV1StickerUrl } from '../../lib/fox-v1-assets'
 import { DialogLayer } from '../../components/ui/DialogLayer'
 import { canvasPhotoFile, loadMomentImage, normalizeMomentPhoto, photoCanvas } from '../../lib/moment-photo'
-import { DEFAULT_PHOTO_ADJUSTMENTS, type PhotoFilter, type PhotoQuality, type QualityMode, type PhotoAdjustments } from '../../lib/moment-photo-quality'
+import { STICKER_EDGES, stickerEdgeCanvas, type StickerEdge } from '../../lib/photo-sticker'
+import { listLocalStickers, deleteLocalSticker, saveLocalSticker, LOCAL_STICKERS_CHANGED_EVENT, type LocalSticker } from '../../lib/local-stickers'
+import { PHOTO_PRESETS, lifeRecordId, type LifeRecordPhoto } from '../../lib/life-records'
+import { cropStickerFavorite } from '../../lib/sticker-favorite'
+import { CAMPUS_FILTERS, DEFAULT_PHOTO_ADJUSTMENTS, type CampusFilter, type PhotoTone, type PhotoFilter, type PhotoQuality, type QualityMode, type PhotoAdjustments } from '../../lib/moment-photo-quality'
 import { MOMENT_FONTS, loadMomentFont, loadSnapshotFonts } from '../../lib/moment-fonts'
 import styles from './MomentPhotoEditor.module.css'
 
 export interface MomentEditState { json: string; width: number; height: number; base: string }
 type Tool = 'select' | 'draw' | 'text' | 'sticker' | 'quality' | 'layers' | 'mosaic'
 const ADJUSTMENTS: Array<[keyof PhotoAdjustments, string, number, number, number]> = [['exposure', '曝光', -2, 2, .1], ['brightness', '亮度', -50, 50, 1], ['contrast', '对比度', -50, 50, 1], ['saturation', '饱和度', 0, 200, 1], ['temperature', '色温', -50, 50, 1], ['gamma', '伽马', 50, 200, 5], ['vignette', '暗角', 0, 100, 1]]
+const NEUTRAL_TONE: PhotoTone = { version: 2, shadows: 0, highlights: 0, tint: 0, midtone: 0 }
+const TONE_CONTROLS = [['shadows', '阴影'], ['highlights', '高光'], ['tint', '绿／洋红色偏'], ['midtone', '中间调']] as const
 const COLORS = ['#ffffff', '#151515', '#ff5353', '#ffcc35', '#07c160', '#58b7ff', '#ac8bfa']
 const STICKERS = [['heart', '绿心'], ['sparkles', '闪光'], ['sun', '太阳'], ['flower', '樱花'], ['party', '庆祝'], ['cat', '猫咪'], ['coffee', '咖啡'], ['book', '书本'], ['star', '星星'], ['thumb', '赞'], ['rainbow', '彩虹'], ['smile', '笑脸']] as const
 const EMOJIS = ['✨', '❤️', '🌸', '🎉', '😂', '☀️', '🌿', '💚']
 
 /** 深色本机编辑器：几何变换与对象层分离，裁剪/旋转合并图层后仍可撤销。 */
-export function MomentPhotoEditor({ file, initialState, availableFiles, onClose, onSave }: {
-  file: File; initialState?: MomentEditState; availableFiles: File[]; onClose: () => void
+export function MomentPhotoEditor({ owner, file, initialState, availableFiles, startWithFilters = false, onClose, onSave }: {
+  owner: string; startWithFilters?: boolean; file: File; initialState?: MomentEditState; availableFiles: File[]; onClose: () => void
   onSave: (file: File, state: MomentEditState) => void
 }) {
   const element = useRef<HTMLCanvasElement>(null), host = useRef<HTMLDivElement>(null)
@@ -27,7 +35,7 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
   const [processing, setProcessing] = useState(false)
   const [cropRatio, setCropRatio] = useState(1)
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('')
-  const [tool, setTool] = useState<Tool>('select'), [color, setColor] = useState('#ffffff'), [brushSize, setBrushSize] = useState(10)
+  const [tool, setTool] = useState<Tool>(startWithFilters ? 'quality' : 'select'), [color, setColor] = useState('#ffffff'), [brushSize, setBrushSize] = useState(10)
   const [fontFamily, setFontFamily] = useState('sans-serif'), [fontLoading, setFontLoading] = useState(false)
   const [layers, setLayers] = useState<Array<{ index: number; label: string; visible: boolean; opacity: number; blend: GlobalCompositeOperation }>>([])
   const [viewSize, setViewSize] = useState({ width: 1, height: 1 })
@@ -37,9 +45,37 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
   const [text, setText] = useState(''), [selected, setSelected] = useState(false), [comparing, setComparing] = useState(false)
   const [quality, setQuality] = useState<PhotoQuality>({ mode: 'none', strength: 35, filter: 'none', adjustments: { ...DEFAULT_PHOTO_ADJUSTMENTS } })
   const [cropSource, setCropSource] = useState<{ src: string; sticker: boolean } | null>(null)
+  const [stickerEdge, setStickerEdge] = useState<StickerEdge>('none')
   const [crop, setCrop] = useState({ x: 0, y: 0 }), [zoom, setZoom] = useState(1)
   const [aspect, setAspect] = useState<number | undefined>(), [area, setArea] = useState<Area | null>(null)
+  const photoText = useRef<HTMLInputElement>(null)
   const stickerInput = useRef<HTMLInputElement>(null)
+  const [collection, setCollection] = useState<LocalSticker[] | null>(null)
+  const [collectionError, setCollectionError] = useState('')
+  const [collectionRevision, setCollectionRevision] = useState(0)
+  const [removingSticker, setRemovingSticker] = useState('')
+  // 上一张裁切贴纸：只留在本机内存里，等用户显式收藏；关闭编辑器或收藏成功即清除。
+  const [lastSticker, setLastSticker] = useState<LifeRecordPhoto | null>(null)
+  const [collectingSticker, setCollectingSticker] = useState(false)
+
+  useEffect(() => {
+    if (tool !== 'sticker') return
+    let disposed = false, request = 0
+    const load = () => {
+      const current = ++request
+      void listLocalStickers(owner).then(rows => {
+        if (!disposed && current === request) { setCollection(rows); setCollectionError('') }
+      }, () => {
+        if (!disposed && current === request) setCollectionError('本机贴纸读取失败，请重试。')
+      })
+    }
+    const changed = (event: Event) => {
+      if ((event as CustomEvent<{ owner: string }>).detail?.owner === owner) load()
+    }
+    load()
+    window.addEventListener(LOCAL_STICKERS_CHANGED_EVENT, changed)
+    return () => { disposed = true; window.removeEventListener(LOCAL_STICKERS_CHANGED_EVENT, changed) }
+  }, [owner, tool, collectionRevision])
 
   /** 画布始终保留逻辑像素，仅缩小CSS尺寸；导出和触控坐标使用同一坐标系。 */
   function fit() {
@@ -163,7 +199,7 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
       await changeBase(result.toDataURL('image/png'))
     }); remember()
   }
-  function openCrop(src: string, sticker: boolean) { setCrop({ x: 0, y: 0 }); setZoom(1); setAspect(undefined); setArea(null); setCropSource({ src, sticker }) }
+  function openCrop(src: string, sticker: boolean) { setCrop({ x: 0, y: 0 }); setZoom(1); setAspect(undefined); setArea(null); setStickerEdge('none'); setCropSource({ src, sticker }) }
   async function chooseSticker(file?: File) {
     if (!file || locked.current) return
     await task(async () => {
@@ -179,12 +215,15 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
       const image = await loadMomentImage(source.src); if (!active.current) return
       const result = photoCanvas(area.width, area.height)
       result.getContext('2d')!.drawImage(image, area.x, area.y, area.width, area.height, 0, 0, result.width, result.height)
-      const src = result.toDataURL('image/png')
       if (source.sticker) {
+        const original = result.toDataURL('image/png')
+        const src = stickerEdgeCanvas(result, stickerEdge, 14, lifeRecordId()).toDataURL('image/png')
         const object = await FabricImage.fromURL(src); if (!active.current) return
         object.scaleToWidth(canvas.current!.width * .28)
         locked.current = false; addObject(object); locked.current = true
-      } else await changeBase(src)
+        // 保留最近一次裁切结果，供「收藏上一张贴纸」显式收藏；构造失败保持静默（不收藏）。
+        if (active.current) setLastSticker(cropStickerFavorite(lifeRecordId(), original, src, stickerEdge))
+      } else await changeBase(result.toDataURL('image/png'))
       if (active.current) setCropSource(null)
     }); remember()
   }
@@ -219,9 +258,28 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
     catch (reason) { if (active.current) setError(reason instanceof Error ? reason.message : '字体加载失败') }
     finally { if (active.current) setFontLoading(false) }
   }
-  async function addOpenSticker(id: string) {
-    await task(async () => { const object = await FabricImage.fromURL(`${import.meta.env.BASE_URL}moment-editor/stickers/${id}.svg`); if (!active.current) return; object.scaleToWidth(canvas.current!.width * .2); locked.current = false; addObject(object); locked.current = true })
+  async function addLocalSticker(src: string) {
+    await task(async () => { const object = await FabricImage.fromURL(src); if (!active.current) return; object.scaleToWidth(canvas.current!.width * .2); locked.current = false; addObject(object); locked.current = true })
   }
+  async function removeCollectionSticker(id: string) {
+    if (removingSticker !== id) { setRemovingSticker(id); return }
+    await task(async () => {
+      await deleteLocalSticker(owner, id)
+      if (active.current) { setCollection(rows => rows?.filter(row => row.id !== id) ?? null); setRemovingSticker(''); setStatus('已移除收藏，不影响已贴到图片上的内容。') }
+    })
+  }
+  // 显式收藏上一张贴纸：只写收藏库，不产生生活记录；收藏库变更事件会刷新列表。
+  async function collectLastSticker() {
+    if (!lastSticker || busy || collectingSticker) return
+    setCollectingSticker(true)
+    try {
+      await saveLocalSticker(owner, lastSticker)
+      if (active.current) { setLastSticker(null); setStatus('已收藏贴纸，可在「我的本机贴纸」里复用。') }
+    } catch {
+      if (active.current) setStatus('贴纸收藏失败，请检查本机存储后重试。')
+    } finally { if (active.current) setCollectingSticker(false) }
+  }
+
   function changeLayer(index: number, values: Partial<FabricObject>, save = true) {
     if (locked.current) return
     const object = canvas.current?.getObjects()[index]; if (!object) return
@@ -237,7 +295,7 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
       if (!saved || typeof saved !== 'object' || !['none','denoise','blur','sharpen','wavelet-denoise','wavelet-detail','edges','emboss','median'].includes(saved.mode) || !['none','mono','warm','cool','vivid','sepia','invert','fade'].includes(saved.filter) || !Number.isFinite(saved.strength) || saved.strength < 0 || saved.strength > 100) throw Error()
       const adjustments = { ...DEFAULT_PHOTO_ADJUSTMENTS, ...saved.adjustments }
       for (const [id,,min,max] of ADJUSTMENTS) if (!Number.isFinite(adjustments[id]) || adjustments[id] < min || adjustments[id] > max) throw Error()
-      setQuality({ mode: saved.mode, filter: saved.filter, strength: saved.strength, adjustments }); setStatus('已载入常用参数，点击应用后生效。')
+      setQuality({ ...saved, adjustments }); setStatus('已载入常用参数，点击应用后生效。')
     } catch { setError('没有可用的常用参数，请先保存一组。') }
   }
   async function applyMosaic() {
@@ -258,7 +316,7 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
       const rendered = await loadMomentImage(c.toDataURL({ format: 'png', multiplier: 1 }))
       const result = photoCanvas(c.width, c.height), ctx = result.getContext('2d')!
       ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, result.width, result.height); ctx.drawImage(rendered, 0, 0)
-      const output = await canvasPhotoFile(result)
+      const output = await canvasPhotoFile(result, file.name)
       if (active.current) onSave(output, snapshot())
     })
   }
@@ -272,10 +330,43 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
       {busy ? <div className={styles.busy} role="status">正在处理图片…{processing ? <button type="button" onClick={() => stopWorker.current?.()}>停止处理</button> : null}</div> : null}
       <div className={styles.options}>
         {(tool === 'text' || tool === 'draw') ? <div className={styles.palette} aria-label="选择颜色">{COLORS.map(value => <button type="button" key={value} aria-label={`颜色 ${value}`} aria-pressed={color === value} onClick={() => setColor(value)} style={{ background: value }} disabled={busy} />)}</div> : null}
-        {tool === 'text' ? <><label className={styles.fontPicker}>字体<select aria-label="文字字体" disabled={busy || fontLoading} value={fontFamily} onChange={event => void chooseFont(event.target.value)}>{MOMENT_FONTS.map(font => <option key={font.id} value={font.family}>{font.label}</option>)}</select></label><div className={styles.textRow}><input aria-label="图片文字" value={text} maxLength={120} onChange={e => setText(e.target.value)} placeholder="写点什么，添加后可双击修改" disabled={busy} /><button type="button" disabled={busy || fontLoading || !ready || !text.trim()} onClick={() => addText(text)}>添加</button></div>{fontLoading ? <p className={styles.note} role="status">正在加载字库…</p> : null}<a className={styles.licenseLink} href={`${import.meta.env.BASE_URL}moment-editor/NOTICE.md`} target="_blank" rel="noreferrer">字体与素材许可</a></> : null}
+        {tool === 'text' ? <><label className={styles.fontPicker}>字体<select aria-label="文字字体" disabled={busy || fontLoading} value={fontFamily} onChange={event => void chooseFont(event.target.value)}>{MOMENT_FONTS.map(font => <option key={font.id} value={font.family}>{font.label}</option>)}</select></label><div className={styles.textRow}><input ref={photoText} aria-label="图片文字" value={text} maxLength={120} onChange={e => setText(e.target.value)} placeholder="写点什么，添加后可双击修改" disabled={busy} /><button type="button" disabled={busy || fontLoading || !ready || !text.trim()} onClick={() => addText(text)}>添加</button></div><ComposerKeyboard field={photoText} value={text} onChange={setText} disabled={busy} />{fontLoading ? <p className={styles.note} role="status">正在加载字库…</p> : null}<a className={styles.licenseLink} href={`${import.meta.env.BASE_URL}moment-editor/NOTICE.md`} target="_blank" rel="noreferrer">字体与素材许可</a></> : null}
         {tool === 'draw' ? <label className={styles.range}>画笔粗细<input type="range" min="2" max="28" value={brushSize} disabled={busy} onChange={e => setBrushSize(Number(e.target.value))} /></label> : null}
-        {tool === 'sticker' ? <><div className={styles.openStickers}>{STICKERS.map(([id, label]) => <button type="button" key={id} disabled={busy || !ready} aria-label={`添加${label}贴纸`} onClick={() => void addOpenSticker(id)}><img src={`${import.meta.env.BASE_URL}moment-editor/stickers/${id}.svg`} width="40" height="40" alt="" /></button>)}</div><div className={styles.emoji}>{EMOJIS.map(emoji => <button type="button" disabled={busy || !ready} key={emoji} onClick={() => addText(emoji)}>{emoji}</button>)}<button type="button" disabled={busy || !ready} onClick={() => stickerInput.current?.click()}>图片贴纸</button></div><div className={styles.photoChoices}>{availableFiles.map((source, index) => <button type="button" key={index} disabled={busy || !ready} onClick={() => void chooseSticker(source)}>裁第{index + 1}张</button>)}</div></> : null}
-        {tool === 'quality' ? <><div className={styles.qualityRow}><label>滤镜<select aria-label="滤镜" value={quality.filter} disabled={busy} onChange={e => setQuality(q => ({ ...q, filter: e.target.value as PhotoFilter }))}>{[['none', '原色'], ['mono', '黑白'], ['warm', '暖调'], ['cool', '冷调'], ['vivid', '鲜明'], ['sepia', '复古棕'], ['invert', '反相'], ['fade', '褪色']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>画质<select aria-label="画质" value={quality.mode} disabled={busy} onChange={e => setQuality(q => ({ ...q, mode: e.target.value as QualityMode }))}>{[['none', '不处理'], ['denoise', '柔和去噪'], ['blur', '模糊'], ['sharpen', '傅里叶锐化'], ['wavelet-denoise', '小波降噪'], ['wavelet-detail', '小波细节'], ['median', '中值去斑'], ['edges', 'Sobel边缘'], ['emboss', '浮雕']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div><label className={styles.range}>强度 {quality.strength}<input type="range" min="0" max="100" value={quality.strength} disabled={busy} onChange={e => setQuality(q => ({ ...q, strength: Number(e.target.value) }))} /></label><details className={styles.adjustments}><summary>专业调节</summary>{ADJUSTMENTS.map(([id, label, min, max, step]) => <label className={styles.range} key={id}>{label} {quality.adjustments?.[id] ?? DEFAULT_PHOTO_ADJUSTMENTS[id]}<input aria-label={label} type="range" min={min} max={max} step={step} disabled={busy} value={quality.adjustments?.[id] ?? DEFAULT_PHOTO_ADJUSTMENTS[id]} onChange={event => setQuality(q => ({ ...q, adjustments: { ...DEFAULT_PHOTO_ADJUSTMENTS, ...q.adjustments, [id]: Number(event.target.value) } }))} /></label>)}</details><div className={styles.presets}><button type="button" disabled={busy} onClick={() => setQuality({ mode: 'none', strength: 35, filter: 'none', adjustments: { ...DEFAULT_PHOTO_ADJUSTMENTS } })}>还原参数</button><button type="button" disabled={busy} onClick={() => { try { localStorage.setItem('ohu.photo-adjustment.v1', JSON.stringify(quality)); setStatus('已保存常用参数，只记录调节数值，不保存照片。') } catch { setError('常用参数保存失败') } }}>保存常用</button><button type="button" disabled={busy} onClick={loadPreset}>使用常用</button></div><p className={styles.note}>小波细节与傅里叶锐化可能放大噪点；去噪会减少细节。选择参数后应用，可撤销。</p><button type="button" className={styles.apply} disabled={busy || !ready} onClick={() => void applyQuality()}>应用并查看效果</button></> : null}
+        {tool === 'sticker' ? <><section className={styles.collection} aria-label="本机贴纸收藏">
+          <h3>我的本机贴纸</h3>
+          <p>在「记一笔」或本编辑器裁切后收藏。点按重贴，不增加生活记录；移除收藏不影响已贴内容。</p>
+          {lastSticker ? <div className={styles.collectRow}>
+            <img src={lastSticker.sticker} width="40" height="40" alt="上一张贴纸预览" />
+            <button type="button" disabled={busy || collectingSticker} onClick={() => void collectLastSticker()}>{collectingSticker ? '收藏中…' : '收藏上一张贴纸'}</button>
+          </div> : null}
+          {collectionError ? <p role="alert">{collectionError}<button type="button" disabled={busy} onClick={() => setCollectionRevision(value => value + 1)}>重试读取</button></p> : collection === null ? <p role="status">正在读取本机贴纸…</p> : collection.length === 0 && !lastSticker ? <p>还没有收藏，可先在「记一笔」选照片并收藏贴纸。</p> : null}
+          <ul className={styles.collectionList}>{collection?.map((sticker, index) => <li key={sticker.id} className={styles.collectionCard}>
+            <button type="button" disabled={busy || !ready} aria-label={`贴上第${index + 1}张收藏贴纸`} onClick={() => void addLocalSticker(sticker.sticker)}>
+              <img src={sticker.sticker} width="56" height="56" alt="" loading="lazy" />
+              <span>{PHOTO_PRESETS.find(preset => preset.value === sticker.preset)?.label}</span>
+            </button>
+            <button type="button" className={styles.delete} disabled={busy || !ready} onClick={() => void removeCollectionSticker(sticker.id)}>{removingSticker === sticker.id ? '确认移除' : '移除收藏'}</button>
+            {removingSticker === sticker.id ? <button type="button" disabled={busy} onClick={() => setRemovingSticker('')}>保留收藏</button> : null}
+          </li>)}</ul>
+        </section><div className={styles.openStickers}>{STICKERS.map(([id, label]) => <button type="button" key={id} disabled={busy || !ready} aria-label={`添加${label}贴纸`} onClick={() => void addLocalSticker(import.meta.env.BASE_URL + 'moment-editor/stickers/' + id + '.svg')}><img src={`${import.meta.env.BASE_URL}moment-editor/stickers/${id}.svg`} width="40" height="40" alt="" /></button>)}</div><details className={styles.adjustments}><summary>阿狐贴纸</summary><div className={styles.openStickers}>{FOX_V1_STICKERS.map(sticker => <button type="button" key={sticker.id} disabled={busy || !ready} aria-label={'添加' + sticker.name} onClick={() => void addLocalSticker(foxV1StickerUrl(sticker))}><img src={foxV1StickerUrl(sticker)} width="40" height="40" alt="" loading="lazy" /></button>)}</div></details><div className={styles.emoji}>{EMOJIS.map(emoji => <button type="button" disabled={busy || !ready} key={emoji} onClick={() => addText(emoji)}>{emoji}</button>)}<button type="button" disabled={busy || !ready} onClick={() => stickerInput.current?.click()}>图片贴纸</button></div><div className={styles.photoChoices}>{availableFiles.map((source, index) => <button type="button" key={index} disabled={busy || !ready} onClick={() => void chooseSticker(source)}>裁第{index + 1}张</button>)}</div></> : null}
+        {tool === 'quality' ? <>
+          <label className={styles.range}>校园滤镜<select value={quality.preset ?? 'original'} disabled={busy} onChange={event => setQuality(q => ({ ...q, preset: event.target.value as CampusFilter, filter: 'none' }))}>{Object.entries(CAMPUS_FILTERS).map(([id, item]) => <option key={id} value={id}>{item.label}</option>)}</select></label>
+          <label className={styles.range}>滤镜强度 {quality.filterStrength ?? 60}%<input type="range" min="0" max="100" value={quality.filterStrength ?? 60} disabled={busy || !quality.preset || quality.preset === 'original'} onChange={event => setQuality(q => ({ ...q, filterStrength: Number(event.target.value) }))} /></label>
+          <div className={styles.qualityRow}><label>滤镜<select aria-label="滤镜" value={quality.filter} disabled={busy} onChange={e => setQuality(q => ({ ...q, filter: e.target.value as PhotoFilter, preset: 'original' }))}>{[['none', '原色'], ['mono', '黑白'], ['warm', '暖调'], ['cool', '冷调'], ['vivid', '鲜明'], ['sepia', '复古棕'], ['invert', '反相'], ['fade', '褪色']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>画质<select aria-label="画质" value={quality.mode} disabled={busy} onChange={e => setQuality(q => ({ ...q, mode: e.target.value as QualityMode, adaptiveWavelet: e.target.value.startsWith('wavelet-') }))}>{[['none', '不处理'], ['denoise', '柔和去噪'], ['blur', '模糊'], ['sharpen', '傅里叶锐化'], ['wavelet-denoise', '小波降噪'], ['wavelet-detail', '小波细节'], ['median', '中值去斑'], ['edges', 'Sobel边缘'], ['emboss', '浮雕']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div><label className={styles.range}>画质强度 {quality.strength}<input type="range" min="0" max="100" value={quality.strength} disabled={busy} onChange={e => setQuality(q => ({ ...q, strength: Number(e.target.value) }))} /></label><details className={styles.adjustments}><summary>专业调节</summary>
+          {quality.mode === 'sharpen' ? <>
+            <label className={styles.range}>锐化半径 {quality.sharpenRadius ?? 1.2} px<input type="range" min=".4" max="3" step=".1" value={quality.sharpenRadius ?? 1.2} disabled={busy} onChange={event => setQuality(q => ({ ...q, sharpenRadius: Number(event.target.value) }))} /></label>
+            <label className={styles.range}>细节阈值 {quality.sharpenThreshold ?? 0}<input type="range" min="0" max="20" value={quality.sharpenThreshold ?? 0} disabled={busy} onChange={event => setQuality(q => ({ ...q, sharpenThreshold: Number(event.target.value) }))} /></label>
+          </> : null}
+          {quality.mode.startsWith('wavelet-') ? <>
+            <label className={styles.range}><span>自适应小波</span><input type="checkbox" checked={!!quality.adaptiveWavelet} disabled={busy} onChange={event => setQuality(q => ({ ...q, adaptiveWavelet: event.target.checked }))} /></label>
+            {quality.adaptiveWavelet ? <>
+              <label className={styles.range}>分解层数<select value={quality.waveletLevels ?? 3} disabled={busy} onChange={event => setQuality(q => ({ ...q, waveletLevels: Number(event.target.value) }))}><option value="2">2 层</option><option value="3">3 层</option></select></label>
+              <label className={styles.range}>阈值倍率 {quality.waveletThreshold ?? 1}<input type="range" min=".6" max="1.2" step=".05" value={quality.waveletThreshold ?? 1} disabled={busy} onChange={event => setQuality(q => ({ ...q, waveletThreshold: Number(event.target.value) }))} /></label>
+            </> : null}
+          </> : null}
+          <label className={styles.range}><span>线性光曝光与进阶色调</span><input type="checkbox" checked={!!quality.tone} disabled={busy} onChange={event => setQuality(q => ({ ...q, tone: event.target.checked ? { ...NEUTRAL_TONE } : undefined }))} /></label>
+          {quality.tone ? TONE_CONTROLS.map(([id, label]) => <label className={styles.range} key={id}>{label} {quality.tone?.[id]}<input type="range" min="-50" max="50" step="1" value={quality.tone?.[id] ?? 0} disabled={busy} onChange={event => setQuality(q => ({ ...q, tone: { ...NEUTRAL_TONE, ...q.tone, [id]: Number(event.target.value) } }))} /></label>) : null}
+          {ADJUSTMENTS.map(([id, label, min, max, step]) => <label className={styles.range} key={id}>{label} {quality.adjustments?.[id] ?? DEFAULT_PHOTO_ADJUSTMENTS[id]}<input aria-label={label} type="range" min={min} max={max} step={step} disabled={busy} value={quality.adjustments?.[id] ?? DEFAULT_PHOTO_ADJUSTMENTS[id]} onChange={event => setQuality(q => ({ ...q, adjustments: { ...DEFAULT_PHOTO_ADJUSTMENTS, ...q.adjustments, [id]: Number(event.target.value) } }))} /></label>)}</details><div className={styles.presets}><button type="button" disabled={busy} onClick={() => setQuality({ mode: 'none', strength: 35, filter: 'none', adjustments: { ...DEFAULT_PHOTO_ADJUSTMENTS } })}>还原参数</button><button type="button" disabled={busy} onClick={() => { try { localStorage.setItem('ohu.photo-adjustment.v1', JSON.stringify(quality)); setStatus('已保存常用参数，只记录调节数值，不保存照片。') } catch { setError('常用参数保存失败') } }}>保存常用</button><button type="button" disabled={busy} onClick={loadPreset}>使用常用</button></div><p className={styles.note}>小波细节与傅里叶锐化可能放大噪点；去噪会减少细节。选择参数后应用，可撤销。</p><button type="button" className={styles.apply} disabled={busy || !ready} onClick={() => void applyQuality()}>应用并查看效果</button></> : null}
         {tool === 'mosaic' ? <><p className={styles.note}>拖动框选要遮盖的区域；发表时会合成为图片。模糊不能保证隐藏文字，请用足够大的格块或实色贴纸覆盖。</p><label className={styles.range}>格块 {mosaicSize}<input type="range" min="8" max="48" value={mosaicSize} onChange={event => setMosaicSize(Number(event.target.value))} /></label><button type="button" className={styles.apply} disabled={busy || !mosaicArea || mosaicArea.width < 4 || mosaicArea.height < 4} onClick={() => void applyMosaic()}>应用马赛克</button></> : null}
         {tool === 'layers' ? <><p className={styles.note}>文字、涂鸦、贴纸与马赛克是独立图层；顶部为前景。</p>{[...layers].reverse().map(layer => <div className={styles.layerRow} key={layer.index}><button type="button" disabled={busy} onClick={() => { const c = canvas.current!, object = c.getObjects()[layer.index]; if (object) { c.setActiveObject(object); c.requestRenderAll() } }}>{layer.label}</button><button type="button" disabled={busy} aria-label={`${layer.visible ? '隐藏' : '显示'}图层${layer.index + 1}`} onClick={() => changeLayer(layer.index, { visible: !layer.visible })}>{layer.visible ? '可见' : '隐藏'}</button><button type="button" disabled={busy || layer.index === layers.length - 1} onClick={() => moveLayer(layer.index, 1)}>上移</button><button type="button" disabled={busy || layer.index === 0} onClick={() => moveLayer(layer.index, -1)}>下移</button><label>透明度<input aria-label={`图层${layer.index + 1}透明度`} type="range" min="0" max="100" step="5" value={Math.round(layer.opacity * 100)} onChange={event => changeLayer(layer.index, { opacity: Number(event.target.value) / 100 }, false)} onPointerUp={() => remember()} onKeyUp={() => remember()} onBlur={() => remember()} disabled={busy} /></label><select aria-label={`图层${layer.index + 1}混合模式`} disabled={busy} value={layer.blend} onChange={event => changeLayer(layer.index, { globalCompositeOperation: event.target.value as GlobalCompositeOperation })}><option value="source-over">正常</option><option value="multiply">正片叠底</option><option value="screen">滤色</option><option value="overlay">叠加</option></select></div>)}{!layers.length ? <p className={styles.note}>添加文字、涂鸦或贴纸后，会在这里显示。</p> : null}<button type="button" disabled={busy || !ready} onClick={() => void rotate(true)}>水平翻转整图</button></> : null}
         {selected ? <button className={styles.delete} type="button" disabled={busy} onClick={removeSelected}>删除选中内容</button> : null}
@@ -286,6 +377,7 @@ export function MomentPhotoEditor({ file, initialState, availableFiles, onClose,
     {cropSource ? <DialogLayer title={cropSource.sticker ? '裁剪图片贴纸' : '裁剪图片'} full onClose={() => setCropSource(null)} allowClose={!busy} className={styles.surface}>
       <div className={styles.cropEditor}><header className={styles.header}><button type="button" disabled={busy} onClick={() => setCropSource(null)}>取消</button><span>{cropSource.sticker ? '裁剪图片贴纸' : '裁剪'}</span><button className={styles.done} type="button" disabled={busy || !area} onClick={() => void acceptCrop()}>确定</button></header>
         <div className={styles.cropStage} style={{ pointerEvents: busy ? 'none' : undefined }}><Cropper image={cropSource.src} crop={crop} zoom={zoom} aspect={aspect ?? cropRatio} onMediaLoaded={media => setCropRatio(media.naturalWidth / media.naturalHeight)} objectFit="contain" onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, pixels) => setArea(pixels)} /></div>
+        {cropSource.sticker ? <div className={styles.ratios} role="group" aria-label="贴纸边">{STICKER_EDGES.map(edge => <button type="button" key={edge.value} disabled={busy} aria-pressed={stickerEdge === edge.value} onClick={() => setStickerEdge(edge.value)}>{edge.label}</button>)}</div> : null}
         <div className={styles.ratios}>{([['原图', undefined], ['1:1', 1], ['4:3', 4 / 3], ['16:9', 16 / 9]] as const).map(([label, ratio]) => <button type="button" key={label} disabled={busy} aria-pressed={aspect === ratio} onClick={() => { setAspect(ratio); setCrop({ x: 0, y: 0 }); setZoom(1) }}>{label}</button>)}</div>
         <label className={styles.range}>缩放<input type="range" min="1" max="4" step=".01" disabled={busy} value={zoom} onChange={e => setZoom(Number(e.target.value))} /></label><p className={styles.note}>{cropSource.sticker ? '裁好后可拖动、缩放和旋转贴纸。' : '裁剪会合并当前文字、涂鸦和贴纸，仍可撤销。'}</p>
       </div>

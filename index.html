@@ -11,13 +11,14 @@
     <title>哦狐</title>
     <script>
       window.__OHU_BOOT_STARTED_AT__ = Date.now()
+      document.documentElement.dataset.uiVariant = 'companion'
       try {
         var choice = localStorage.getItem('app.theme') || 'system'
         var dark = choice === 'dark' || (choice === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-        /* 无狐皮肤提前挂上属性：启动屏 CSS 会隐去狐狸奔跑与陪伴文案，也避免 React 恢复前闪出旧版 */
+        /* 首帧使用已选皮肤，避免启动封面与进入首页时的背景闪变。 */
         var uv = localStorage.getItem('ohfox.ui.variant.v1')
-        if (uv === 'pure' || uv === 'companion') document.documentElement.dataset.uiVariant = uv
+        if (uv === 'classic' || uv === 'pure' || uv === 'handdrawn' || uv === 'ink') document.documentElement.dataset.uiVariant = uv
       } catch (_) {}
     </script>
   </head>

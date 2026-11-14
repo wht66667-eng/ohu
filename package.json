@@ -2,7 +2,7 @@
   "name": "sunshine-campus",
   "private": true,
   "license": "MIT",
-  "version": "1.2.157",
+  "version": "1.2.179",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -49,6 +49,8 @@
     "story:smoke": "node tools/run-story-smoke.mjs && node .tmp-smoke/smoke.mjs"
   },
   "dependencies": {
+    "@astryxdesign/core": "^0.7.11",
+    "@astryxdesign/theme-neutral": "^0.7.11",
     "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.1.2",
     "@capacitor/camera": "7.0.5",
@@ -58,6 +60,8 @@
     "@capacitor/status-bar": "^7.0.6",
     "@capgo/capacitor-updater": "^7.51.23",
     "@cloudbase/js-sdk": "^3.9.3",
+    "@noble/ciphers": "^2.4.0",
+    "@stylexjs/stylex": "^0.19.0",
     "browser-image-compression": "^2.0.2",
     "capacitor-freerasp": "^3.2.1",
     "fabric": "7.4.0",
@@ -70,6 +74,7 @@
     "react-dom": "^19.2.8",
     "react-easy-crop": "^6.2.4",
     "react-router-dom": "^7.18.3",
+    "tesseract.js": "^5.1.1",
     "three": "^0.186.1"
   },
   "devDependencies": {

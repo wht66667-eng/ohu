@@ -13,9 +13,9 @@
 import { CAMPUS_BRIDGE_AVAILABLE, CampusBridge, decodeEvalValue, evalText } from './campus-bridge'
 import { saveExamsCache, saveGradesCache } from './academic-cache'
 import { saveScheduleCache } from './schedule-cache'
-import { captureQbankSession } from './qbank'
+import { captureQbankSession, isQbankSessionCurrent } from './qbank'
 import { importTiceSummary } from './physical-test-results'
-import { parseTiceCurrent, parseTiceHistory, mergeTicePages } from './tice-parse'
+import { parseTiceCurrent, parseTiceHistory, parseTiceHistoryDetailLinks, mergeTicePages } from './tice-parse'
 import { parsePuCreditJson, parsePuPageText, puIsEmpty, type PuSummary } from './pocketuni-parse'
 import { savePocketUni } from './pocketuni-store'
 import { parseZfCourseSelectionHtml, savePublicElectives } from './public-elective'
@@ -82,6 +82,34 @@ async function waitForUrl(match: (url: string) => boolean, timeoutMs = 25_000, s
     const state = await CampusBridge.currentUrl()
     last = state.url
     if (last && match(last)) return last
+    await sleep(400)
+  }
+  throw new OneClickError(stage, `等待页面跳转超时（当前停留在 ${last || '空白页'}）`)
+}
+
+/**
+ * 手动验证码 / 手动登录等待：轮询逻辑与 waitForUrl 相同（不改其签名），
+ * 但每 10s 用 report 刷新一次剩余时间，让用户知道还要等多久、页面没有卡死。
+ */
+async function waitForManualLogin(
+  match: (url: string) => boolean,
+  timeoutMs: number,
+  stage: OneClickStage,
+  report: StageReporter,
+  describe: (remainingSecs: number) => string,
+): Promise<string> {
+  const started = Date.now()
+  let lastReported = -10_000
+  let last = ''
+  while (Date.now() - started < timeoutMs) {
+    const state = await CampusBridge.currentUrl()
+    last = state.url
+    if (last && match(last)) return last
+    const elapsed = Date.now() - started
+    if (elapsed - lastReported >= 10_000) {
+      lastReported = elapsed
+      report(stage, describe(Math.max(0, Math.ceil((timeoutMs - elapsed) / 1000))))
+    }
     await sleep(400)
   }
   throw new OneClickError(stage, `等待页面跳转超时（当前停留在 ${last || '空白页'}）`)
@@ -165,9 +193,9 @@ async function loginVpn(studentId: string, vpnPassword: string, report: StageRep
   report('vpn', '正在登录校园网（WebVPN）…')
   await CampusBridge.open()
   try {
-    const cookie = (await CampusBridge.cookies({ url: `${GATEWAY}/` })).cookie
+    const { hasSession } = await CampusBridge.hasVpnSession({ url: `${GATEWAY}/` })
     /* 已有 WebVPN 票据时先探测一次：旧票据会整站弹回 /login，不能直接复用。 */
-    if (cookie.includes('wengine_vpn_ticket')) {
+    if (hasSession) {
       await CampusBridge.load({ url: zfUrl('/') })
       await waitReady(8_000)
       const probe = await CampusBridge.currentUrl()
@@ -188,7 +216,13 @@ async function loginVpn(studentId: string, vpnPassword: string, report: StageRep
   if (vpnResult === 'need-captcha') {
     report('vpn', '校园网登录需要验证码，请在页面上手动完成一次…')
     await CampusBridge.show()
-    await waitForUrl((url) => !url.includes('/login') && !url.endsWith('/do-login'), 180_000, 'vpn').catch(() => {
+    await waitForManualLogin(
+      (url) => !url.includes('/login') && !url.endsWith('/do-login'),
+      180_000,
+      'vpn',
+      report,
+      (left) => `请在弹出的页面上完成校园网验证码（剩余 ${left}s）…`,
+    ).catch(() => {
       throw new OneClickError('vpn', '手动登录没有完成或超时。')
     })
     await CampusBridge.hide()
@@ -256,20 +290,23 @@ export async function verifyCampusIdentity(
   vpnPassword: string,
   casPassword: string,
   report: StageReporter,
+  options: { zfTicket?: boolean } = {},
 ): Promise<void> {
   const id = studentId.trim()
   if (!/^\d{6,20}$/.test(id)) throw new Error('请输入正确的学号。')
   if (!casPassword) throw new Error('请输入统一认证密码。')
   await resetBridge()
   try {
-    await loginCampus(id, vpnPassword || casPassword, casPassword, report)
+    // 首次认证门槛只需建立 WebVPN + CAS 会话；正方票据交换留给「一键获取」阶段，
+    // 登录面少等 40–90 秒（zf 段含两次 20s waitReady + 25s 跳转等待）。
+    await loginCampus(id, vpnPassword || casPassword, casPassword, report, { zfTicket: options.zfTicket !== false })
   } finally {
     await CampusBridge.close().catch(() => {})
   }
 }
 
-/** 登录 WebVPN + CAS，返回正方页面可用的姓名参数（xm）。 */
-async function loginCampus(studentId: string, vpnPassword: string, casPassword: string, report: StageReporter): Promise<string> {
+/** 登录 WebVPN + CAS；zfTicket=false 时跳过正方票据交换（认证门槛用）。 */
+async function loginCampus(studentId: string, vpnPassword: string, casPassword: string, report: StageReporter, options: { zfTicket?: boolean } = {}): Promise<string> {
   await loginVpn(studentId, vpnPassword, report)
 
   report('cas', '正在登录统一认证（CAS）…')
@@ -290,7 +327,13 @@ async function loginCampus(studentId: string, vpnPassword: string, casPassword: 
     if (casResult === 'need-captcha') {
       report('cas', '统一认证需要验证码，请在页面上手动完成一次…')
       await CampusBridge.show()
-      await waitForUrl((url) => !url.includes('lyuapServer'), 180_000, 'cas').catch(() => {
+      await waitForManualLogin(
+        (url) => !url.includes('lyuapServer'),
+        180_000,
+        'cas',
+        report,
+        (left) => `请在弹出的页面上完成统一认证验证码（剩余 ${left}s）…`,
+      ).catch(() => {
         throw new OneClickError('cas', '手动登录没有完成或超时。')
       })
       await CampusBridge.hide()
@@ -301,43 +344,48 @@ async function loginCampus(studentId: string, vpnPassword: string, casPassword: 
     }
   }
 
-  /* CAS 会话已建立后，再拿 zf 的 service 换票据：服务端会自动 302，无需再填表。 */
-  report('zf', '正在进入正方教务…')
-  let landedOk = false
-  for (let attempt = 0; attempt < 2 && !landedOk; attempt += 1) {
-    if (attempt > 0) {
-      report('zf', '正方票据没有换到，重建校园会话后重试…')
-      await resetBridge()
-      await loginVpn(studentId, vpnPassword, () => {})
+  if (options.zfTicket !== false) {
+    /* CAS 会话已建立后，再拿 zf 的 service 换票据：服务端会自动 302，无需再填表。 */
+    report('zf', '正在进入正方教务…')
+    let landedOk = false
+    for (let attempt = 0; attempt < 2 && !landedOk; attempt += 1) {
+      if (attempt > 0) {
+        report('zf', '正方票据没有换到，重建校园会话后重试…')
+        await resetBridge()
+        await loginVpn(studentId, vpnPassword, () => {})
+      }
+      await CampusBridge.load({ url: CAS_LOGIN })
+      await waitReady(20_000)
+      landedOk = await waitForUrl((url) => url.includes('cas_verify') || url.includes('login_cas') || url.includes('xs_main'), 25_000, 'zf')
+        .then(() => true)
+        .catch(() => false)
     }
-    await CampusBridge.load({ url: CAS_LOGIN })
-    await waitReady(20_000)
-    landedOk = await waitForUrl((url) => url.includes('cas_verify') || url.includes('login_cas') || url.includes('xs_main'), 25_000, 'zf')
-      .then(() => true)
-      .catch(() => false)
-  }
-  if (!landedOk) throw new OneClickError('zf', '正方会话没有建立：CAS 已登录，但没有换到正方票据，重试后仍失败。')
+    if (!landedOk) throw new OneClickError('zf', '正方会话没有建立：CAS 已登录，但没有换到正方票据，重试后仍失败。')
 
-  /* 抓包实证：login_cas.aspx?ticket=ST-... 页面靠 window.open('xs_main.aspx') 跳转，
-     部分 WebView 会拦截这个跳转；这里直接带 Referer 走一次 xs_main。 */
-  const afterTicket = await CampusBridge.currentUrl()
-  if (!afterTicket.url.includes('xs_main')) {
-    await CampusBridge.load({
-      url: zfUrl(`/xs_main.aspx?xh=${encodeURIComponent(studentId)}&type=1`),
-      headers: { Referer: afterTicket.url },
-    })
-    await waitReady(20_000)
-    await waitForUrl((url) => url.includes('xs_main'), 15_000, 'zf').catch(() => {})
+    /* 抓包实证：login_cas.aspx?ticket=ST-... 页面靠 window.open('xs_main.aspx') 跳转，
+       部分 WebView 会拦截这个跳转；这里直接带 Referer 走一次 xs_main。 */
+    const afterTicket = await CampusBridge.currentUrl()
+    if (!afterTicket.url.includes('xs_main')) {
+      await CampusBridge.load({
+        url: zfUrl(`/xs_main.aspx?xh=${encodeURIComponent(studentId)}&type=1`),
+        headers: { Referer: afterTicket.url },
+      })
+      await waitReady(20_000)
+      await waitForUrl((url) => url.includes('xs_main'), 15_000, 'zf').catch(() => {})
+    }
+
+    if (await isZfLoginPage()) {
+      throw new OneClickError('zf', '正方回到了登录页：CAS 票据没有换成会话，请重试或手动登录一次。')
+    }
+
+    /* 正方链接里可能是 `&amp;xm=`，也可能 URL 编码；两种都要能取到姓名。 */
+    const html = await evalText('document.documentElement.outerHTML')
+    const match = html.match(/[?&](?:amp;)?xm=([^&"'#]+)/)
+    return match ? decodeURIComponent(match[1].replace(/&amp;/g, '&')) : ''
   }
 
-  if (await isZfLoginPage()) {
-    throw new OneClickError('zf', '正方回到了登录页：CAS 票据没有换成会话，请重试或手动登录一次。')
-  }
-
-  const html = await evalText('document.documentElement.outerHTML')
-  /* 正方链接里可能是 `&amp;xm=`，也可能 URL 编码；两种都要能取到姓名。 */
-  const match = html.match(/[?&](?:amp;)?xm=([^&"'#]+)/)
-  return match ? decodeURIComponent(match[1].replace(/&amp;/g, '&')) : ''
+  /* zfTicket=false（首次认证门槛）：只建立 WebVPN + CAS 会话，不换正方票据。 */
+  return ''
 }
 
 async function loadWithReferer(url: string, referer: string, expect: string) {
@@ -356,18 +404,6 @@ function raceTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ])
 }
 
-/** 体测老页面是 frameset，DOM 读不到时用页面内 fetch 直接取 HTML。 */
-async function fetchPage(url: string, timeoutMs = 20_000): Promise<string> {
-  await evalText(`(function(){window.__page='';fetch(${JSON.stringify(url)},{credentials:'include'}).then(function(r){return r.text()}).then(function(t){window.__page='OK|'+t}).catch(function(e){window.__page='ERR|'+e});return 'started'})()`)
-  const started = Date.now()
-  while (Date.now() - started < timeoutMs) {
-    const value = await evalText('window.__page || ""')
-    if (value.startsWith('OK|')) return value.slice(3)
-    if (value.startsWith('ERR|')) throw new Error(`页面请求失败：${value.slice(4, 120)}`)
-    await sleep(300)
-  }
-  throw new Error('页面请求超时')
-}
 async function pageHtml(): Promise<string> {
   const outer = await raceTimeout(evalText('document.documentElement.outerHTML'), 8_000, '页面读取超时').catch(() => '')
   if (outer.trim()) return outer
@@ -625,6 +661,7 @@ export async function runTiceSync(input: {
   vpnPassword: string
   ticePassword: string
   report?: StageReporter
+  signal?: AbortSignal
 }): Promise<SourceStatus> {
   assertBridge()
   const report = input.report ?? (() => {})
@@ -651,9 +688,13 @@ export async function runTiceSync(input: {
   await ensureVpn()
   await CampusBridge.load({ url: ticeUrl('/student/studentFrame.jsp') })
   await waitReady(20_000)
+  /* 未登录时会被弹回 index.jsp，角色下拉默认「教师用户登录」；
+     固定选学生（911），可见页面与手动登录都不再落在教师入口。 */
+  await evalText("(function(){var s=document.querySelector('select[name=displayRole]');if(!s)return 'no-role';for(var i=0;i<s.options.length;i++){var student=s.options[i].value==='911';s.options[i].selected=student;s.options[i].defaultSelected=student}if(s.value!=='911')return 'no-student-option';s.dispatchEvent(new Event('change',{bubbles:true}));return 'student'})()")
   /* 抓包实证：体测登录是对 studentFrame.jsp 的表单 POST，
      字段 operType=911 / loginflag=0 / loginType=1 / userName / passwd。
-     页面本身是 frameset，直接找按钮并不可靠，这里直接构造同样的表单提交。 */
+     页面本身是 frameset，直接找按钮并不可靠，这里直接构造同样的表单提交。
+     action 固定为学生入口：被弹回 index.jsp 时 location.href 不再是登录地址。 */
   const payload = JSON.stringify({
     operType: '911', loginflag: '0', loginType: '1', userName: studentId, passwd: input.ticePassword,
   })
@@ -661,7 +702,7 @@ export async function runTiceSync(input: {
     var data = ${payload};
     var form = document.createElement('form');
     form.method = 'POST';
-    form.action = location.href;
+    form.action = ${JSON.stringify(ticeUrl('/student/studentFrame.jsp'))};
     Object.keys(data).forEach(function(key){
       var input = document.createElement('input');
       input.type = 'hidden'; input.name = key; input.value = data[key];
@@ -691,25 +732,34 @@ export async function runTiceSync(input: {
     if (!(await ticeLoggedIn())) throw new OneClickError('tice-login', '体测登录失败：页面没有进入学生查询，请检查体测密码或稍后重试。')
   }
 
-  report('tice', '正在读取体测成绩…')
-  let historyHtml = await fetchPage(ticeUrl('/student/Historyhealth.jsp'))
-  let currentHtml = await fetchPage(ticeUrl('/student/queryHealthInfo.jsp'))
-
-  let history = parseTiceHistory(historyHtml)
-  try { localStorage.setItem('ohu.debug.tice', JSON.stringify({ hLen: historyHtml.length, cLen: currentHtml.length, rows: history.length, first: history[0] || null })) } catch { /* debug */ }
-  /* 历年表每行都有「具体信息」：逐学年打开，补齐单项。 */
-  const detailLinks = [...historyHtml.matchAll(/window\.open\('([^']*listdetalhistroyScore\.jsp[^']*)'/g)].map((match) => match[1].replace(/&amp;/g, '&')).slice(0, 6)
-  for (let index = 0; index < detailLinks.length; index += 1) {
+  const readPage = async (path: string): Promise<string> => {
+    input.signal?.throwIfAborted()
+    const key = `__ticePage_${Date.now()}_${Math.random().toString(36).slice(2)}`
+    const slot = `window[${JSON.stringify(key)}]`
     try {
-      const detailHtml = await fetchPage(ticeUrl(detailLinks[index]), 12_000)
-      const detail = parseTiceCurrent(detailHtml, history[index]?.year ?? '')
-      if (!detail?.items.length) continue
-      const gradeNo = Number(detailLinks[index].match(/gradeNo=(\d+)/)?.[1] ?? '')
-      const position = Number.isFinite(gradeNo) && gradeNo > 0 ? Math.max(0, history.length - gradeNo) : Math.min(index, history.length - 1)
-      history[position] = { ...history[position], items: detail.items, total: detail.total ?? history[position].total, grade: detail.grade || history[position].grade }
-    } catch { /* 单个学年失败不影响其它学年 */ }
+      await raceTimeout(evalText(`(function(){var state={value:'',controller:new AbortController()};${slot}=state;state.timer=setTimeout(function(){state.controller.abort()},12000);fetch(${JSON.stringify(ticeUrl(path))},{credentials:'include',signal:state.controller.signal}).then(function(r){if(!r.ok)throw new Error('http');return r.text()}).then(function(t){state.value='OK|'+t}).catch(function(){state.value='ERR'}).finally(function(){clearTimeout(state.timer)});return 'started'})()`), 8_000, '体测页面请求超时')
+      const started = Date.now()
+      while (Date.now() - started < 15_000) {
+        input.signal?.throwIfAborted()
+        const value = await raceTimeout(evalText(`${slot} ? ${slot}.value : ''`), 8_000, '体测页面读取超时')
+        if (value.startsWith('OK|')) return value.slice(3)
+        if (value === 'ERR') return ''
+        await sleep(300)
+      }
+      return ''
+    } catch {
+      input.signal?.throwIfAborted()
+      return ''
+    } finally {
+      await raceTimeout(evalText(`(function(){var s=${slot};if(s){clearTimeout(s.timer);s.controller.abort();delete ${slot}}return 'cleared'})()`), 3_000, '体测请求清理超时').catch(() => {})
+    }
   }
-  let current = parseTiceCurrent(currentHtml, history[0]?.year ?? '')
+  report('tice', '正在读取历年体测汇总…')
+  let historyHtml = await readPage('/student/Historyhealth.jsp')
+  report('tice', '正在读取当前最新体测明细…')
+  let currentHtml = await readPage('/student/queryHealthInfo.jsp')
+  let history = parseTiceHistory(historyHtml)
+  let current = parseTiceCurrent(currentHtml)
   if (!history.length && !current) {
     /* 部分账号 POST 后还要走一次 left1.jsp 才把体测会话落到 cookie（抓包里的真实顺序）。 */
     const query = `userName=${encodeURIComponent(studentId)}&passwd=${encodeURIComponent(input.ticePassword)}`
@@ -720,16 +770,40 @@ export async function runTiceSync(input: {
     await loadAndWait(ticeUrl('/student/queryHealthInfo.jsp'), 'queryHealthInfo')
     currentHtml = await pageHtml()
     history = parseTiceHistory(historyHtml)
-    current = parseTiceCurrent(currentHtml, history[0]?.year ?? '')
+    current = parseTiceCurrent(currentHtml)
   }
-  if (!history.length && !current) {
-    let debug = ''
-    try { debug = localStorage.getItem('ohu.debug.tice') || '' } catch { /* ignore */ }
-    throw new OneClickError('tice', `体测页面没有解析到成绩（${debug}）。`)
+  input.signal?.throwIfAborted()
+  if (!history.length && !current) throw new OneClickError('tice', '体测页面没有解析到成绩，原记录已保留，请稍后重试。')
+
+  const unresolved = new Set(history.map((year) => year.year))
+  const detailLinks = parseTiceHistoryDetailLinks(historyHtml)
+  for (const [index, link] of detailLinks.entries()) {
+    input.signal?.throwIfAborted()
+    const position = history.findIndex((year) => year.year === link.year)
+    if (position < 0) continue
+    report('tice', `正在读取 ${link.year} 明细（${index + 1}/${detailLinks.length}）…`)
+    const detail = parseTiceCurrent(await readPage(link.path), link.year)
+    if (!detail) continue
+    const target = history[position]
+    history[position] = {
+      ...detail,
+      total: detail.total !== null && detail.total > 0 ? detail.total : (target.total ?? detail.total),
+      grade: detail.grade || target.grade,
+    }
+    unresolved.delete(link.year)
   }
   const summary = mergeTicePages(history, current)
-  const records = importTiceSummary(summary, session)
-  return { ok: true, count: records.length }
+  if (current && summary.current?.year) unresolved.delete(summary.current.year)
+  const warnings = [
+    ...(!history.length ? ['历年汇总未读取。'] : []),
+    ...(!current ? ['当前最新明细未读取。'] : !summary.current?.year ? ['当前明细已保存，学年待确认；未按手机日期推断。'] : []),
+    ...(unresolved.size ? [`${unresolved.size} 个学年的明细未读取，已有明细保留。`] : []),
+  ]
+  input.signal?.throwIfAborted()
+  importTiceSummary(summary, session)
+  const years = new Set(history.map((year) => year.year))
+  if (current) years.add(summary.current?.year ?? '')
+  return { ok: true, count: years.size, ...(warnings.length ? { message: warnings.join('') } : {}) }
 }
 
 /** 登录后从 SPA 的 localStorage 取 token/sid，直连 PU 学分接口，避免依赖成绩页 DOM。 */
@@ -944,7 +1018,8 @@ const CHAOXING_COURSE_URL = 'http://webvpn.jou.edu.cn:58888/https/77726476706e69
 export async function runChaoxingSsoSync(input: { studentId: string; vpnPassword: string; casPassword: string; report?: StageReporter }): Promise<SourceStatus> {
   assertBridge()
   const report = input.report ?? (() => {})
-  await resetBridge()
+  const session = captureQbankSession()
+  if (!session.uid) throw new OneClickError('chaoxing-login', '请先登录哦狐，再同步学习通课程。')
   await loginCampus(input.studentId, input.vpnPassword, input.casPassword, report)
   report('chaoxing', '正在用统一认证登录学习通…')
   await CampusBridge.load({ url: CHAOXING_SSO_URL })
@@ -953,13 +1028,17 @@ export async function runChaoxingSsoSync(input: { studentId: string; vpnPassword
   await CampusBridge.load({ url: CHAOXING_COURSE_URL })
   await sleep(3500)
   const html = await pageHtml()
-  const courses = filterCurrentSemester(parseChaoxingCourseListHtml(html))
-  saveChaoxingCourses(courses)
+  const allCourses = parseChaoxingCourseListHtml(html)
+  if (!allCourses.length) throw new OneClickError('chaoxing', '未能读取课程列表，已保留原记录。请在学习通页面登录后重试。')
+  const courses = filterCurrentSemester(allCourses)
+  saveChaoxingCourses(courses, session)
   return { ok: true, count: courses.length }
 }
 /** 学习通 Cookie 导入：浏览器登录后复制 uid/_uid/fid/vc3，直接读课程列表（chaoxing-mcp 同款兜底）。 */
 export async function runChaoxingCookieSync(input: { cookie: string; report?: StageReporter }): Promise<SourceStatus> {
   assertBridge()
+  const session = captureQbankSession()
+  if (!session.uid) throw new OneClickError('chaoxing-login', '请先登录哦狐，再同步学习通课程。')
   const cookie = input.cookie.trim().replace(/^cookie:\s*/i, '')
   if (!cookie) throw new OneClickError('chaoxing-login', '请先粘贴学习通 Cookie。')
   const report = input.report ?? (() => {})
@@ -975,15 +1054,18 @@ export async function runChaoxingCookieSync(input: { cookie: string; report?: St
     const html = await pageHtml()
     const fromHtml = parseChaoxingCourseHtml(html)
     courses = fromHtml.length ? fromHtml : parseChaoxingCourses(await evalText('document.body ? document.body.innerText : ""'))
+    if (courses.length) break
   }
   if (!courses.length) throw new OneClickError('chaoxing', 'Cookie 已导入，但没有读到课程：Cookie 可能过期或页面改版。')
-  saveChaoxingCourses(courses)
+  saveChaoxingCourses(courses, session)
   return { ok: true, count: courses.length }
 }
 /** 学习通：首次可见登录，之后读课程列表。 */
 export async function runChaoxingSync(input: { report?: StageReporter; timeoutMs?: number } = {}): Promise<SourceStatus> {
   assertBridge()
   const report = input.report ?? (() => {})
+  const session = captureQbankSession()
+  if (!session.uid) throw new OneClickError('chaoxing-login', '请先登录哦狐，再同步学习通课程。')
   const timeoutMs = input.timeoutMs ?? 180_000
   report('chaoxing-login', '请在打开的页面里登录学习通…')
   await resetBridge()
@@ -996,7 +1078,8 @@ export async function runChaoxingSync(input: { report?: StageReporter; timeoutMs
   while (Date.now() - started < timeoutMs) {
     const state = await CampusBridge.currentUrl()
     if (!state.visible) throw new OneClickError('chaoxing-login', '已取消学习通授权。')
-    const text = await evalText('document.body ? document.body.innerText : "')
+    if (!isQbankSessionCurrent(session)) throw new OneClickError('chaoxing-login', '账号已切换，请重新授权。')
+    const text = await evalText('document.body ? document.body.innerText : ""')
     if (!state.url.includes('passport') && (text.includes('课程') || text.includes('我的课程'))) { loggedIn = true; break }
     await sleep(1200)
   }
@@ -1011,7 +1094,8 @@ export async function runChaoxingSync(input: { report?: StageReporter; timeoutMs
   const html = await pageHtml()
   const fromHtml = parseChaoxingCourseHtml(html)
   const courses = fromHtml.length ? fromHtml : parseChaoxingCourses(text)
-  saveChaoxingCourses(courses)
+  if (!courses.length) throw new OneClickError('chaoxing', '未能读取课程列表，已保留原记录。')
+  saveChaoxingCourses(courses, session)
   return { ok: true, count: courses.length }
 }
 

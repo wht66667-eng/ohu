@@ -107,4 +107,32 @@ public class AppProbePlugin extends Plugin {
         }
         call.resolve(ret);
     }
+
+    /**
+     * 分享文本到微信（ACTION_SEND 拉起微信选择聊天）。学校电费、图书馆选座等页面是
+     * 微信公众号 OAuth 网页，只能在微信内打开：发送到「文件传输助手」后点开链接即可。
+     * 微信未安装或分享失败返回 ok=false，由前端降级为复制链接 + 拉起微信。
+     */
+    @PluginMethod
+    public void shareToWeChat(PluginCall call) {
+        String text = call.getString("text", "");
+        JSObject ret = new JSObject();
+        if (text == null || text.isEmpty()) {
+            ret.put("ok", false);
+            call.resolve(ret);
+            return;
+        }
+        try {
+            Intent send = new Intent(Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(Intent.EXTRA_TEXT, text);
+            send.setPackage("com.tencent.mm");
+            send.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(send);
+            ret.put("ok", true);
+        } catch (Throwable t) {
+            ret.put("ok", false);
+        }
+        call.resolve(ret);
+    }
 }

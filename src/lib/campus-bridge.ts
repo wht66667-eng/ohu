@@ -14,7 +14,7 @@ export interface CampusBridgePlugin {
   hide(): Promise<void>
   close(): Promise<void>
   currentUrl(): Promise<{ url: string; visible: boolean }>
-  cookies(options: { url: string }): Promise<{ cookie: string }>
+  hasVpnSession(options: { url: string }): Promise<{ hasSession: boolean }>
   setCookie(options: { url: string; cookie: string }): Promise<void>
   setCapture(options: { enabled: boolean }): Promise<void>
   requests(): Promise<{ requests: string[] }>

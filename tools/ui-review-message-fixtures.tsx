@@ -158,3 +158,6 @@ export const fetchLostMine = async () => ({ rows: [], error: null })
 export const fetchHelpMine = async () => ({ rows: [], error: null })
 export const fetchMyTasks = async () => ({ rows: [], error: null })
 export const fetchMyItems = async () => ({ rows: [], error: null })
+
+// 2026-11-14（TASK-A6 修复）：notify 模块新增游标分页导入，fixture 缺失导出会使整个样例入口断链。
+export const fetchNotificationsPage = async () => ({ rows: [], nextBeforeId: null, hasMore: false, error: null })

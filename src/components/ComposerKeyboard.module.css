@@ -1,0 +1,7 @@
+.root { min-width: 0; color: inherit; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.root .controls > button, .root .keys > button { display: inline-grid; place-items: center; width: auto; height: auto; min-width: 44px; min-height: 44px; margin: 0; padding: 4px 8px; border: 1px solid var(--composer-key-line, var(--line)); border-radius: 8px; background: var(--composer-key-bg, var(--card)); color: var(--composer-key-text, var(--text)); font: inherit; }
+.root .controls > button[aria-pressed="true"] { border-color: var(--composer-key-accent, var(--green-text)); color: var(--composer-key-accent, var(--green-text)); }
+.panel { display: grid; gap: 6px; padding-block: 6px; }
+.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 4px; max-height: min(148px, calc(var(--app-viewport-height, 100dvh) * .34)); overflow-y: auto; overscroll-behavior: contain; }
+.root .keys > button { font-size: 18px; padding: 0; }

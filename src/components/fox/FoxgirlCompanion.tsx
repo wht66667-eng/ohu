@@ -3,11 +3,14 @@ import type { CSSProperties } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { isFoxDockOn, onFoxDockToggle, setFoxDockOn } from '../../lib/fox-dock-pref'
 import { companionPoint, getCompanionPreferences, saveCompanionPreferences, subscribeCompanionPreferences, type CompanionPosition } from '../../lib/companion-preferences'
+import { playSound, SoundEvent } from '../../lib/sound'
+import { useUiVariant } from '../../lib/ui-variant'
 import styles from './FoxgirlCompanion.module.css'
 
 /** 跨皮肤共用的陪伴入口；拖动只改变本机位置，编辑和专注流程由外壳隐藏。 */
 export function FoxgirlCompanion() {
   const navigate = useNavigate(), { pathname } = useLocation()
+  const ink = useUiVariant() === 'ink'
   const [visible, setVisible] = useState(isFoxDockOn), [open, setOpen] = useState(false)
   const [preferences, setPreferences] = useState(getCompanionPreferences)
   const [size, setSize] = useState({ width: 0, height: 0 }), [position, setPosition] = useState<CompanionPosition | null>(preferences.position)
@@ -36,7 +39,9 @@ export function FoxgirlCompanion() {
   }
   if (!['/', '/services', '/profile', '/plaza'].includes(pathname)) return null
   const custom = preferences.image && preferences.image !== failedImage
-  /* 全部皮肤都显示陪伴宠物：默认狐娘形象，可在设置中换成自定义图片 */
+  const base = import.meta.env.BASE_URL
+  const inkAsset = ink && !custom ? '' : undefined
+  const image = custom ? preferences.image : ink ? `${base}brand/ink/ink-fox.svg` : `${base}companions/foxgirl/${open ? 'pat-0' : 'idle-0'}.png`
   const point = companionPoint(position, size.width, size.height)
   /* 气泡面板相对狐狸定位；尾巴水平位置对齐狐狸中心，并限制在面板圆角内 */
   const panelLeft = Math.max(8, Math.min(size.width - 280, point.x - 140)) - point.x
@@ -47,7 +52,7 @@ export function FoxgirlCompanion() {
     {!visible ? <button className={styles.restore} type="button" onClick={() => setFoxDockOn(true)}>陪伴</button> : <>
       {open ? <div className={styles.panel} style={panelStyle}>
         <div className={styles.panelHead}>
-          <img className={styles.panelAvatar} src={custom ? preferences.image : `${import.meta.env.BASE_URL}companions/foxgirl/pat-0.png`} width="36" height="36" alt="" draggable={false} onError={() => { if (custom) setFailedImage(preferences.image) }} />
+          <img className={styles.panelAvatar} src={image} data-ink-fox={inkAsset} width="36" height="36" alt="" draggable={false} onError={() => { if (custom) setFailedImage(preferences.image) }} />
           <div className={styles.panelText}>
             <b>需要帮忙吗？</b>
             <p>拖动宠物可移动位置，也可在外观设置中换成自己的图片。</p>
@@ -78,9 +83,9 @@ export function FoxgirlCompanion() {
         onPointerUp={event => { const start = drag.current; drag.current = null; if (start?.moved) persist(start.next); if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId) }}
         onPointerCancel={() => { drag.current = null; setPosition(getCompanionPreferences().position) }}
         onLostPointerCapture={() => { if (drag.current) { drag.current = null; setPosition(getCompanionPreferences().position) } }}
-        onClick={() => { if (suppressClick.current) { suppressClick.current = false; return }; setOpen(value => !value) }}
+        onClick={() => { if (suppressClick.current) { suppressClick.current = false; return }; if (!open) playSound(SoundEvent.FoxHappy); setOpen(value => !value) }}
         onKeyDown={event => { const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key]; if (!delta) return; event.preventDefault(); persist({ x: Math.max(0, Math.min(1, (position?.x ?? 1) + delta[0] * 12 / Math.max(1, point.maxX))), y: Math.max(0, Math.min(1, (position?.y ?? 1) + delta[1] * 12 / Math.max(1, point.maxY))) }) }}>
-        <img src={custom ? preferences.image : `${import.meta.env.BASE_URL}companions/foxgirl/${open ? 'pat-0' : 'idle-0'}.png`} width="240" height="240" alt="" draggable={false} decoding="async" onError={() => { if (custom) setFailedImage(preferences.image) }} />
+        <img src={image} data-ink-fox={inkAsset} width="240" height="240" alt="" draggable={false} decoding="async" onError={() => { if (custom) setFailedImage(preferences.image) }} />
       </button>
     </>}
   </aside>

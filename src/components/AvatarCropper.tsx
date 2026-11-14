@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
 import 'react-easy-crop/react-easy-crop.css'
 import { AVATAR_OUT, canvasToFile } from '../lib/avatar-crop'
+import { DialogLayer } from './ui/DialogLayer'
 import s from './AvatarCropper.module.css'
 
 const MIN_ZOOM = 1
@@ -31,11 +32,13 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 export function AvatarCropper({
   file,
   busy,
+  topLayer = false,
   onCancel,
   onConfirm,
 }: {
   file: File | null
   busy?: boolean
+  topLayer?: boolean
   onCancel: () => void
   onConfirm: (file: File) => void
 }) {
@@ -96,8 +99,7 @@ export function AvatarCropper({
 
   if (!file) return null
 
-  return (
-    <div className={s.mask} role="dialog" aria-modal="true" aria-label="调整头像">
+  const content = (
       <div className={s.card}>
         <div className={s.head}>
           <b className={s.title}>调整头像</b>
@@ -156,6 +158,9 @@ export function AvatarCropper({
           </button>
         </div>
       </div>
-    </div>
   )
+
+  return topLayer
+    ? <DialogLayer title="调整头像" className={s.dialogSurface} onClose={onCancel} allowClose={!busy}>{content}</DialogLayer>
+    : <div className={s.mask} role="dialog" aria-modal="true" aria-label="调整头像">{content}</div>
 }

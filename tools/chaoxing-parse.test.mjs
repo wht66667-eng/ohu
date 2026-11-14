@@ -29,7 +29,7 @@ test('学习通课程 HTML：无课程链接返回空', () => {
 })
 
 test('学习通 SSO 落页：过滤姓名块并解析课程/教师', () => {
-  const text = '王昊天\n\n医药数理统计方法\n罗志丹\n\n防火防爆技术\n姜琴\n\n更多'
+  const text = '测试同学\n\n医药数理统计方法\n罗志丹\n\n防火防爆技术\n姜琴\n\n更多'
   const courses = parseChaoxingSsoPage(text)
   assert.equal(courses.length, 2)
   assert.equal(courses[0].title, '医药数理统计方法')

@@ -47,6 +47,16 @@
 .resultBad { border-color:color-mix(in srgb,var(--danger,#a3321b) 35%,var(--line)); }
 
 .muted { margin:0; color:var(--text-3); font-size:12px; line-height:1.6; }
+.ovList { display:grid; gap:6px; }
+.ovRow { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; background:var(--page-mid); }
+.ovRow b { flex:none; font-size:13px; }
+.ovTime { flex:1; min-width:0; color:var(--text-3); font-size:12px; overflow-wrap:anywhere; }
+.ovOk,.ovBad { flex:none; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:700; }
+.ovOk { background:var(--green-soft); color:var(--green-text); }
+.ovBad { background:var(--danger-soft,#fff1ee); color:var(--danger,#a3321b); }
+.expDetails { display:grid; gap:8px; padding:10px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--page-mid); }
+.expDetails summary { cursor:pointer; list-style:none; color:var(--text-2); font-size:12px; font-weight:700; }
+.noteSummary { cursor:pointer; list-style:none; color:var(--green-text); font-size:13px; font-weight:750; }
 .sourceList { display:grid; gap:10px; }
 .sourceRow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--page-mid); }
 .sourceRow > div { display:grid; gap:3px; min-width:0; }
@@ -54,6 +64,7 @@
 .sourceRow small { color:var(--text-3); font-size:11px; line-height:1.5; }
 .okText { margin:0; padding:10px 12px; border-radius:12px; background:var(--green-soft); color:var(--green-text); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
 .badText { margin:0; padding:10px 12px; border-radius:12px; background:var(--danger-soft,#fff1ee); color:var(--danger,#a3321b); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.partText { margin:0; padding:10px 12px; border-radius:12px; background:color-mix(in srgb,var(--orange,#c77700) 14%,var(--card)); color:color-mix(in srgb,var(--orange,#c77700) 72%,var(--text)); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
 
 .links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
 .links a { padding:12px 10px; border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--green-text); text-align:center; text-decoration:none; font-size:13px; font-weight:700; }
@@ -63,3 +74,15 @@
 .noteCard p { margin:0; color:var(--text-2); font-size:11px; line-height:1.7; }
 
 @media (max-width:380px) { .results { grid-template-columns:1fr; } .links { grid-template-columns:1fr; } }
+
+/* M-UX：密码互动（显示/隐藏 + 聚焦光晕）与分步展示 */
+.pwWrap { position: relative; display: flex; align-items: center; }
+.pwWrap input { padding-right: 64px; transition: border-color .18s ease, box-shadow .18s ease; }
+.pwWrap input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 22%, transparent); }
+.pwEye { position: absolute; right: 8px; min-height: 34px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
+.pwEye:hover { background: color-mix(in srgb, var(--orange) 12%, transparent); }
+details.card > .cardHead, details.card > .ovList, details.card > .muted { cursor: default; }
+details.card { display: grid; gap: 10px; }
+details.card[open] .cardHead::after { content: '▴'; margin-left: auto; color: var(--text-3); font-size: 12px; }
+details.card:not([open]) .cardHead::after { content: '▾'; margin-left: auto; color: var(--text-3); font-size: 12px; }
+details.card > .cardHead { display: flex; }

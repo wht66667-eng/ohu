@@ -173,7 +173,8 @@ export function parsePuPageText(text: string): PuSummary {
     const category = parsedName || prefix
     if (!category || PU_NOISE.test(category) || PU_NOISE.test(prefix)) continue
     const key = `${line}|${credit}`
-    if (!seen.add(key)) continue
+    if (seen.has(key)) continue
+    seen.add(key)
     rows.push({
       name: (prefix ? `【${prefix}】${category}` : line).slice(0, 120),
       category: category.slice(0, 120),
@@ -211,7 +212,8 @@ function collectRows(body: unknown, bucket: PuBucket, seen: Set<string>, rows: P
     if (!name || credit === null || credit <= 0 || PU_NOISE.test(name)) continue
     const [prefix, rest] = splitPuTitle(name)
     const key = `${name}|${credit}`
-    if (!seen.add(key)) continue
+    if (seen.has(key)) continue
+    seen.add(key)
     rows.push({
       name: name.slice(0, 120),
       category: (rest || prefix || name).slice(0, 120),

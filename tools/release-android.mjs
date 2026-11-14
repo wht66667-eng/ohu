@@ -74,14 +74,15 @@ export function main({ root = PROJECT_ROOT, argv = process.argv.slice(2), env = 
   // Optional local configuration lives beside the existing keystore and is
   // ignored by Git. Explicit process environment always takes precedence.
   env = { ...env }
-  const signingFile = join(root, 'android/keystore/release-signing.properties')
+  const signingDirectory = env.SUNSHINE_SIGNING_DIR ? resolve(env.SUNSHINE_SIGNING_DIR) : join(root, 'android/keystore')
+  const signingFile = join(signingDirectory, 'release-signing.properties')
   if (existsSync(signingFile)) {
     for (const line of readFileSync(signingFile, 'utf8').split(/\r?\n/)) {
       const match = /^(SUNSHINE_STORE_PASSWORD|SUNSHINE_KEY_PASSWORD)=(.*)$/.exec(line)
       if (match && !env[match[1]]) env[match[1]] = match[2]
     }
   }
-  const keystore = join(root, 'android/keystore/sunshine-release.jks')
+  const keystore = join(signingDirectory, 'sunshine-release.jks')
   if (!existsSync(keystore)) throw new Error('Existing release keystore is missing. Restore the original key; this tool never generates or replaces it.')
   if (!env.SUNSHINE_STORE_PASSWORD || !env.SUNSHINE_KEY_PASSWORD) {
     throw new Error('Set SUNSHINE_STORE_PASSWORD and SUNSHINE_KEY_PASSWORD in the process environment before releasing. Values are never logged.')

@@ -119,7 +119,7 @@ final class FocusNotificationScheduler {
         if (Build.VERSION.SDK_INT >= 33 && ctx.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) return;
         String reminder = store(ctx).getString("reminder", "sound");
         String channel = "vibrate".equals(reminder) ? "sc-focus-vibrate-v3" : "sc-focus-sound-v3";
-        Intent launch = new Intent(ctx, MainActivity.class);
+        Intent launch = new Intent(ctx, SecurityEntryActivity.class);
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         launch.putExtra("focusNotificationRoute", "/study/focus");
         PendingIntent open = PendingIntent.getActivity(ctx, id, launch, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

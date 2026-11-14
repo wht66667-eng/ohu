@@ -5,6 +5,19 @@
     <string name="package_name">com.sunshinecampus.app</string>
     <string name="custom_url_scheme">com.sunshinecampus.app</string>
     <string name="widget_today_schedule_description">查看今天最多三节课程和教室</string>
-    <string name="widget_next_class_description">查看正在上的课或下一节课程</string>
+    <string name="widget_next_class_description">查看正在上的课或下一节课程与开课时间</string>
     <string name="widget_fox_companion_description">哦狐桌面陪伴：时段问候、课程状态与连续陪伴天数</string>
+    <string name="widget_microgreen_label">微绿 · 下一节课</string>
+    <string name="widget_classic_label">经典 · 阿狐问候</string>
+    <string name="widget_classic_description">阿狐问候、日期和今日课程数</string>
+    <string name="widget_classic_preview_greeting">你好，同学</string>
+    <string name="widget_handdrawn_label">手绘 · 待办便签</string>
+    <string name="widget_handdrawn_description">查看今日的本机待办和完成进度</string>
+    <string name="widget_handdrawn_heading">本机待办</string>
+    <string name="widget_simple_label">简单 · 快捷入口</string>
+    <string name="widget_simple_description">四个可调整的纯文字入口</string>
+    <string name="widget_shortcut_schedule">课表</string>
+    <string name="widget_shortcut_todo">待办</string>
+    <string name="widget_shortcut_grades">成绩</string>
+    <string name="widget_shortcut_services">服务</string>
 </resources>

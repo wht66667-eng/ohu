@@ -17,8 +17,13 @@ class ProductionSurface(unittest.TestCase):
     def test_default_routes_have_no_static_demo_or_test_entry(self):
         routes = self.inspect(False)
         self.assertIn("/api/timetable/query", routes)
-        self.assertIn("/api/physical/query", routes)
         self.assertIn("/api/health", routes)
+        self.assertIn("/api/integrations/capabilities", routes)
+        # 体测改为设备侧同步（device-sync-only），服务端不再暴露查询/验证码路由；
+        # 旧 /api/schedule 兼容入口已移除，当前前端只调用 /api/timetable/*。
+        self.assertNotIn("/api/physical/query", routes)
+        self.assertNotIn("/api/physical/captcha", routes)
+        self.assertNotIn("/api/schedule", routes)
         self.assertFalse(any("<path:" in route or "/static" in route or "__offline" in route or "/debug" in route for route in routes), routes)
 
     def test_local_demo_route_requires_explicit_opt_in(self):

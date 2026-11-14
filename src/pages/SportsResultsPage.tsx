@@ -1,4 +1,4 @@
-import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { GradeTabs } from '../components/GradeTabs'
@@ -74,6 +74,7 @@ function TiceSyncCard({ onSynced }: { onSynced: () => void }) {
   const [remember, setRemember] = useState(true)
   const [connected, setConnected] = useState(prefill.remember)
   const [busy, setBusy] = useState(false)
+  const syncAbort = useRef<AbortController | null>(null)
   const [stage, setStage] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
@@ -83,7 +84,7 @@ function TiceSyncCard({ onSynced }: { onSynced: () => void }) {
     setNotice('')
     if (!studentId.trim()) { setError('请填写学号。'); return false }
     if (!vpnPassword) { setError('请填写校园网（VPN）密码。'); return false }
-    if (!ticePassword) { setError('体测是独立账号，请填写体测密码（首次可试「姓名首字母大写_学号」）。'); return false }
+    if (!ticePassword) { setError('体测是独立账号，请填写体测密码（首次可试 123456 或「姓名首字母大写_学号」）。'); return false }
     setError('')
     return true
   }
@@ -94,32 +95,50 @@ function TiceSyncCard({ onSynced }: { onSynced: () => void }) {
     if (!CAMPUS_BRIDGE_AVAILABLE) { setError('体测取数只在 Android App 内可用；网页版请用下方粘贴导入。'); return }
     if (!complete) { validate(); return }
     setBusy(true)
+    const controller = new AbortController()
+    syncAbort.current = controller
     let timer = 0
+    const heartbeat = () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => controller.abort(new Error('体测读取已超过 2 分钟没有进展，请检查网络后重试。')), 120_000)
+    }
+    const cancelled = new Promise<never>((_, reject) => {
+      controller.signal.addEventListener('abort', () => reject(controller.signal.reason), { once: true })
+    })
     try {
       setStage('正在完成后台同步…')
-      await waitForBackgroundSync()
+      heartbeat()
+      await Promise.race([waitForBackgroundSync(), cancelled])
+      controller.signal.throwIfAborted()
       setStage('')
       const result = await Promise.race([
         runTiceSync({
           studentId: studentId.trim(),
           vpnPassword,
           ticePassword,
-          report: (next, message) => setStage(`${TICE_STAGE_TEXT[next] ?? next} · ${message}`),
+          signal: controller.signal,
+          report: (next, message) => {
+            if (controller.signal.aborted) return
+            heartbeat()
+            setStage(`${TICE_STAGE_TEXT[next] ?? next} · ${message}`)
+          },
         }),
-        new Promise<never>((_, reject) => {
-          timer = window.setTimeout(() => reject(new Error('体测读取超过 2 分钟，已停止；请检查网络后重试。')), 120_000)
-        }),
-      ]).finally(() => window.clearTimeout(timer))
+        cancelled,
+      ])
+      controller.signal.throwIfAborted()
       const saved = readOneClickCredentials()
       if (remember) {
         saveOneClickCredentials({ ...saved, stuid: studentId.trim(), vpnPassword, ticePassword, remember: true })
         setConnected(true)
       }
       onSynced()
-      setNotice(`已从学校系统更新 ${result.count ?? 0} 条体测记录。`)
+      setNotice(`已从学校系统更新 ${result.count ?? 0} 条体测记录。${result.message ?? ''}`)
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : '体测更新失败，请重试。')
     } finally {
+      window.clearTimeout(timer)
+      if (controller.signal.aborted) await closeCampusWebView().catch(() => {})
+      syncAbort.current = null
       setBusy(false)
       setStage('')
     }
@@ -146,24 +165,24 @@ function TiceSyncCard({ onSynced }: { onSynced: () => void }) {
         : '体测不占入口门禁的密码。连接一次后就能直接更新历年与本次成绩，密码按哦狐账号加密保存在本机。'}</p>
       <label className={styles.field}>学号<input value={studentId} inputMode="numeric" autoComplete="username" onChange={(event) => { setStudentId(event.target.value); setError(''); setNotice('') }} placeholder="20231111" /></label>
       <label className={styles.field}>校园网密码<input type="password" value={vpnPassword} autoComplete="current-password" onChange={(event) => { setVpnPassword(event.target.value); setError(''); setNotice('') }} placeholder="8–20 位，区分大小写" /></label>
-      <label className={styles.field}>体测密码<input type="password" value={ticePassword} autoComplete="off" onChange={(event) => { setTicePassword(event.target.value); setError(''); setNotice('') }} placeholder="如 AAA_20231111" /></label>
+      <label className={styles.field}>体测密码<input type="password" value={ticePassword} autoComplete="off" onChange={(event) => { setTicePassword(event.target.value); setError(''); setNotice('') }} placeholder="123456 或 AAA_202311111" /></label>
       <label className={styles.check}><input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} /> 保持连接（本机加密保存，下次免输入）</label>
       <div className={styles.syncActions}>
         <button type="button" className={styles.primary} disabled={busy || !CAMPUS_BRIDGE_AVAILABLE} onClick={() => void sync()}>
           {busy ? '正在登录…' : connected ? '更新体测成绩' : '登录并读取成绩'}
         </button>
         {connected && !busy ? <button type="button" className={styles.outlineButton} onClick={disconnect}>断开连接</button> : null}
-        {busy ? <button type="button" className={styles.outlineButton} onClick={() => { setStage('已取消'); void closeCampusWebView().catch(() => undefined) }}>取消</button> : null}
+        {busy ? <button type="button" className={styles.outlineButton} onClick={() => syncAbort.current?.abort(new Error('已取消体测读取。'))}>取消</button> : null}
       </div>
       {stage ? <p className={styles.syncStage} role="status">{stage}</p> : null}
       {notice ? <p className={styles.success} role="status">{notice}</p> : null}
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
-      <small>首次体测密码一般是「姓名首字母大写_学号」。学号与校园网密码也可以在<Link to="/study/oneclick">一键获取</Link>里统一管理。</small>
+      <small>首次体测密码常见为「123456」或「姓名首字母大写_学号」（如 AAA_202311111）。学号与校园网密码也可以在<Link to="/study/oneclick">一键获取</Link>里统一管理。</small>
     </CollapsibleCard>
 }
 
 function ResultsChart({ rows }: { rows: PhysicalTestRecord[] }) {
-  const ordered = rows.filter((row) => row.totalScore !== null)
+  const ordered = rows.filter((row) => row.totalScore !== null && (row.testedAt || row.academicYear))
     .sort((a, b) => (a.testedAt || a.academicYear).localeCompare(b.testedAt || b.academicYear))
   if (ordered.length < 2) return <p className={styles.chartHint}>再记录一次不同日期的成绩，就能看到趋势变化。</p>
   const width = 320, height = 124, padX = 18, padY = 16
@@ -195,8 +214,8 @@ function TicePreview({ summary }: { summary: TiceSummary }) {
         <span>{year.total === null ? '未公布' : `${scoreText(year.total)} 分`}</span>
         <span>{year.grade || '等级未公布'}</span>
       </li>)}
-    </ul> : <p>没有识别到历年表。若只粘贴了「本次」页，会缺少学年与总分，请连同历年成绩页一起粘贴。</p>}
-    {current?.items.length ? <p>本次已计分 {current.doneCount}/{current.totalCount} 项；`---` 的项目按「未计分」保存，不当成 0 分。</p> : null}
+    </ul> : <p>没有识别到历年表；仍可保存本次明细，不推断缺失的学年或总分。</p>}
+    {current?.items.length ? <p>{current.year || '本次 · 学年待确认'}，已计分 {current.doneCount}/{current.totalCount} 项；`---` 的项目按「未计分」保存，不当成 0 分。</p> : null}
   </div>
 }
 
@@ -276,7 +295,7 @@ function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } =
       <section style={{ padding: '22px 20px', borderRadius: 24, background: 'var(--green-soft)', color: 'var(--green-text)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <small style={{ opacity: 0.8 }}>最近一次体测</small>
-          <small style={{ opacity: 0.8 }}>{latest?.academicYear || '尚无记录'}</small>
+          <small style={{ opacity: 0.8 }}>{latest ? latest.academicYear || '本次 · 学年待确认' : '尚无记录'}</small>
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '6px 0 2px' }}>
           <b style={{ fontSize: 68, lineHeight: 1 }}>{latest ? scoreText(latest.totalScore) : '—'}</b>
@@ -284,7 +303,7 @@ function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } =
           {latest?.grade ? <em style={{ marginLeft: 8, padding: '3px 8px', borderRadius: 999, background: 'rgba(255,255,255,.2)', fontSize: 12, fontStyle: 'normal' }}>{latest.grade}</em> : null}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, opacity: 0.9 }}>
-          <span>最好 {best ? `${scoreText(best.totalScore)} 分 · ${best.academicYear}` : '—'}</span>
+          <span>最好 {best ? `${scoreText(best.totalScore)} 分 · ${best.academicYear || '学年待确认'}` : '—'}</span>
           <button type="button" onClick={() => document.getElementById('tice-sync')?.scrollIntoView({ block: 'center', behavior: 'smooth' })} style={{ border: 0, padding: 0, background: 'transparent', color: 'inherit', font: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>登录体测系统</button>
         </div>
       </section>
@@ -303,14 +322,14 @@ function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } =
           <button type="button" className={styles.outlineButton} onClick={() => openExternalUrl('https://www.csh.moe.edu.cn/wtzx/zcwj/20141226/2c909e854a8490a4014a84fda9b4001d.html')}>查看国家体测标准 ↗</button>
         </div> : rows.length ? <>
           {recordView === 'history' ? <div className={styles.stats}>
-            <div><small>最好成绩</small><strong>{best ? scoreText(best.totalScore) : '—'}<i>分</i></strong><span>{best?.academicYear ?? '等待记录'}</span></div>
-            <div><small>最近一次</small><strong>{latest ? scoreText(latest.totalScore) : '—'}<i>分</i></strong><span>{latest?.testedAt || latest?.academicYear || '等待记录'}</span></div>
+            <div><small>最好成绩</small><strong>{best ? scoreText(best.totalScore) : '—'}<i>分</i></strong><span>{best ? best.academicYear || '学年待确认' : '等待记录'}</span></div>
+            <div><small>最近一次</small><strong>{latest ? scoreText(latest.totalScore) : '—'}<i>分</i></strong><span>{latest ? latest.testedAt || latest.academicYear || '学年待确认' : '等待记录'}</span></div>
           </div> : null}
           {recordView === 'history' ? <ResultsChart rows={rows} /> : null}
           <div className={styles.history}>{(recordView === 'current' ? (latest ? [latest] : []) : rows).map(row => <article className={styles.resultRow} key={row.id}>
             <div className={styles.resultHead}>
               <span>
-                <b>{row.academicYear}{row.grade ? <em className={styles.gradePill}>{row.grade}</em> : null}</b>
+                <b>{row.academicYear || '本次 · 学年待确认'}{row.grade ? <em className={styles.gradePill}>{row.grade}</em> : null}</b>
                 <small>{row.testedAt || '学校未提供具体日期'}{row.source === 'jou-tice' ? ' · 学校系统同步' : row.source === 'tice-import' ? ' · 体测页面导入' : ''}{row.bonus ? ` · 加分 ${row.bonus}` : ''}</small>
               </span>
               <strong>{scoreText(row.totalScore)}<i>分</i></strong>
@@ -323,13 +342,13 @@ function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } =
               </div>)}
             </div> : <small className={styles.noEvents}>未录入单项明细</small>}
           </article>)}</div>
-        </> : <div className={styles.empty}><strong>还没有体测记录</strong><span>用一键登录自动同步（填写体测密码），或从学校官方入口查询后粘贴成绩页文字识别保存，之后就能看最好成绩与变化趋势。</span><Link to="/study/oneclick" style={{ justifySelf: 'center', display: 'inline-block', padding: '10px 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none', fontWeight: 600 }}>去一键获取</Link></div>}
+        </> : <div className={styles.empty}><strong>还没有体测记录</strong><span>用一键登录自动同步（填写体测密码），或从学校官方入口查询后粘贴成绩页文字识别保存，之后就能看最好成绩与变化趋势。</span><Link to="/study/oneclick" style={{ justifySelf: 'center', display: 'inline-block', padding: '10px 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none', fontWeight: 600 }}>去一键获取</Link><a href="#tice-sync">在本页连接体测</a><a href="#tice-import">粘贴成绩页识别</a></div>}
       </section>
 
       <div id="tice-sync"><TiceSyncCard onSynced={() => setRows(listPhysicalTestResults())} /></div>
 
-      <CollapsibleCard title="粘贴成绩页文字导入" meta="从体测系统复制成绩表格，识别后预览保存">
-        <label className={styles.field}>粘贴成绩页文字<textarea value={ticeText} onChange={event => { setTiceText(event.target.value); setTiceError(''); setTiceMessage('') }} rows={4} maxLength={60000} placeholder="粘贴体测成绩页文字" /></label>
+      <div id="tice-import"><CollapsibleCard title="粘贴成绩页文字导入" meta="从体测系统复制成绩表格，识别后预览保存">
+        <label className={styles.field}>粘贴成绩页文字<textarea value={ticeText} onChange={event => { setTiceText(event.target.value); setTicePreview(null); setTiceError(''); setTiceMessage('') }} rows={4} maxLength={60000} placeholder="粘贴体测成绩页文字" /></label>
         <div className={styles.buttonRow}>
           <button type="button" className={styles.outlineButton} onClick={analyzeTice} disabled={!ticeText.trim()}>识别</button>
           <button type="button" className={styles.primary} onClick={saveTice} disabled={!ticePreview}>保存</button>
@@ -337,7 +356,7 @@ function SportsResultsAccountPage({ embedded = false }: { embedded?: boolean } =
         {ticePreview ? <TicePreview summary={ticePreview} /> : null}
         {ticeMessage ? <p className={styles.success} role="status">{ticeMessage}</p> : null}
         {ticeError ? <p className={styles.error} role="alert">{ticeError}</p> : null}
-      </CollapsibleCard>
+      </CollapsibleCard></div>
 
       <CollapsibleCard title="手动录入成绩" meta="学年、日期、总分与项目明细">
         <label className={styles.field}>粘贴成绩页文字<textarea value={sourceText} onChange={event => { setSourceText(event.target.value); setError(''); setMessage('') }} rows={3} placeholder="粘贴成绩页文字" /></label>

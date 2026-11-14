@@ -11,6 +11,7 @@ import java.util.Locale;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.util.HashSet;
 
 final class ScheduleWidgetStore {
     private static final String PREFS = "ohu_schedule_widget_v1";
@@ -18,6 +19,7 @@ final class ScheduleWidgetStore {
     private static final String REVISION = "identity_revision";
     private static final String INSTANCE = "instance_id";
     private static final String DATA = "today_data";
+    private static final String SHORTCUTS = "shortcuts";
 
     private ScheduleWidgetStore() {}
 
@@ -35,7 +37,7 @@ final class ScheduleWidgetStore {
     }
 
     static synchronized boolean setData(Context context, String uid, int revision, String instanceId,
-            String date, String dayLabel, String state, JSArray classes) {
+            String date, String dayLabel, String state, JSArray classes, JSONObject todos) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         if (!hash(uid).equals(prefs.getString(OWNER, ""))
                 || revision != prefs.getInt(REVISION, -1)
@@ -62,6 +64,19 @@ final class ScheduleWidgetStore {
                 }
             }
             data.put("classes", safeClasses);
+            if (todos != null) {
+                int total = Math.max(0, Math.min(10_000, todos.optInt("total", 0)));
+                int completed = Math.max(0, Math.min(total, todos.optInt("completed", 0)));
+                JSONArray safeTitles = new JSONArray();
+                JSONArray titles = todos.optJSONArray("titles");
+                if (titles != null) {
+                    for (int i = 0; i < Math.min(3, titles.length()); i++) {
+                        String title = safeText(titles.optString(i, ""), 64);
+                        if (!title.isEmpty()) safeTitles.put(title);
+                    }
+                }
+                data.put("todos", new JSONObject().put("total", total).put("completed", completed).put("titles", safeTitles));
+            }
             prefs.edit().putString(DATA, data.toString()).apply();
             updateAll(context);
             return true;
@@ -76,6 +91,40 @@ final class ScheduleWidgetStore {
         try { return new JSONObject(raw); } catch (JSONException ignored) { return null; }
     }
 
+    static boolean setShortcuts(Context context, JSONArray routes) {
+        if (routes == null || routes.length() != 4) return false;
+        HashSet<String> unique = new HashSet<>();
+        for (int i = 0; i < 4; i++) {
+            String route = WidgetLinks.safeRoute(routes.optString(i, ""));
+            if (route == null || !unique.add(route)) return false;
+        }
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String next = routes.toString();
+        if (!next.equals(prefs.getString(SHORTCUTS, ""))) {
+            prefs.edit().putString(SHORTCUTS, next).apply();
+            AppWidgetManager manager = AppWidgetManager.getInstance(context);
+            int[] ids = manager.getAppWidgetIds(new ComponentName(context, SimpleShortcutWidgetProvider.class));
+            SimpleShortcutWidgetProvider.update(context, manager, ids);
+        }
+        return true;
+    }
+
+    static String[] readShortcuts(Context context) {
+        String[] defaults = {"/schedule", "/todo", "/grades", "/services"};
+        try {
+            JSONArray stored = new JSONArray(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(SHORTCUTS, ""));
+            if (stored.length() != defaults.length) return defaults;
+            String[] routes = new String[4];
+            for (int i = 0; i < routes.length; i++) {
+                routes[i] = WidgetLinks.safeRoute(stored.optString(i, ""));
+                if (routes[i] == null) return defaults;
+            }
+            return routes;
+        } catch (JSONException ignored) {
+            return defaults;
+        }
+    }
+
     static void updateAll(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         int[] today = manager.getAppWidgetIds(new ComponentName(context, TodayScheduleWidgetProvider.class));
@@ -84,6 +133,10 @@ final class ScheduleWidgetStore {
         if (next != null && next.length > 0) NextClassWidgetProvider.update(context, manager, next);
         int[] fox = manager.getAppWidgetIds(new ComponentName(context, FoxCompanionWidgetProvider.class));
         if (fox != null && fox.length > 0) FoxCompanionWidgetProvider.update(context, manager, fox);
+        int[] classic = manager.getAppWidgetIds(new ComponentName(context, ClassicGreetingWidgetProvider.class));
+        ClassicGreetingWidgetProvider.update(context, manager, classic);
+        int[] notes = manager.getAppWidgetIds(new ComponentName(context, HanddrawnTodoWidgetProvider.class));
+        HanddrawnTodoWidgetProvider.update(context, manager, notes);
     }
 
     static String safeText(String value, int max) {

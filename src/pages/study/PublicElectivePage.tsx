@@ -109,16 +109,21 @@ export function PublicElectivePage({ embedded = false }: { embedded?: boolean } 
         <Link to="/study/oneclick" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 12, background: 'var(--green,#1f8f5f)', color: '#fff', textDecoration: 'none' }}>去一键获取</Link>
       </section>}
 
-      {filtered.length ? <section style={{ padding: 14, borderRadius: 16, background: 'var(--card,#fff)' }}>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索课程 / 代码 / 教师" aria-label="搜索公选课" style={{ width: '100%', minHeight: 34, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 10px', marginBottom: 8 }} />
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead><tr style={{ textAlign: 'left', opacity: 0.65 }}><th>课程</th><th>教师</th><th>学分</th><th>成绩</th></tr></thead>
-          <tbody>{filtered.map((course) => <tr key={`${course.code}-${course.name}`} style={{ borderTop: '1px solid rgba(0,0,0,.06)' }}>
-            <td style={{ padding: '6px 2px' }}>{course.name}<small style={{ display: 'block', opacity: 0.55 }}>{course.code}</small></td>
-            <td>{course.teacher || '—'}</td><td>{course.credit || '—'}</td><td>{course.score}</td>
-          </tr>)}</tbody>
-        </table>
-        <details style={{ marginTop: 8 }}><summary style={{ cursor: 'pointer', fontSize: 12 }}>查看结构化 JSON 样例</summary><pre style={{ overflowX: 'auto', fontSize: 11, background: 'rgba(0,0,0,.04)', padding: 8, borderRadius: 8 }}>{JSON.stringify(filtered.slice(0, 3), null, 2)}</pre></details>
+      {courses.length ? <section style={{ padding: 14, borderRadius: 16, background: 'var(--card,#fff)' }}>
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索课程 / 代码 / 教师" aria-label="搜索公选课" style={{ width: '100%', minHeight: 44, borderRadius: 10, border: '1px solid rgba(0,0,0,.12)', padding: '0 10px', marginBottom: 8, fontSize: 14 }} />
+        {filtered.length ? <>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead><tr style={{ textAlign: 'left', opacity: 0.65 }}><th>课程</th><th>教师</th><th>学分</th><th>成绩</th></tr></thead>
+            <tbody>{filtered.map((course) => <tr key={`${course.code}-${course.name}`} style={{ borderTop: '1px solid rgba(0,0,0,.06)' }}>
+              <td style={{ padding: '6px 2px' }}>{course.name}<small style={{ display: 'block', opacity: 0.55 }}>{course.code}</small></td>
+              <td>{course.teacher || '—'}</td><td>{course.credit || '—'}</td><td>{course.score}</td>
+            </tr>)}</tbody>
+          </table>
+          <details style={{ marginTop: 8 }}><summary style={{ cursor: 'pointer', fontSize: 12 }}>查看结构化 JSON 样例</summary><pre style={{ overflowX: 'auto', fontSize: 11, background: 'rgba(0,0,0,.04)', padding: 8, borderRadius: 8 }}>{JSON.stringify(filtered.slice(0, 3), null, 2)}</pre></details>
+        </> : <div role="status" style={{ display: 'grid', gap: 8, justifyItems: 'start', padding: '10px 2px' }}>
+          <span style={{ fontSize: 13, opacity: 0.75 }}>没有匹配「{query.trim()}」的课程，试试其他关键词。</span>
+          <button type="button" onClick={() => setQuery('')} style={{ minHeight: 40, padding: '0 16px', borderRadius: 10, border: '1px solid var(--green,#1f8f5f)', background: 'transparent', color: 'var(--green,#1f8f5f)', fontSize: 13, fontWeight: 600 }}>清除搜索</button>
+        </div>}
       </section> : null}
     </main>
 

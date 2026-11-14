@@ -72,3 +72,23 @@ export const openNotificationSettings = async () => '本地预览没有打开手
 export const getReminderPermissionState = async () => ({ supported: true, state: { courseChannelsSupported: true, notificationsEnabled: previewMode !== 'denied', exactAlarmAllowed: previewMode !== 'denied', batteryOptimizationIgnored: true, hasVibrator: true, ringerMode: 'normal' as const, notificationVolume: 5, notificationMaxVolume: 7, interruptionFilter: 'all' as const, channelExists: true, channelImportance: 4, channelSoundEnabled: true, channelVibrationEnabled: true } })
 export const IS_NATIVE = true // Only the isolated settings component import resolves to this value.
 export const PLATFORM = { native: true, target: 'capacitor' as const, os: 'android' }
+
+// 2026-11-14（TASK-A6 修复）：StudyHubPage 导入 exam-utils 的考试倒计时报/排序，fixture 缺失导出会使样例入口断链。
+export function examCountdown(datetime: string) {
+  const time = Date.parse(String(datetime || '').replace(' ', 'T'))
+  if (!Number.isFinite(time)) return { label: '时间待定', days: 999, past: false }
+  const diff = time - Date.now()
+  if (diff < -3 * 3600_000) return { label: '已结束', days: -1, past: true }
+  if (diff < 0) return { label: '进行中/今日', days: 0, past: false }
+  const days = Math.floor(diff / 86_400_000)
+  if (days === 0) return { label: '即将开考', days: 0, past: false }
+  if (days === 1) return { label: '明天', days: 1, past: false }
+  return { label: `${days} 天后`, days, past: false }
+}
+export function sortExamsUpcoming<T extends { datetime?: string }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => {
+    const da = Date.parse(String(a.datetime || '').replace(' ', 'T')) || Number.MAX_SAFE_INTEGER
+    const db = Date.parse(String(b.datetime || '').replace(' ', 'T')) || Number.MAX_SAFE_INTEGER
+    return da - db
+  })
+}

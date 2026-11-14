@@ -1,22 +1,17 @@
 import type { TtRow } from './timetable'
 import type { PeriodPair } from './schedule-prefs'
-import { cbRdb } from './cb'
-import { captureQbankSession, isQbankSessionCurrent } from './qbank'
-
 export type ShareVisibility = 'full' | 'busy'
 
-export type SharedSchedule = {
-  id: string
-  code: string
-  ownerUid: string
+type ScheduleShare = {
   defaultName: string
-  localName: string
   visibility: ShareVisibility
   rows: TtRow[]
   termStart: string
-  updatedAt: string
-  revoked: boolean
-  mine: boolean
+}
+
+export type SharedSchedule = ScheduleShare & {
+  id: string
+  localName: string
 }
 
 export type FreeSlot = {
@@ -27,94 +22,118 @@ export type FreeSlot = {
   timeLabel: string
 }
 
-type Any = any
+const SHARE_SCHEMA = 'ohu.schedule-share'
+export const MAX_SCHEDULE_SHARE_LENGTH = 256_000
+const MAX_ROWS = 1500
+const MAX_IMPORTS = 20
 
-function errorText(value: unknown): string {
-  if (!value) return ''
-  if (typeof value === 'string') return value
-  if (typeof value === 'object' && value && 'message' in value) return String((value as { message?: unknown }).message || '')
-  return String(value)
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
 }
 
-function normalizeRows(value: unknown): TtRow[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((row): row is TtRow => !!row && typeof row === 'object'
-    && Number.isInteger(Number((row as TtRow).week)) && Number((row as TtRow).week) > 0
-    && Number.isInteger(Number((row as TtRow).day)) && Number((row as TtRow).day) >= 1 && Number((row as TtRow).day) <= 7
-    && Array.isArray((row as TtRow).sections) && (row as TtRow).sections.length > 0
-    && typeof (row as TtRow).name === 'string')
+function isWhole(value: unknown, min: number, max: number): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
 }
 
-function normalizeShare(row: Any): SharedSchedule {
+function scheduleName(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > 30) throw new Error('课表名称须为 1 到 30 个字符')
+  return value.trim()
+}
+
+function readShare(value: unknown): ScheduleShare {
+  const data = asRecord(value)
+  const { visibility, termStart, rows } = data
+  if (visibility !== 'busy' && visibility !== 'full') throw new Error('课表分享范围不正确')
+  if (typeof termStart !== 'string' || !validDateKey(termStart)) throw new Error('课表缺少有效的学期起始日期')
+  if (!Array.isArray(rows) || !rows.length || rows.length > MAX_ROWS) throw new Error('课表的课程数量不正确')
   return {
-    id: String(row.id || row.share_id || ''),
-    code: String(row.code || ''),
-    ownerUid: String(row.owner_uid || ''),
-    defaultName: String(row.default_name || '同学课表'),
-    localName: String(row.local_name || row.default_name || '同学课表'),
-    visibility: row.visibility === 'busy' ? 'busy' : 'full',
-    rows: normalizeRows(row.rows),
-    termStart: String(row.term_start || ''),
-    updatedAt: String(row.updated_at || ''),
-    revoked: row.revoked === true,
-    mine: row.mine === true,
+    defaultName: scheduleName(data.defaultName),
+    visibility,
+    termStart,
+    rows: rows.map(value => {
+      const row = asRecord(value)
+      const { week, day, sections, name, room, teacher } = row
+      if (!isWhole(week, 1, 60) || !isWhole(day, 1, 7) || !Array.isArray(sections) || !sections.length
+        || sections.length > 14 || !sections.every(section => isWhole(section, 1, 14))) {
+        throw new Error('课表含有无效周次、星期或节次')
+      }
+      const position = { week, day, sections: [...new Set<number>(sections)].sort((a, b) => a - b) }
+      if (visibility === 'busy') return { ...position, name: '课程', room: '', teacher: '' }
+      if (typeof name !== 'string' || !name.trim() || name.length > 200 || typeof room !== 'string'
+        || room.length > 200 || typeof teacher !== 'string' || teacher.length > 200) {
+        throw new Error('课表含有无效的课程名称、教室或教师')
+      }
+      return { ...position, name, room, teacher }
+    }),
   }
 }
 
-async function rpc(name: string, params: Record<string, unknown> = {}): Promise<Any[]> {
-  const session = captureQbankSession()
-  if (!session.uid) throw new Error('请先登录哦狐账号')
-  const response: Any = await (cbRdb() as Any).rpc(name, params)
-  if (!isQbankSessionCurrent(session)) throw new Error('账号已切换，请重新操作')
-  if (response?.error) throw new Error(errorText(response.error) || '多人课表服务暂不可用')
-  return Array.isArray(response?.data) ? response.data : response?.data ? [response.data] : []
+export function encodeScheduleShare(share: ScheduleShare): string {
+  const text = JSON.stringify({ schema: SHARE_SCHEMA, version: 1, ...readShare(share) })
+  if (text.length > MAX_SCHEDULE_SHARE_LENGTH) throw new Error('课表文本太长，请使用忙闲模式')
+  return text
 }
 
-export async function publishScheduleShare(input: {
-  defaultName: string
-  visibility: ShareVisibility
-  rows: TtRow[]
-  termStart: string
-}): Promise<SharedSchedule> {
-  if (!input.defaultName.trim()) throw new Error('请填写课表名称')
-  if (!input.rows.length) throw new Error('当前没有可分享的课程')
-  // Busy-only shares should never send course names, locations, or teachers to the RPC.
-  const sharedRows = input.visibility === 'busy'
-    ? input.rows.map((row) => ({ week: row.week, day: row.day, sections: [...row.sections], name: '课程', room: '', teacher: '' }))
-    : input.rows
-  const rows = await rpc('schedule_share_publish', {
-    p_default_name: input.defaultName.trim().slice(0, 30),
-    p_visibility: input.visibility,
-    p_rows: sharedRows,
-    p_term_start: input.termStart,
-  })
-  if (!rows[0]) throw new Error('分享码生成失败，请重试')
-  return normalizeShare(rows[0])
+export function decodeScheduleShare(text: string): ScheduleShare {
+  if (text.length > MAX_SCHEDULE_SHARE_LENGTH) throw new Error('课表文本太长')
+  let value: unknown
+  try { value = JSON.parse(text) }
+  catch { throw new Error('请粘贴同学从哦狐复制的完整课表文本') }
+  const data = asRecord(value)
+  if (data.schema !== SHARE_SCHEMA || data.version !== 1) throw new Error('无法识别这个课表文本版本')
+  return readShare(data)
 }
 
-export async function importScheduleShare(code: string): Promise<SharedSchedule> {
-  const normalized = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
-  if (normalized.length < 6) throw new Error('请输入完整分享码')
-  const rows = await rpc('schedule_share_import', { p_code: normalized })
-  if (!rows[0]) throw new Error('分享码不存在或已撤销')
-  return normalizeShare(rows[0])
+function storeKey(uid: string): string {
+  return 'ohu.schedule-group.local.v1:' + JSON.stringify(uid)
 }
 
-export async function listScheduleShares(): Promise<SharedSchedule[]> {
-  return (await rpc('schedule_share_list')).map(normalizeShare).filter((item) => item.id && !item.revoked)
+export function readLocalScheduleShares(uid: string): SharedSchedule[] {
+  try {
+    const data: unknown = JSON.parse(localStorage.getItem(storeKey(uid)) ?? '[]')
+    if (!Array.isArray(data) || data.length > MAX_IMPORTS) throw new Error()
+    const ids = new Set<string>()
+    return data.map(value => {
+      const item = asRecord(value)
+      if (typeof item.id !== 'string' || (!/^\d+$/.test(item.id) || !Number.isSafeInteger(Number(item.id))) || ids.has(item.id)) throw new Error()
+      ids.add(item.id)
+      return { ...readShare(item), id: item.id, localName: scheduleName(item.localName) }
+    })
+  } catch {
+    throw new Error('暂时无法读取本机课表，请保留设备数据后重试')
+  }
 }
 
-export async function renameImportedSchedule(shareId: string, localName: string): Promise<void> {
-  if (!localName.trim()) throw new Error('名称不能为空')
-  await rpc('schedule_share_rename', { p_share_id: shareId, p_local_name: localName.trim().slice(0, 30) })
+function saveLocalScheduleShares(uid: string, items: SharedSchedule[]) {
+  try { localStorage.setItem(storeKey(uid), JSON.stringify(items)) }
+  catch { throw new Error('本机无法保存课表，请检查存储空间后重试') }
 }
 
-export async function removeImportedSchedule(shareId: string): Promise<void> {
-  await rpc('schedule_share_remove', { p_share_id: shareId })
+export function importLocalScheduleShare(uid: string, text: string) {
+  const share = decodeScheduleShare(text)
+  const items = readLocalScheduleShares(uid)
+  const formatted = encodeScheduleShare(share)
+  const existing = items.find(item => encodeScheduleShare(item) === formatted)
+  if (existing) return { items, active: existing, duplicate: true }
+  if (items.length >= MAX_IMPORTS) throw new Error('本机最多保留 20 份课表，请先移除一份')
+  const id = String(Math.max(0, ...items.map(item => Number(item.id))) + 1)
+  const active = { ...share, id, localName: share.defaultName }
+  const next = [active, ...items]
+  saveLocalScheduleShares(uid, next)
+  return { items: next, active, duplicate: false }
 }
 
-export async function revokeScheduleShare(shareId: string): Promise<void> {
-  await rpc('schedule_share_revoke', { p_share_id: shareId })
+export function renameLocalScheduleShare(uid: string, id: string, name: string): SharedSchedule[] {
+  const localName = scheduleName(name)
+  const next = readLocalScheduleShares(uid).map(item => item.id === id ? { ...item, localName } : item)
+  saveLocalScheduleShares(uid, next)
+  return next
+}
+
+export function removeLocalScheduleShare(uid: string, id: string): SharedSchedule[] {
+  const next = readLocalScheduleShares(uid).filter(item => item.id !== id)
+  saveLocalScheduleShares(uid, next)
+  return next
 }
 
 function clock(pair: PeriodPair | undefined, side: 0 | 1, fallback: string): string {
@@ -177,6 +196,7 @@ function teachingWeekAt(date: Date, termStart: string): number {
 export function commonFreeSlotsForDate(input: {
   date: string
   ownRows: TtRow[]
+  ownLastWeek?: number
   ownTermStart: string
   otherSchedules: Array<Pick<SharedSchedule, 'rows' | 'termStart'>>
   periods: PeriodPair[]
@@ -189,6 +209,12 @@ export function commonFreeSlotsForDate(input: {
   if (!input.otherSchedules.length) return []
   const [year, month, day] = input.date.split('-').map(Number)
   const date = new Date(year, month - 1, day, 12)
+  const ownWeek = teachingWeekAt(date, input.ownTermStart)
+  const others = input.otherSchedules.map(item => ({ item, week: teachingWeekAt(date, item.termStart) }))
+  if (input.ownLastWeek && (!ownWeek || ownWeek > input.ownLastWeek)
+    || others.some(({ item, week }) => !week || week > Math.max(0, ...item.rows.map(row => row.week)))) {
+    throw new Error('所选日期超出至少一份课表的已知周次，请换个日期。')
+  }
   const weekday = ((date.getDay() + 6) % 7) + 1
   const maxSection = Math.min(14, Math.max(1, input.maxSection || 11))
   const busy = new Set<number>()
@@ -203,8 +229,8 @@ export function commonFreeSlotsForDate(input: {
     }
   }
   // The caller has already projected this account's school holidays and one-day changes.
-  addRows(input.ownRows, teachingWeekAt(date, input.ownTermStart), null)
-  for (const item of input.otherSchedules) addRows(item.rows, teachingWeekAt(date, item.termStart), weekday)
+  addRows(input.ownRows, ownWeek, null)
+  for (const { item, week } of others) addRows(item.rows, week, weekday)
 
   const result: FreeSlot[] = []
   let start = 0

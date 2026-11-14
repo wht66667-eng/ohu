@@ -93,6 +93,8 @@ import type { ScheduleAiChange } from '../../lib/schedule-ai'
 import { beginAcademicSync, isAcademicSyncCurrent, runAutoSync } from '../../lib/auto-sync'
 /* 访客没有提醒归属（提醒按账号隔离），同步成功后要把这件事讲清楚而不是静默放过 */
 import { useAuth } from '../../lib/auth'
+import { saveSnapshotToJournal, journalOwnerOf } from '../../lib/journal-snapshot'
+import { toast } from '../../lib/toast'
 import { useQbankRevision } from '../../lib/useQbankRevision'
 import { rescheduleClassReminders, type ClassReminderResult } from '../../lib/class-remind'
 import { rescheduleExamReminders } from '../../lib/exam-utils'
@@ -251,7 +253,7 @@ function groupRows(rows: TtRow[], week: number): Record<number, CellGroup[]> {
  * 页面
  * ============================================================ */
 
-type ScheduleAction = 'bind' | 'periods' | 'calendar' | 'export' | 'ai' | 'group'
+type ScheduleAction = 'bind' | 'periods' | 'calendar' | 'export' | 'ai'
 type ResumedScheduleAction = { id: number; kind: ScheduleAction; session: ReturnType<typeof captureQbankSession> }
 
 export function ScheduleHome() {
@@ -868,6 +870,16 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
   const todayRows = getScheduleRowsForDate(new Date(), rows)
   const todayGroups = groupRows(todayRows, guessTeachingWeek())
   const todayList = todayGroups[todayStatus.effectiveDay] ?? []
+  const [savingToday, setSavingToday] = useState(false)
+  async function saveTodayToJournal() {
+    if (savingToday) return
+    setSavingToday(true)
+    try {
+      const lines = todayList.map(g => `第${g.start}-${g.end}节 ${g.name}${g.room ? ` @${g.room}` : ''}`)
+      const body = lines.length ? `今日 ${lines.length} 节课：\n${lines.join('\n')}` : '今天没有课，自由安排。'
+      await saveSnapshotToJournal(journalOwnerOf(auth.isSigned, auth.user?.uid), '课表 · 今日课程', body)
+    } catch { toast.err('保存失败，请重试。') } finally { setSavingToday(false) }
+  }
   const todayClock = tmCustom ? tm : getOfficialPeriods(new Date())
   const nowSec = currentSection(todayClock)
   const dateLabel = `${new Date().getMonth() + 1}月${new Date().getDate()}日 ${WEEK_CN[new Date().getDay()]}`
@@ -997,6 +1009,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
                   <button type="button" onClick={onReQuery} style={{ background: 'none', color: 'inherit', opacity: 0.65 }}>
                     手动绑定
                   </button>
+                  <button type="button" onClick={() => { if (isQbankSessionCurrent(ownerSession)) setScheduleGroupOpen(true) }}>导入同学课表</button>
                 </>
               }
             />
@@ -1202,7 +1215,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
             <summary><span><strong>更多课表工具</strong><small>学习 AI、多人课表与官方课表入口</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></summary>
             <div className={styles.scheduleMoreLinks}>
               <Link className={styles.scheduleStudyAiLink} to="/study?tab=ai">打开学习中心的 8 项 AI 工具 <span aria-hidden="true">›</span></Link>
-              <button type="button" className={styles.scheduleStudyAiLink} onClick={() => { if (requireSigned('group')) setScheduleGroupOpen(true) }}>分享课表、导入同学课表 <span aria-hidden="true">›</span></button>
+              <button type="button" className={styles.scheduleStudyAiLink} onClick={() => { if (isQbankSessionCurrent(ownerSession)) setScheduleGroupOpen(true) }}>分享课表、导入同学课表 <span aria-hidden="true">›</span></button>
               <button type="button" className={styles.scheduleStudyAiLink} onClick={() => setScheduleImageOpen(true)}>拍照上传课表，AI 一键整理 <span aria-hidden="true">›</span></button>
               <Link className={styles.scheduleStudyAiLink} to="/schedule/guide">查询本校及其他学校的官方课表入口 <span aria-hidden="true">›</span></Link>
             </div>
@@ -1224,13 +1237,13 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
                 const upcoming = isFocusedToday && toMin(startTime) > focusMinutesNow
                 const isLunchBreak = index > 0 && focusCourses[index - 1]!.end <= 4 && g.start >= 5
                 return <div className={styles.v4TimelineItem} key={`${g.day}-${g.start}-${g.name}`}>
-                  {isLunchBreak ? <div className={styles.v4Lunch}><span className={styles.v4LunchSun} aria-hidden="true">☀</span><span className={styles.v4LunchCopy}>午休时间 · 给自己补充能量</span><FoxSheetPose pose="resting" /></div> : null}
+                  {isLunchBreak ? <div className={styles.v4Lunch}><span className={styles.v4LunchSun} aria-hidden="true">☀</span><span className={styles.v4LunchCopy}>午休时间 · 给自己补充能量</span><FoxSheetPose pose="resting" style={{ flex: 'none', alignSelf: 'flex-end', width: 'min(62px, 22%)', height: 37, pointerEvents: 'none' }} /></div> : null}
                   <div className={styles.v4TimelineRow}>
                     <div className={styles.v4Time}><strong>{startTime}</strong><span>{endTime}</span><i aria-hidden="true" /></div>
                     <button type="button" className={`${styles.v4Course} ${ongoing ? styles.v4CourseNow : ''} ${index === 0 && g.name.length < 14 ? styles.v4CourseWithFox : ''}`} style={{ background: `linear-gradient(100deg, ${palette.bg}, color-mix(in srgb, ${palette.bg} 44%, #fffdf7))` }} onClick={() => setSheet(g)} aria-haspopup="dialog" aria-label={`${g.name}，${startTime}到${endTime}，查看课程详情`}>
                       <span className={styles.v4CourseIcon} style={{ color: palette.fg }}><ScheduleTypeIcon name={g.name} size={24} /></span>
                       <span className={styles.v4CourseText}><strong>{g.name}</strong><small>{[g.teacher, g.room].filter(Boolean).join(' · ') || '教室和教师未提供'}</small></span>
-                      {index === 0 && g.name.length < 14 ? <FoxSheetPose className={styles.v4CourseFox} pose="reading" /> : null}
+                      {index === 0 && g.name.length < 14 ? <FoxSheetPose className={styles.v4CourseFox} pose="reading" style={{ position: "absolute", right: 7, bottom: 6, width: 58, height: 58, pointerEvents: "none" }} /> : null}
                       {ongoing ? <span className={styles.v4Status}>进行中</span> : upcoming && index === focusCourses.findIndex(item => toMin(focusClock[item.start - 1]?.[0] ?? '23:59') > focusMinutesNow) ? <span className={styles.v4StatusNext}>下节课</span> : <span className={styles.v4Chevron} aria-hidden="true">›</span>}
                     </button>
                   </div>
@@ -1241,7 +1254,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
 
           {view === 'day' ? <div className={styles.v4BottomCards}>
             <Link className={styles.v4ReminderCard} to="/study?tab=exams"><strong>重要提醒 <span aria-hidden="true">🔔</span></strong><span>{academicCounts.exams ? `已同步 ${academicCounts.exams} 场考试，查看考试安排` : '考试安排同步后会显示在这里'}</span><small>查看考试安排 ›</small></Link>
-            <div className={styles.v4Encourage}><strong>保持状态！</strong><span>今天也和阿狐一起前进</span><FoxSheetPose pose="cool" /></div>
+            <div className={styles.v4Encourage}><strong>保持状态！</strong><span>今天也和阿狐一起前进</span><FoxSheetPose pose="cool" style={{ alignSelf: "flex-end", width: 60, height: 60 }} /></div>
           </div> : null}
 
           {view === 'day' ? <section className={styles.v4Summary} aria-label="所选日期课程小结"><h2>当日课程小结</h2><div><span><strong>{focusCourses.length}</strong> 节课<small>所选日期</small></span><span><strong>{completedCourses}/{focusCourses.length}</strong><small>已结束</small></span><span><strong>{lessonMinutes ? `${Math.round(lessonMinutes / 60 * 10) / 10}` : '0'}</strong> 小时<small>课程时长</small></span></div><FoxSheetPose pose="cheering" /></section> : null}
@@ -1255,6 +1268,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
                 <span>{dateLabel} · 第 {currentWeek} 周</span>
               </div>
               <span className={styles.weekPill}>第 {currentWeek} 周</span>
+              <button type="button" className={styles.todaySave} disabled={savingToday} onClick={() => void saveTodayToJournal()}>{savingToday ? '保存中…' : '记入手账'}</button>
             </div>
             {todayStatus.off ? (
               <p className={styles.todayEmpty}>
@@ -1886,7 +1900,7 @@ function ScheduleHomeContent({ resumedAction = null, requestAction }: {
         </DialogLayer>
       ) : null}
       {scheduleAiOpen ? <ScheduleAiChangeSheet context={scheduleAiContext} onClose={() => { setScheduleAiOpen(false); setScheduleAiContext(null) }} onApply={applyAiScheduleChanges} scheduleRows={rows} /> : null}
-      {scheduleGroupOpen ? <ScheduleGroupSheet rows={rows} termStart={termStart} periods={tm} onClose={() => setScheduleGroupOpen(false)} /> : null}
+      {scheduleGroupOpen ? <ScheduleGroupSheet rows={rows} termStart={termStart} periods={tm} ownerUid={ownerSession.uid} onClose={() => setScheduleGroupOpen(false)} /> : null}
       {scheduleImageOpen ? <ScheduleImageImportSheet defaultSchool="江苏海洋大学" onClose={() => setScheduleImageOpen(false)} onSaved={(photoRows, photoTerm) => {
         setRows(photoRows); setTermStart(photoTerm); setCurrentWeek(guessTeachingWeek(photoTerm)); setScheduleImageOpen(false)
         showMsg('照片课表已保存到当前设备，原课表可随时恢复')

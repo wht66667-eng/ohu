@@ -130,6 +130,24 @@ export const CAMPUS_LINKS: CampusLink[] = [
     group: 'campus',
   },
   {
+    id: 'lib-wechat',
+    title: '我去图书馆（微信选座）',
+    desc: '微信内打开选座 / 签到；哦狐复制链接并拉起微信',
+    href: 'https://web.traceint.com/web/index.html#/pages/index/index',
+    tag: '图书',
+    cred: 'none',
+    group: 'campus',
+  },
+  {
+    id: 'dorm-power',
+    title: '寝室电费充值与查询',
+    desc: '学校电费系统 · 余额 / 充值 / 用电明细',
+    href: 'http://dfcz.jou.edu.cn/home',
+    tag: '生活',
+    cred: 'none',
+    group: 'campus',
+  },
+  {
     id: 'job',
     title: '就业信息网',
     desc: '招聘会 · 实习 · 就业指导',
@@ -211,6 +229,10 @@ export const ALL_CAMPUS_LINKS: CampusLink[] = [...CAMPUS_LINKS, ...CERT_LINKS]
 
 export const VPN_URL = CAMPUS_LINKS.find((l) => l.id === 'vpn')!.href
 export const JW_URL = CAMPUS_LINKS.find((l) => l.id === 'jw')!.href
+/** 我去图书馆微信选座 H5（不带易失分享参数） */
+export const LIBRARY_WECHAT_URL = CAMPUS_LINKS.find((l) => l.id === 'lib-wechat')!.href
+/** 寝室电费官方系统（不带易失 jsessionid） */
+export const DORM_POWER_URL = CAMPUS_LINKS.find((l) => l.id === 'dorm-power')!.href
 /** 统一身份认证入口：CAS 校外不可达，故指向 WebVPN；校内网络下可直接用 cas.jou.edu.cn */
 export const CAS_URL = CAMPUS_LINKS.find((l) => l.id === 'cas')!.href
 

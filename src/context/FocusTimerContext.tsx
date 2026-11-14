@@ -15,6 +15,7 @@ import { syncFocusNotifications } from '../lib/focus-notify'
 import { checkReminderHealth } from '../lib/notify-setup'
 import { isNativeApp } from '../lib/native'
 import { studentHaptic } from '../lib/student-haptics'
+import { playSound, SoundEvent } from '../lib/sound'
 import { fadeUp, fadeOnly } from '../lib/animations'
 import type { FocusOptions } from '../lib/focus-settings'
 import { saveFocusSession, setFocusImmersive, type FocusSession } from '../services/focus'
@@ -126,13 +127,16 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
     storageWarning(result.durable)
     // Persistence happens before publishing or external effects; repeated wake events cannot claim twice.
     publish(next); silence(); setFocusImmersive(false); notifyFocusStats()
+    /* 专注完成已有专属铃声/震动通路；只有它不响时才补任务完成音，避免双重发声。 */
+    const dedicatedChime = (!isNativeApp() || scheduled.current.get(previous.sessionId || '') === false) && (previous.reminder || 'sound') === 'sound'
     if (!isNativeApp() || scheduled.current.get(previous.sessionId || '') === false) {
       if (document.visibilityState === 'visible') remindFocusComplete(previous.reminder || 'sound')
     }
-    if (previous.phase === 'break') toast.ok('休息结束，可以开始下一轮了')
+    if (!dedicatedChime) playSound(SoundEvent.TaskComplete)
+    if (previous.phase === 'break') toast.ok('休息结束，可以开始下一轮了', dedicatedChime ? { sound: false } : undefined)
     else if (result.recorded) {
       if (document.visibilityState === 'visible') studentHaptic()
-      toast.ok(`专注完成 ${previous.minutes} 分钟，已记入统计`)
+      toast.ok(`专注完成 ${previous.minutes} 分钟，已记入统计`, { sound: false })
       if (previous.todoId != null && previous.userId) {
         try { localStorage.setItem(`focus.pendingTodoComplete.v1:${previous.userId}`, JSON.stringify({ ...previous, id: previous.todoId, completedAt: previous.endsAt })) } catch { /* the live event still offers confirmation */ }
       }

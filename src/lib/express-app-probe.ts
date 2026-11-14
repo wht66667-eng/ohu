@@ -11,6 +11,7 @@ export interface AppProbePlugin {
   launchUrl(options: { url: string }): Promise<{ ok: boolean }>
   openPerfectCampus(): Promise<{ ok: boolean }>
   openChaoxingApp(): Promise<{ ok: boolean }>
+  shareToWeChat(options: { text: string }): Promise<{ ok: boolean }>
 }
 
 const AppProbe = registerPlugin<AppProbePlugin>('AppProbe', {
@@ -20,6 +21,7 @@ const AppProbe = registerPlugin<AppProbePlugin>('AppProbe', {
       launchUrl: () => Promise.resolve({ ok: false }),
       openPerfectCampus: () => Promise.resolve({ ok: false }),
       openChaoxingApp: () => Promise.resolve({ ok: false }),
+      shareToWeChat: () => Promise.resolve({ ok: false }),
     }),
 })
 
@@ -62,6 +64,22 @@ export async function launchScheme(scheme: string): Promise<boolean> {
   if (!IS_NATIVE || !scheme) return false
   try {
     const res = await AppProbe.launchUrl({ url: scheme })
+    return !!res.ok
+  } catch {
+    return false
+  }
+}
+
+/**
+ * 原生分享文本到微信（Android ACTION_SEND → 微信选择聊天）。
+ * 学校电费、图书馆选座等微信公众号 OAuth 页面只能在微信内打开：
+ * 发送到「文件传输助手」后点开链接即在微信 WebView 内完成授权。
+ * @returns true=已拉起微信分享；false=未安装微信/旧原生包无此方法/失败（前端降级为复制链接+拉起微信）
+ */
+export async function shareTextToWeChat(text: string): Promise<boolean> {
+  if (!IS_NATIVE || !text) return false
+  try {
+    const res = await AppProbe.shareToWeChat({ text })
     return !!res.ok
   } catch {
     return false

@@ -2,4 +2,13 @@
 
 .simple { background:#eee; }.simple i:first-child { background:#444; }
 
+.inkOption { grid-column:1/-1; }
+.inkOption button { min-height:0; }
+.inkPreview { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:10px 14px; border-radius:5px 24px 7px 21px; background:radial-gradient(ellipse at 86% 0%,#d1d4d2,transparent 72%),#eeede8; color:#222322; }
+.inkPreview>span { min-width:0; font:400 24px/1.2 "OHU-InkTitle","Songti SC","SimSun",serif; }
+.inkPreview small { display:block; margin-top:7px; color:#464744; font:400 12px/1.5 system-ui,sans-serif; }
+.inkPreview img { flex:none; width:min(36%,102px); height:auto; }
+
+.hand { background:#fffaf0; }.hand i { background:#fffefa; border-color:#d9cfb8; border-radius:6px 9px 7px 10px; }.hand i:first-child { background:#1f5b3a; border-color:#1f5b3a; }.hand i:last-child { background:#ff8a3d; border-color:#ff8a3d; }
+
 .petSettings { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); }.petHeading { display:flex; gap:12px; align-items:center; }.petHeading img { flex:none; object-fit:contain; }.petHeading h3 { margin:0; font-size:16px; }.petHeading p,.petSettings>p { font-size:12px; margin:6px 0; }.petActions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }.petActions button { min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--text); cursor:pointer; }.petActions button:first-child { background:var(--green); color:var(--on-primary); border-color:var(--green); }.petActions button:disabled { opacity:.45; cursor:default; }.petActions button:focus-visible { outline:2px solid var(--green-text); outline-offset:3px; }

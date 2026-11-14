@@ -71,7 +71,8 @@ export function startBootPresentation(): () => void {
   const stopMotion = () => { animations.forEach((animation) => animation.cancel()); animations = [] }
   const runMotion = () => {
     stopMotion()
-    if (media.matches || !splash.animate) return
+    // 默认无启动屏进场动画；仅 DEV ?preview=boot 保留预览。
+    if (!previewBoot || media.matches || !splash.animate) return
     // StrictMode remounts continue one timeline; foreground and resize never replay it.
     const elapsed = Date.now() - presentationStartedAt!
     if (elapsed > 1000) return
@@ -94,7 +95,10 @@ export function startBootPresentation(): () => void {
     }
   }
   const skipAnimation = () => dismissBootSplash('skip')
-  if (skip) { skip.hidden = false; skip.addEventListener('click', skipAnimation) }
+  if (skip) {
+    skip.hidden = !previewBoot
+    if (previewBoot) skip.addEventListener('click', skipAnimation)
+  }
   media.addEventListener('change', runMotion)
   runMotion(); updatePresentation()
   const cleanup = () => { stopMotion(); media.removeEventListener('change', runMotion); skip?.removeEventListener('click', skipAnimation) }
@@ -130,7 +134,7 @@ export function dismissBootSplash(reason: 'ready' | 'timeout' | 'skip' = 'ready'
     if (restoreFocus && previousFocus && previousFocus !== document.body && previousFocus.isConnected) previousFocus.focus({ preventScroll: true })
   }
   const remaining = Math.max(0, documentStartedAt + MAX_BOOT_MS - Date.now())
-  if (reduceMotion() || !splash.animate || (!previewBoot && remaining === 0)) { finish(); return }
+  if (!previewBoot || reduceMotion() || !splash.animate || remaining === 0) { finish(); return }
   splash.style.pointerEvents = 'none'
   splash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: previewBoot ? BOOT_FADE_MS : Math.min(BOOT_FADE_MS, remaining), fill: 'forwards' }).finished.then(finish, finish)
 }

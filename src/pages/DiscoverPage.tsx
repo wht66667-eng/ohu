@@ -15,7 +15,7 @@ export function DiscoverPage() {
       <main className={styles.main}>
         <motion.div 
           className={styles.cardGrid}
-          initial="hidden"
+          initial={false}
           animate="show"
           variants={{
             show: {

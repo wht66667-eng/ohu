@@ -57,7 +57,7 @@ public final class TodayScheduleWidgetProvider extends AppWidgetProvider {
     }
 
     private static void setOpenIntent(Context context, RemoteViews views, int id) {
-        Intent intent = new Intent(context, MainActivity.class);
+            Intent intent = new Intent(context, SecurityEntryActivity.class);
         intent.setAction("com.sunshinecampus.app.OPEN_TODAY_SCHEDULE_WIDGET");
         intent.putExtra("scheduleWidgetRoute", "/schedule");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

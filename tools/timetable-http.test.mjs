@@ -89,6 +89,23 @@ test('waiting for response headers is bounded and aborts the request', async () 
   assert.equal(f.jobs.size, 0)
 })
 
+test('timeout copy names the stage budget it enforces (25s captcha / 60s query / 90s auto)', async () => {
+  for (const [invoke, deadline, label] of [
+    [(api) => api.fetchCaptcha(), 25_000, '验证码请求'],
+    [(api) => api.queryAcademic('fixture', credentials), 60_000, '教务查询'],
+    [(api) => api.autoQueryAcademic(credentials), 90_000, '自动同步'],
+  ]) {
+    const f = fixture(() => new Promise(() => {}))
+    const rejected = assert.rejects(invoke(f.api), (error) => {
+      assert.equal(error.code, '1006')
+      assert.match(error.message, new RegExp(`${label}超时（${deadline / 1000}s）`))
+      return true
+    })
+    f.advance(deadline)
+    await rejected
+  }
+})
+
 test('network and body read failures use the same actionable network error', async () => {
   for (const fakeFetch of [
     async () => { throw new TypeError('synthetic connection failure') },

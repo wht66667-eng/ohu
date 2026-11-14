@@ -1,1 +1,0 @@
-{"domain":"jou-d4gq7a3cqf51e6caa-1394316826.ap-shanghai.app.tcloudbase.com","routes":[{"path":"/api/campus-auth","upstreamResourceType":"SCF","upstreamResourceName":"campusAuth","enable":true,"enableAuth":false,"enablePathTransmission":true}]}

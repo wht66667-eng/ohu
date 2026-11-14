@@ -8,8 +8,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // 两端（学生端 / 管理端）共用 versionCode / versionName，保证同步更新
-        versionCode 157
-        versionName "1.2.157"
+        versionCode 179
+        versionName "1.2.179"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // 默认只打 arm64，体积更小（参考酱海带分 ABI 包；老机需另出 armeabi-v7a）
         ndk {
@@ -44,7 +44,8 @@ android {
     }
     signingConfigs {
         release {
-            def ks = file('../keystore/sunshine-release.jks')
+            def signingDirectory = System.getenv('SUNSHINE_SIGNING_DIR') ?: '../keystore'
+            def ks = file("${signingDirectory}/sunshine-release.jks")
             if (ks.exists()) {
                 storeFile ks
                 storePassword System.getenv('SUNSHINE_STORE_PASSWORD')
@@ -64,10 +65,9 @@ android {
         }
         debug {
             minifyEnabled false
-            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
-                signingConfig signingConfigs.release
-            }
-            // TEST ONLY: 独立包名，避免覆盖手机上已安装的 release 版（签名不同装不进去）。
+            applicationIdSuffix '.debug'
+            signingConfig signingConfigs.debug
+            // 测试包独立安装，不读取正式签名口令，也不会覆盖手机上的正式版。
         }
         // F-Droid signs the resulting APK with its repository key.
         fdroid {

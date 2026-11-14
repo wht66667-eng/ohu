@@ -16,8 +16,7 @@ from hypothesis import given, settings, strategies as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import app as service
 
-ROUTES = ["/api/timetable/query", "/api/timetable/auto", "/api/schedule",
-          "/api/physical/query", "/api/learning/chaoxing/query"]
+ROUTES = ["/api/timetable/query", "/api/timetable/auto", "/api/learning/chaoxing/query"]
 SPEC = {
     "openapi": "3.0.3", "info": {"title": "OHU offline security contract", "version": "150"},
     "paths": {path: {"post": {
@@ -41,13 +40,11 @@ schema = schemathesis.openapi.from_wsgi("/__offline_security150_schema", service
 
 @pytest.fixture(autouse=True)
 def offline_only():
-    with patch.dict(os.environ, {"CHAOXING_READ_ENABLED": "1", "PHYSICAL_READ_ENABLED": "1", "PHYSICAL_ALLOW_HTTP": "1"}), \
+    with patch.dict(os.environ, {"CHAOXING_READ_ENABLED": "1"}), \
          patch.object(service, "MOCK", False), \
          patch("requests.sessions.Session.request", side_effect=AssertionError("Live upstream access forbidden")), \
          patch.object(service, "query_academic", return_value={"rows": []}), \
          patch.object(service, "auto_query_academic", return_value={"rows": []}), \
-         patch("physical_read.query", return_value={"records": []}), \
-         patch("physical_read.prepare", return_value={"sid": "synthetic-only", "image": None}), \
          patch("chaoxing_read.query_chaoxing", return_value={"courses": [], "homework": []}), \
          patch("captcha_ocr.ocr_available", return_value=True), \
          patch.object(service, "_enter_upstream", return_value=True), \
@@ -105,17 +102,6 @@ def test_proxy_headers_need_trusted_peer_and_use_the_right_hand_hop():
     assert client_ip("10.0.0.2", "192.0.2.5", 1, "invalid") == "10.0.0.2"
 
 
-def test_legacy_endpoint_uses_same_account_and_ip_limits():
-    with patch.object(service, "_win_ip_query", service._SlidingWindow(1)):
-        client = service.app.test_client()
-        first = client.post("/api/schedule", json={"student_id": "synthetic-one", "password": "synthetic-password"})
-        second = client.post("/api/schedule", json={"student_id": "synthetic-two", "password": "synthetic-password"})
-        assert first.status_code == 200
-        assert second.status_code == 429
-        assert second.headers.get("Retry-After")
-        assert service.auto_query_academic.call_count == 1
-
-
 @pytest.mark.parametrize("path", ROUTES)
 def test_credential_bodies_are_bounded_and_private(path):
     r = service.app.test_client().post(path, json={"padding": "x" * 9000})
@@ -124,9 +110,9 @@ def test_credential_bodies_are_bounded_and_private(path):
     assert r.is_json
 
 
-@pytest.mark.parametrize("path", ["/api/timetable/auto", "/api/timetable/query", "/api/schedule"])
+@pytest.mark.parametrize("path", ["/api/timetable/auto", "/api/timetable/query"])
 def test_wrong_field_types_do_not_become_upstream_credentials(path):
-    key = "student_id" if path == "/api/schedule" else "username"
+    key = "username"
     r = service.app.test_client().post(path, json={key: {"$ne": None}, "password": ["synthetic"], "captcha": "1234", "sid": "synthetic"})
     assert r.status_code == 400
     service.auto_query_academic.assert_not_called()

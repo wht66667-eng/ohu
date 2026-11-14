@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 
-const { PGlite } = await import(pathToFileURL(resolve('.codex/qa/friends131-pg/node_modules/@electric-sql/pglite/dist/index.js')).href)
+const { PGlite } = await import(pathToFileURL(resolve(process.env.OHU_PGLITE_PATH || '.codex/qa/friends131-pg/node_modules/@electric-sql/pglite/dist/index.js')).href)
 const migration = readFileSync('docs/release/meet-invitations.sql', 'utf8')
 const tokenA = 'ab'.repeat(32), tokenB = 'cd'.repeat(32), tokenC = 'ef'.repeat(32)
 const seed = `CREATE ROLE authenticated NOLOGIN; CREATE ROLE anon NOLOGIN; CREATE SCHEMA auth;
@@ -42,7 +42,11 @@ test('private activity creates a random public URL capability and stores atomic 
   assert.equal(meet.mine,true)
   const publicRead = await rpc(db,'meet_get',[meet.code],{actor:'',role:'anon'})
   assert.equal(publicRead.mine,false)
-  assert.deepEqual(publicRead.participants,[{name:'发起人',vibe:'any'}])
+  assert.equal(publicRead.detailsVisible,false)
+  assert.deepEqual(publicRead.participants,[])
+  const memberRead = await rpc(db,'meet_get_member',[meet.code,tokenA])
+  assert.equal(memberRead.detailsVisible,true)
+  assert.deepEqual(memberRead.participants,[{name:'发起人',vibe:'any',personalityType:null}])
   const encoded=JSON.stringify(publicRead)
   assert.equal(encoded.includes(tokenA),false)
   assert.equal(encoded.includes('token_hash'),false)
@@ -55,7 +59,7 @@ test('private guest can join without login and only its capability updates its r
   assert.equal(result.participantCount,1)
   result=await reply(db,meet,day,'甲的新昵称',tokenA,{slots:[`${day}T15:00`,`${day}T15:30`]})
   assert.equal(result.participantCount,1)
-  assert.deepEqual(result.participants,[{name:'甲的新昵称',vibe:'any'}])
+  assert.deepEqual(result.participants,[{name:'甲的新昵称',vibe:'any',personalityType:null}])
   assert.equal(result.slotCounts[0].slot,`${day}T15:00`)
   result=await reply(db,meet,day,'同学乙',tokenB)
   assert.equal(result.participantCount,2)
@@ -100,7 +104,8 @@ test('public activity discovery is same-school scoped and public joining require
   const meet=await create(db,day,{visibility:'public'})
   await create(db,day,{visibility:'public',campus:'另一个学校'})
   await create(db,day,{visibility:'private'})
-  const found=await rpc(db,'meet_discover',['江苏海洋大学','study',[]],{role:'anon',actor:''})
+  await assert.rejects(rpc(db,'meet_discover',['江苏海洋大学','study',[]],{role:'anon',actor:''}),/permission denied/)
+  const found=await rpc(db,'meet_discover',['江苏海洋大学','study',[]])
   assert.deepEqual(found.map(item=>item.code),[meet.code])
   await assert.rejects(reply(db,meet,day,'访客',tokenA),/请先登录/)
   await assert.rejects(reply(db,meet,day,'匿名认证',tokenA,{auth:{role:'authenticated',actor:'anon-uid',anonymous:true}}),/请先登录/)

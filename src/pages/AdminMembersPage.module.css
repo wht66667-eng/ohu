@@ -246,6 +246,69 @@
   color: var(--danger);
 }
 
+/* —— 日活面板（govMetrics/govBars 此前被 TSX 引用但未定义样式，1.2.171 窗口 C 补齐） —— */
+
+.govMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.govMetrics > div {
+  background: var(--green-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.govMetrics b {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--green-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.govMetrics span {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.govBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 110px;
+  margin-top: 14px;
+}
+
+.govBarCol {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 3px;
+}
+
+.govBar {
+  width: 100%;
+  max-width: 22px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--green);
+  opacity: 0.85;
+}
+
+.govBarCol small {
+  font-size: 9px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
 @media (min-width: 1000px) {
   :global([data-admin-workspace]) .notice { padding: 15px 18px; border-radius: 10px; font-size: 13px; }
   :global([data-admin-workspace]) .summary { gap: 16px; max-width: 720px; margin-top: 20px; }
@@ -258,4 +321,8 @@
   :global([data-admin-workspace]) .list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   :global([data-admin-workspace]) .card { padding: 18px; border-radius: 10px; box-shadow: none; }
   :global([data-admin-workspace]) .meta { line-height: 1.75; overflow-wrap: anywhere; }
+  :global([data-admin-workspace]) .govMetrics { max-width: 720px; gap: 16px; }
+  :global([data-admin-workspace]) .govMetrics > div { padding: 16px 18px; border-radius: 10px; }
+  :global([data-admin-workspace]) .govMetrics b { font-size: 26px; }
+  :global([data-admin-workspace]) .govBars { max-width: 720px; height: 150px; }
 }

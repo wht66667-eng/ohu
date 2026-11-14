@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { getCompanionPreferences, MAX_COMPANION_DATA_LENGTH, saveCompanionPreferences, subscribeCompanionPreferences } from '../../lib/companion-preferences'
 import { loadMomentImage, photoCanvas } from '../../lib/moment-photo'
+import { useUiVariant } from '../../lib/ui-variant'
 import styles from './UiThemeSettings.module.css'
 
 /** 所有皮肤共用本机宠物设置；只解码图片，不接受可执行的第三方皮肤。 */
 export function CompanionSettings() {
+  const ink = useUiVariant() === 'ink'
+  const defaultImage = `${import.meta.env.BASE_URL}${ink ? 'brand/ink/ink-fox.svg' : 'companions/foxgirl/idle-0.png'}`
   const [preferences, setPreferences] = useState(getCompanionPreferences), [busy, setBusy] = useState(false), [message, setMessage] = useState('')
   const input = useRef<HTMLInputElement>(null), live = useRef(true), lock = useRef(false)
   useEffect(() => { live.current = true; const stop = subscribeCompanionPreferences(() => setPreferences(getCompanionPreferences())); return () => { live.current = false; stop() } }, [])
@@ -26,11 +29,11 @@ export function CompanionSettings() {
     finally { URL.revokeObjectURL(url); lock.current = false; if (live.current) setBusy(false) }
   }
   function reset(kind: 'image' | 'position') {
-    try { saveCompanionPreferences({ ...getCompanionPreferences(), [kind]: kind === 'image' ? '' : null }); setMessage(kind === 'image' ? '已恢复默认狐狸娘' : '已重置宠物位置') } catch { setMessage('无法保存设置，请检查本机存储空间') }
+    try { saveCompanionPreferences({ ...getCompanionPreferences(), [kind]: kind === 'image' ? '' : null }); setMessage(kind === 'image' ? '已恢复当前皮肤的默认宠物' : '已重置宠物位置') } catch { setMessage('无法保存设置，请检查本机存储空间') }
   }
   return <section className={styles.petSettings} aria-label="自定义陪伴宠物">
-    <div className={styles.petHeading}><img width="64" height="72" src={preferences.image || `${import.meta.env.BASE_URL}companions/foxgirl/idle-0.png`} alt="当前陪伴宠物" /><div><h3>陪伴宠物</h3><p>经典、微绿、简单版都可用。拖动角色移动，点一下打开菜单。</p></div></div>
-    <div className={styles.petActions}><button type="button" disabled={busy} onClick={() => input.current?.click()}>{busy ? '正在处理…' : '选择宠物图片'}</button><button type="button" disabled={busy || !preferences.image} onClick={() => reset('image')}>恢复狐狸娘</button><button type="button" disabled={busy} onClick={() => reset('position')}>重置位置</button></div>
+    <div className={styles.petHeading}><img width="64" height="72" src={preferences.image || defaultImage} data-ink-fox={ink && !preferences.image ? '' : undefined} alt="当前陪伴宠物" /><div><h3>陪伴宠物</h3><p>在支持陪伴的页面上，拖动角色移动，点一下打开菜单。</p></div></div>
+    <div className={styles.petActions}><button type="button" disabled={busy} onClick={() => input.current?.click()}>{busy ? '正在处理…' : '选择宠物图片'}</button><button type="button" disabled={busy || !preferences.image} onClick={() => reset('image')}>恢复默认宠物</button><button type="button" disabled={busy} onClick={() => reset('position')}>重置位置</button></div>
     <p>支持PNG、JPG、WebP静态图片，透明PNG效果更好；图片仅存本机，不上传。</p>
     <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; void choose(file) }} />
     {message ? <p role="status">{message}</p> : null}

@@ -1,0 +1,7 @@
+.panel { padding-block:18px; border-block-start:1px solid var(--line); }
+.panel h3 { margin:0; }
+.panel p { margin:6px 0 12px; color:var(--text-2); font-size:13px; }
+.positions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-block:12px; }
+.positions label { display:grid; gap:4px; font-size:13px; }
+.panel :is(select,button) { min-height:44px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text); padding:6px 8px; font:inherit; }
+.panel :is(select,button):focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }

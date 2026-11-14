@@ -1,0 +1,135 @@
+/* 全皮肤纸张 · 画卷 · 翻页共用样式（开发交接阶段 A/B/C）。
+   纸底、墨色、规则线、装订边、阴影默认从各皮肤自身令牌派生，因此 13 套皮肤
+   （经典/简单/微绿/手绘/水墨 + Fox/可爱/极简/沉浸外观包 + 花漾/玻璃/草甸/夜色）
+   与浅/深模式自动获得各自纸面；下面仅对翻页节奏与纸面个性做覆盖。
+   本文件须在 skins.css 之后导入。只扩展视觉与运动，不改业务结构、存储、加密与账号隔离。 */
+
+:root {
+  --paper-bg: var(--card, #fff);
+  --paper-bg-2: var(--surface, var(--card, #fff));
+  --paper-ink: var(--text, #171717);
+  --paper-ink-2: var(--text-2, #444);
+  --paper-rule: var(--line, #d5d5d5);
+  --paper-binding: var(--warm-line, var(--line, #d5d5d5));
+  --paper-accent: var(--green, #07c160);
+  --paper-accent-deep: var(--green-deep, var(--green, #07833f));
+  --paper-accent-ink: var(--green-text, var(--green, #07883f));
+  --paper-on-accent: var(--on-primary, #fff);
+  --paper-shadow: var(--shadow-sm, 0 3px 10px rgba(0, 0, 0, .05));
+  --paper-shadow-lg: var(--shadow, 0 10px 24px rgba(0, 0, 0, .08));
+  --paper-radius: var(--radius-lg, 16px);
+  --paper-line: 2rem;
+  --paper-binding-width: 18px;
+  --paper-fiber: none;
+  --turn-ms: 280ms;
+  --turn-ms-diary: 400ms;
+  --turn-ease: cubic-bezier(.22, 1, .36, 1);
+  --folio-ms: 320ms;
+}
+
+/* 翻页与画卷节奏个性（交接表）：经典适中、简单短轻、微绿柔和、手绘页角明显、
+   水墨克制、可爱轻快、极简最短、沉浸稍慢、花漾轻卷、玻璃抬页轻、草甸柔和、夜色减弱。 */
+:root[data-ui-variant='pure'] { --turn-ms: 220ms; --turn-ms-diary: 340ms; --folio-ms: 240ms; }
+:root[data-ui-variant='companion'] { --turn-ms: 260ms; --turn-ms-diary: 380ms; --folio-ms: 300ms; }
+:root[data-ui-variant='handdrawn'] { --turn-ms: 300ms; --turn-ms-diary: 440ms; --folio-ms: 360ms; --paper-radius: 20px; }
+:root[data-ui-variant='ink'] { --turn-ms: 240ms; --turn-ms-diary: 360ms; --folio-ms: 440ms; }
+:root[data-ui-variant='fox'] { --turn-ms: 280ms; --turn-ms-diary: 420ms; --folio-ms: 320ms; }
+:root[data-ui-variant='cute'] { --turn-ms: 220ms; --turn-ms-diary: 340ms; --folio-ms: 220ms; }
+:root[data-ui-variant='minimal'] { --turn-ms: 200ms; --turn-ms-diary: 320ms; --folio-ms: 200ms; }
+:root[data-ui-variant='immersive'] { --turn-ms: 320ms; --turn-ms-diary: 460ms; --folio-ms: 460ms; }
+:root[data-ui-variant='bloom'] { --turn-ms: 260ms; --turn-ms-diary: 400ms; --folio-ms: 320ms; }
+:root[data-ui-variant='glass'] { --turn-ms: 240ms; --turn-ms-diary: 360ms; --folio-ms: 280ms; --paper-shadow: 0 4px 14px rgba(74, 110, 153, .06); }
+:root[data-ui-variant='meadow'] { --turn-ms: 280ms; --turn-ms-diary: 420ms; --folio-ms: 340ms; }
+:root[data-ui-variant='night'] { --turn-ms: 260ms; --turn-ms-diary: 400ms; --folio-ms: 360ms; --paper-shadow: 0 3px 10px rgba(3, 8, 15, .12); --paper-shadow-lg: 0 8px 20px rgba(3, 8, 15, .16); }
+
+:root[data-ui-variant='classic'],
+:root[data-ui-variant='fox'],
+:root[data-ui-variant='immersive'],
+:root[data-ui-variant='bloom'] {
+  --paper-fiber: linear-gradient(105deg, color-mix(in srgb, var(--paper-binding) 15%, transparent), transparent 34%);
+}
+:root[data-ui-variant='companion'],
+:root[data-ui-variant='meadow'],
+:root[data-ui-variant='cute'] {
+  --paper-fiber: linear-gradient(170deg, color-mix(in srgb, var(--paper-binding) 12%, transparent), transparent 30%);
+}
+:root[data-ui-variant='handdrawn'],
+:root[data-ui-variant='ink'],
+:root[data-ui-variant='night'] {
+  --paper-fiber: repeating-linear-gradient(98deg, transparent 0 3px, color-mix(in srgb, var(--paper-binding) 10%, transparent) 3px 4px);
+}
+
+/* 深色纸面：染墨纸面 + 浅色正文（令牌已随皮肤 dark 翻转），此处仅加重阴影层次。 */
+:root[data-theme='dark'] { --paper-shadow: 0 3px 12px rgba(0, 0, 0, .28); --paper-shadow-lg: 0 10px 26px rgba(0, 0, 0, .34); }
+
+/* ── 共用纸面组件（手账 / 校园生活 / App 内容区从同一套读取） ── */
+.paper-sheet {
+  position: relative;
+  color: var(--paper-ink);
+  background: var(--paper-bg);
+  border: 1px solid var(--paper-binding);
+  border-radius: var(--paper-radius);
+  box-shadow: var(--paper-shadow);
+}
+/* 装订边：左侧竖线，颜色随皮肤强调色 */
+.paper-binding-edge {
+  background-image: linear-gradient(90deg,
+    transparent calc(var(--paper-binding-width) - 1px),
+    var(--paper-binding) calc(var(--paper-binding-width) - 1px),
+    var(--paper-binding) var(--paper-binding-width),
+    transparent var(--paper-binding-width));
+}
+/* 横线规则纸（日记保留清晰横线） */
+.paper-lined {
+  background-image: repeating-linear-gradient(transparent 0 calc(var(--paper-line) - 1px),
+    var(--paper-rule) calc(var(--paper-line) - 1px), var(--paper-line));
+}
+/* 手绘版页角弯曲明显、页边轻微不齐；阴影避开正文 */
+:root[data-ui-variant='handdrawn'] .paper-sheet { border-radius: 18px 22px 16px 24px / 22px 16px 24px 18px; }
+/* 玻璃皮肤：半透明外层、实色正文纸，读写区保持稳定对比 */
+:root[data-ui-variant='glass'] .paper-sheet { background: var(--paper-bg); }
+
+/* ── 画卷展开（阶段 B）：复用原生 details/summary 语义，展开仅作用内容块 ── */
+.folio > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--paper-ink);
+  font-weight: 600;
+}
+.folio > summary::-webkit-details-marker { display: none; }
+.folio > summary::after {
+  content: '';
+  margin-left: auto;
+  width: .55em;
+  height: .55em;
+  border-right: 2px solid var(--paper-accent-ink);
+  border-bottom: 2px solid var(--paper-accent-ink);
+  transform: rotate(45deg);
+  transition: transform var(--folio-ms) var(--turn-ease);
+}
+.folio[open] > summary::after { transform: rotate(-135deg); }
+.folio > summary:focus-visible { outline: 2px solid var(--paper-accent); outline-offset: 3px; border-radius: 8px; }
+@media (prefers-reduced-motion: no-preference) {
+  .folio[open] > :not(summary) { animation: folio-unfold var(--folio-ms) var(--turn-ease) both; }
+  @keyframes folio-unfold {
+    from { opacity: 0; transform: translateY(-6px); clip-path: inset(0 0 100% 0); }
+    to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .folio > summary::after { transition: none; }
+}
+
+/* ── 纸面翻页（阶段 C）：内容区与日记读页复用节奏令牌 ── */
+@media (prefers-reduced-motion: no-preference) {
+  .paper-turn { animation: paper-turn var(--turn-ms) var(--turn-ease) both; transform-origin: left center; }
+  .paper-turn[data-direction='-1'] { transform-origin: right center; }
+  @keyframes paper-turn {
+    from { opacity: .6; transform: perspective(1200px) rotateY(-12deg); }
+    to { opacity: 1; transform: none; }
+  }
+}

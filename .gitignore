@@ -57,6 +57,7 @@ public/last-snapshot.json
 .env.capgo
 CLOUDBASE_API_KEY*
 cloudfunctions/**/local-secret.*
+cloudfunctions/**/key.json
 **/TIM_SECRET*
 
 # Local credentials, test data, logs, device artifacts, and generated media
@@ -172,3 +173,4 @@ _cet_*.txt
 # Isolated local map QA dependencies and evidence
 /.map-qa-runtime/
 /.map-qa-output/
+.ui-review-dist/

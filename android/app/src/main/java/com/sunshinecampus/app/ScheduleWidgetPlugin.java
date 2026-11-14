@@ -41,8 +41,16 @@ public final class ScheduleWidgetPlugin extends Plugin {
             call.resolve(result);
             return;
         }
-        boolean accepted = ScheduleWidgetStore.setData(getContext(), uid, revision, instanceId, date, dayLabel, state, call.getArray("classes"));
+        boolean accepted = ScheduleWidgetStore.setData(getContext(), uid, revision, instanceId, date, dayLabel, state,
+                call.getArray("classes"), call.getObject("todos"));
         result.put("ok", accepted);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void setShortcuts(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("ok", ScheduleWidgetStore.setShortcuts(getContext(), call.getArray("routes")));
         call.resolve(result);
     }
 }

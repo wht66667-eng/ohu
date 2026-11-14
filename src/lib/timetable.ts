@@ -158,6 +158,11 @@ function academicResponse(data: unknown, requested: Array<'schedule' | 'grades' 
   return data as unknown as QueryOkResp
 }
 
+/** 与各端点超时预算对齐的文案（25s 验证码 / 60s 查询 / 90s 自动），秒数由常量推导，不会漂移。 */
+function timeoutMessage(label: string, timeoutMs: number): string {
+  return `${label}超时（${Math.round(timeoutMs / 1000)}s），请重试`
+}
+
 /**
  * 统一的 POST JSON 封装：
  *  - 加超时（避免移动端网络差时按钮长时间无响应）
@@ -168,13 +173,14 @@ async function postJson(
   path: string,
   body: unknown,
   timeoutMs: number,
+  timeoutText: string,
 ): Promise<{ data: unknown; retryAfter: number }> {
   const ctrl = new AbortController()
   let timer: ReturnType<typeof setTimeout>
   const deadline = new Promise<never>((_resolve, reject) => {
     timer = setTimeout(() => {
       ctrl.abort()
-      reject(fail('服务响应超时，请重试', '1006'))
+      reject(fail(timeoutText, '1006'))
     }, timeoutMs)
   })
   try {
@@ -190,7 +196,7 @@ async function postJson(
           return { r, text: await r.text() }
         } catch (error) {
           const aborted = ctrl.signal.aborted || isRecord(error) && error.name === 'AbortError'
-          throw fail(aborted ? '服务响应超时，请重试' : '无法连接课表服务，请检查网络后重试', '1006')
+          throw fail(aborted ? timeoutText : '无法连接课表服务，请检查网络后重试', '1006')
         }
       })(),
       deadline,
@@ -221,7 +227,7 @@ async function postJson(
 
 /** 拉取一次性登录会话 + 验证码图片 */
 export async function fetchCaptcha(): Promise<CaptchaResp> {
-  const { data, retryAfter } = await postJson('/api/timetable/captcha', undefined, TIMEOUT_CAPTCHA)
+  const { data, retryAfter } = await postJson('/api/timetable/captcha', undefined, TIMEOUT_CAPTCHA, timeoutMessage('验证码请求', TIMEOUT_CAPTCHA))
   if (isRecord(data) && data.ok === false) throw apiFailure(data, retryAfter, false, '验证码加载失败，请重试')
   if (!isRecord(data) || data.ok !== true || typeof data.sid !== 'string' || !data.sid
     || typeof data.image !== 'string' || !data.image) throw fail('验证码加载失败，请重试', '1006')
@@ -259,6 +265,7 @@ export async function queryAcademic(
     '/api/timetable/query',
     { sid, ...payload, fetch },
     TIMEOUT_QUERY,
+    timeoutMessage('教务查询', TIMEOUT_QUERY),
   )
   const d = academicResponse(data, fetch, retryAfter)
   return {
@@ -295,6 +302,7 @@ export async function autoQueryAcademic(
       '/api/timetable/auto',
       { ...payload, fetch, max_tries: 5 },
       TIMEOUT_AUTO,
+      timeoutMessage('自动同步', TIMEOUT_AUTO),
     )
     data = res.data
     retryAfter = res.retryAfter

@@ -1,0 +1,274 @@
+/* 设计系统隔离试验页。本文件只定义自有类，颜色/圆角一律读全局令牌（index.css、skins.css），
+   不新增全局令牌、不改皮肤机制、不引用 font-assets/ 字库。 */
+
+.page {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: var(--page-mid, #f6f5f2);
+  color: var(--text, #153d2c);
+}
+
+.head { display: grid; gap: 8px; }
+.head h1 { margin: 0; font-size: 21px; font-weight: 800; line-height: 1.35; letter-spacing: -.02em; }
+
+.labTag {
+  justify-self: start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--service-amber, #fff0dd);
+  color: var(--service-amber-ink, #b9612b);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.note { margin: 0; color: var(--text-2, #4a5a52); font-size: 12.5px; line-height: 1.7; }
+
+.modeRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.mode,
+.modeOn {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #d8d5cd);
+  border-radius: 999px;
+  background: var(--card, #fff);
+  color: var(--text-2, #4a5a52);
+  font-size: 13px;
+  font-weight: 600;
+}
+.modeOn {
+  border-color: var(--green, #1f5b3a);
+  background: var(--green, #1f5b3a);
+  color: var(--on-primary, #fff);
+  font-weight: 700;
+}
+
+.group {
+  display: grid;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid var(--line, #d8d5cd);
+  border-radius: min(16px, var(--radius, 18px));
+  background: var(--card, #fff);
+}
+.group > h2 { margin: 0; font-size: 14px; font-weight: 750; color: var(--green-text, #1f5b3a); }
+.groupNote { margin: 0; color: var(--text-3, #6b7a72); font-size: 11.5px; line-height: 1.6; }
+
+.pair { display: grid; gap: 10px; }
+.pairSide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pairStack { grid-template-columns: minmax(0, 1fr); }
+
+.col { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.colTag {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.colOhu .colTag { background: var(--mint, #e8f0d8); color: var(--green-text, #1f5b3a); }
+/* Astryx 令牌靠 @scope([data-astryx-theme]) 生效；固定 light 让两栏对比可复现，
+   不随哦狐暗色主题变化。 */
+.colAst { color-scheme: light; }
+.colAst .colTag { background: #ece7fb; color: #4b2fa8; }
+
+/* —— 现有哦狐视觉惯例样本：复刻 HomePage / TabBar 既有写法，仅读全局令牌 —— */
+.brand { display: block; min-width: 0; }
+.brandLabel {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: -.035em;
+  color: var(--green-text, #1f5b3a);
+}
+.brandLabel > span {
+  display: inline-block;
+  margin-left: 3px;
+  color: #ff8a3d;
+  font-size: .68em;
+  vertical-align: top;
+}
+.brandNote { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--text-2, #4a5a52); }
+
+.classCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr) auto;
+  gap: 5px 8px;
+  min-height: 91px;
+  padding: 11px 13px 11px 17px;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #fff6e1, #f2f5e7);
+}
+.classCard::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 17px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #e8efd9;
+  border-radius: 50%;
+  background: #27884a;
+}
+.classTime {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: start;
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-numeric, system-ui);
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.03em;
+  color: var(--green-text, #1f5b3a);
+}
+.classTime small { font-size: 13px; font-weight: 500; color: var(--text-3, #6b7a72); }
+.className {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text, #153d2c);
+  overflow-wrap: anywhere;
+}
+.classStatus {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  justify-self: end;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #ff8a3d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+}
+.classMeta { grid-column: 2 / 4; grid-row: 2; font-size: 11px; line-height: 1.6; color: var(--text-2, #4a5a52); }
+.classHint { grid-column: 2 / 4; grid-row: 3; font-size: 11px; line-height: 1.5; color: var(--green-text, #1f5b3a); }
+
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 74px;
+  padding: 9px 3px;
+  border-radius: 17px;
+  background: #fff6dd;
+  color: var(--text, #153d2c);
+  text-align: center;
+}
+.tile:nth-child(3n + 2) { background: #edf5e6; }
+.tile:nth-child(3n) { background: #eaf4f9; }
+.tileIcon { display: grid; place-items: center; width: 30px; height: 30px; color: var(--green-text, #1f5b3a); }
+.tileLabel { font-size: 12px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+
+.btnRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.btnMain,
+.btnGhost,
+.btnSoft,
+.btnDanger {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.btnMain { background: var(--green, #1f5b3a); color: var(--on-primary, #fff); }
+.btnGhost { border: 1px solid var(--line, #d8d5cd); background: var(--card, #fff); color: var(--text-2, #4a5a52); }
+.btnSoft { background: var(--mint, #e8f0d8); color: var(--green-text, #1f5b3a); }
+.btnDanger { background: var(--danger-soft, #fdecec); color: var(--danger, #c0392b); }
+.btnMain:disabled,
+.btnGhost:disabled { opacity: .5; }
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #d8d5cd);
+  border-radius: 14px;
+  background: var(--card, #fff);
+  color: var(--text-3, #6b7a72);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--text, #153d2c);
+  font-size: 14px;
+}
+.search input:focus { outline: none; }
+
+.field { display: grid; gap: 5px; }
+.fieldLabel { font-size: 12.5px; font-weight: 650; color: var(--text-2, #4a5a52); }
+.fieldInput {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #d8d5cd);
+  border-radius: 12px;
+  background: var(--card, #fff);
+  color: var(--text, #153d2c);
+  font-size: 16px;
+}
+.fieldInput[aria-invalid='true'] { border-color: var(--danger, #c0392b); }
+.fieldError { margin: 0; color: var(--danger, #c0392b); font-size: 11.5px; line-height: 1.5; }
+
+.tabbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 64px 1fr 1fr;
+  align-items: center;
+  padding: 6px 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--line, #d8d5cd) 70%, transparent);
+  border-radius: 14px;
+  background: var(--card, #fff);
+}
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+  color: var(--text-3, #6b7a72);
+  font-size: 12px;
+}
+.tabOn { color: var(--green-text, #1f5b3a); font-weight: 650; }
+.tabPlus { display: grid; place-items: center; gap: 2px; }
+.tabPlusBtn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--green, #1f5b3a);
+  color: var(--on-primary, #fff);
+}
+.tabPlusLabel { font-size: 12px; font-weight: 650; color: var(--text-2, #4a5a52); }
+
+.facts {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-2, #4a5a52);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.facts code { font-size: 11.5px; overflow-wrap: anywhere; }
+
+.foot { margin: 0; color: var(--text-3, #6b7a72); font-size: 11.5px; line-height: 1.75; }

@@ -33,13 +33,17 @@ def parse_courses(page: str) -> list[dict]:
     # Adapted from the MIT reference; names/teachers follow each course link.
     courses, seen = [], set()
     page = html.unescape(page)
-    for match in re.finditer(r"stucoursemiddle\?courseid=(\d+)&clazzid=(\d+)&cpi=(\d+)", page):
+    matches = list(re.finditer(r"stucoursemiddle\?courseid=(\d+)&clazzid=(\d+)&cpi=(\d+)", page))
+    for i, match in enumerate(matches):
         cid, clazz, cpi = match.groups()
         key = f"{cid}:{clazz}:{cpi}"
         if key in seen:
             continue
         seen.add(key)
-        segment = page[match.end():match.end() + 2500]
+        # 课程名/教师落在本卡片内：用下一门「不同」课程的链接界定范围，
+        # 既避免固定窗口越过下一链接窃取邻课名称（静默误标），也避免长卡片超出窗口漏读。
+        seg_end = next((m.start() for m in matches[i + 1:] if f"{m[1]}:{m[2]}:{m[3]}" != key), len(page))
+        segment = page[match.end():seg_end]
         name = re.search(r'course-name[^>]*title="([^"]+)"', segment)
         teacher = re.search(r'<p class="line2 color3"[^>]*title="([^"]+)"', segment)
         if not name:
@@ -126,13 +130,18 @@ class Reader:
         def encrypt(value):
             key = b"u2oh6Vu^HWe4_AES"
             return base64.b64encode(AES.new(key, AES.MODE_CBC, key).encrypt(pad(value.encode("utf-8"), 16))).decode()
-        body = self.request("POST", "https://passport2.chaoxing.com/fanyalogin", data={
-            "fid": "-1", "uname": encrypt(username), "password": encrypt(password),
+        # 2026-11-14 修复：fid=-1（通用个人账号）对学校绑定账号（学号）无效；
+        # 江海大超星 fid=12（mlogin 重定向实测确认）。学校绑定账号常为「手机号+独立密码」。
+        # 先 fid=12（学校账号：学号或手机号），失败再回退 fid=-1（个人手机号账号）。
+        for fid in ("12", "-1"):
+            body = self.request("POST", "https://passport2.chaoxing.com/fanyalogin", data={
+                "fid": fid, "uname": encrypt(username), "password": encrypt(password),
             "refer": "https%3A%2F%2Fi.chaoxing.com", "t": "true", "forbidotherlogin": "0",
             "validate": "", "doubleFactorLogin": "0", "independentId": "0",
         }).json()
-        if body.get("status") is not True:
-            raise ChaoxingReadError("学习通登录未通过，请核对账号或先在官方应用完成验证")
+            if body.get("status") is True:
+                return
+        raise ChaoxingReadError("学习通登录未通过，请核对账号或先在官方应用完成验证")
 
     def sync(self, course_key: str = "", course_keys: list[str] | None = None) -> dict:
         base = self.request("GET", "https://i.chaoxing.com/base").text

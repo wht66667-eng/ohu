@@ -20,7 +20,11 @@
 .avatar { flex: none; border-radius: 50%; }
 .greeting { min-width: 0; flex: 1; }
 .greeting small { color: var(--text-2); font-size: 12px; }
-.greeting h1 { margin: 2px 0 0; font-size: 24px; line-height: 1.25; overflow-wrap: anywhere; color: var(--home-forest, var(--text)); }
+.greeting h1 { margin: 2px 0 0; font-size: 24px; line-height: 1.25; overflow-wrap: anywhere; text-wrap: balance; color: var(--home-forest, var(--text)); }
+/* 老内核（如 MuMu Chromium 110）不支持 text-wrap: balance：略缩字号让问候语一行放下，避免断在「你好」中间 */
+@supports not (text-wrap: balance) {
+  .greeting h1 { font-size: 20px; }
+}
 .actions { display: flex; gap: 4px; }
 .actions > * {
   display: grid;
@@ -57,16 +61,20 @@
 .heroLink {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   min-height: 44px;
-  margin-top: 5px;
-  color: inherit;
+  margin-top: 10px;
+  padding: 0 16px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
-.heroArt { position: relative; flex: none; width: clamp(72px, 23vw, 104px); }
+.heroPrimary { background: var(--green); color: var(--on-primary, #fff); }
+.heroSecondary { border: 1px solid var(--line); color: inherit; background: transparent; }
+.heroArt { position: relative; flex: none; width: clamp(64px, 20vw, 92px); }
+:global(:root[data-ui-variant='companion']) .heroArt { display: none; }
 .heroArt img { display: block; width: 100%; height: auto; border-radius: 50%; }
 .heroArt span { position: absolute; top: -8px; right: 0; color: var(--fox-deep); font-size: 22px; }
 
@@ -112,7 +120,7 @@
   color: var(--home-forest, var(--green));
 }
 .cardHead b { flex: 1; min-width: 0; font-size: 15px; color: var(--home-forest, var(--text)); }
-.cardHead a { flex: none; font-size: 12px; color: inherit; opacity: 0.55; text-decoration: none; }
+.cardHead a { flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border-radius: 10px; font-size: 12px; color: inherit; opacity: 0.65; text-decoration: none; }
 
 .rowList { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .infoRow { display: flex; align-items: center; gap: 10px; }
@@ -156,3 +164,167 @@
 }
 .dueText { flex: none; font-size: 12px; opacity: 0.6; }
 .emptyText { margin: 0; font-size: 13px; opacity: 0.55; }
+.lifeStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lifeStat {
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  min-height: 56px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text-2, var(--text));
+  font: inherit;
+  cursor: pointer;
+}
+.lifeStat b { font-size: 17px; font-weight: 800; color: var(--home-forest, var(--green-text, var(--text))); }
+.lifeStat small { font-size: 12px; opacity: 0.7; }
+.lifeStat:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+:global(:root[data-ui-variant='handdrawn']) .cardHead a { color: var(--text-2); opacity: 1; }
+:global(:root[data-ui-variant='handdrawn']) .emptyText { color: var(--text-2); opacity: 1; }
+.shortcuts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.shortcut { display:grid; justify-items:center; align-content:center; gap:6px; min-height:76px; padding:10px 6px; border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--text); text-decoration:none; font-size:12px; font-weight:700; white-space:nowrap; }
+.shortcutGlyph { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--green-soft); color:var(--green-text); font-size:14px; font-weight:800; }
+.shortcut:focus-visible { outline:3px solid var(--orange,#ff8a3d); outline-offset:2px; }
+.meetBanner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border:1px solid var(--warm-line,var(--line)); border-radius:18px; background:linear-gradient(135deg,var(--green-soft),var(--card)); }
+.meetBanner b { font-size:16px; }
+.meetBanner p { margin:4px 0 0; color:var(--text-2); font-size:12px; line-height:1.6; }
+.meetBanner a { flex:none; min-height:44px; padding:0 16px; display:inline-flex; align-items:center; border-radius:999px; background:var(--green); color:var(--on-primary,#fff); text-decoration:none; font-size:13px; font-weight:750; }
+
+/* 水墨首页：头部留白，墨色课表，下方用细线分组。 */
+.page[data-fox-home='true'][data-home-skin='ink'] { --home-forest:var(--text); --home-leaf:var(--green-soft); gap:20px; padding-top:24px; }
+.page[data-home-skin='ink'] .header { padding-block-end:12px; border-block-end:1px solid var(--line); }
+.page[data-home-skin='ink'] .header .avatar { order:1; width:clamp(36px,12vw,53px); height:auto; margin-inline:0 2px; }
+.page[data-home-skin='ink'] .actions { order:2; }
+.page[data-home-skin='ink'] .actions > * { border-radius:50%; background:transparent; }
+.page[data-home-skin='ink'] .greeting h1 { font-size:38px; letter-spacing:-.065em; line-height:1.1; }
+.page[data-home-skin='ink'] .hero {
+  min-height:195px;
+  padding:21px 16px;
+  border-color:#484746;
+  border-radius:9px 9px 38px 9px;
+  background:#20201f linear-gradient(90deg,#20201f 4%,#20201fd9 62%,transparent 98%);
+  background-image:linear-gradient(90deg,#20201f 4%,#20201fd9 62%,transparent 98%),url('/brand/ink/ink-wash-v2.webp');
+  background-position:center;
+  background-size:cover;
+  color:#faf8f3;
+}
+.page[data-home-skin='ink'] .heroCopy { max-width:82%; }
+.page[data-home-skin='ink'] .heroArt { display:none; }
+.page[data-home-skin='ink'] .hero h2 { margin:7px 0 8px; font-size:clamp(22px,6.2vw,32px); line-height:1.18; color:inherit; }
+.page[data-home-skin='ink'] .hero p { color:#e6e2dd; }
+.page[data-home-skin='ink'] .heroLink { margin-top:15px; border:1px solid #f6f3ee; border-radius:99px; color:#20201f; background:#f6f3ee; }
+.page[data-home-skin='ink'] .heroLink:focus-visible { outline-color:#fff; }
+.page[data-home-skin='ink'] .shortcuts { gap:8px; }
+.page[data-home-skin='ink'] .shortcut {
+  min-height:70px; min-width:0; border-radius:4px 13px 4px 4px;
+  background:transparent; white-space:normal; text-align:center; overflow-wrap:anywhere;
+}
+.page[data-home-skin='ink'] .shortcut:first-child { background:var(--text); color:var(--page-mid); border-color:var(--text); }
+.page[data-home-skin='ink'] .shortcutGlyph { background:transparent; color:inherit; }
+.page[data-home-skin='ink'] :is(.card,.meetBanner) { background:none; border:0; border-top:1px solid var(--line); padding:10px 0 0; border-radius:0; }
+.page[data-home-skin='ink'] :is(.emptyText,.rowMain small,.dueText,.cardHead a) { opacity:1; color:var(--text-2); }
+
+.shortcutsSection { min-width:0; }
+.shortcutsHead { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+.shortcutsHead h2 { margin:0; font-size:18px; color:var(--text); }
+.shortcutsHead button { min-height:44px; padding:0 8px; border:0; border-radius:8px; color:var(--green-text); background:transparent; font-size:13px; cursor:pointer; }
+.shortcut { white-space:normal; overflow-wrap:anywhere; line-height:1.35; text-align:center; }
+.classicSchedule { display:grid; gap:7px; margin:10px 0 0; padding:0; list-style:none; }
+.classicSchedule li { display:flex; align-items:baseline; min-width:0; gap:9px; padding:4px 6px; border-radius:5px; }
+.classicSchedule li[aria-current='time'] { background:var(--service-amber); border-inline-start:2px solid var(--orange); }
+.classicSchedule li>span { flex:none; color:var(--text-2); font-size:12px; font-variant-numeric:tabular-nums; }
+.classicSchedule li>div { display:grid; min-width:0; gap:2px; }
+.classicSchedule strong { font-size:14px; overflow-wrap:anywhere; }
+.classicSchedule small { color:var(--text-2); font-size:12px; }
+
+.page:is([data-home-skin='classic'],[data-home-skin='companion'],[data-home-skin='handdrawn'],[data-home-skin='pure']) {
+  --home-forest:var(--text);
+  --home-leaf:var(--green-soft);
+  --home-cream:var(--chip-bg);
+  background:var(--page-mid);
+}
+.page:is([data-home-skin='classic'],[data-home-skin='companion'],[data-home-skin='handdrawn'],[data-home-skin='pure']) :is(.emptyText,.rowMain small,.dueText,.dateBadge small,.cardHead a) { opacity:1; color:var(--text-2); }
+.page:is([data-home-skin='classic'],[data-home-skin='companion'],[data-home-skin='handdrawn'],[data-home-skin='pure']) .hero { background:var(--card); }
+.page:is([data-home-skin='classic'],[data-home-skin='companion'],[data-home-skin='handdrawn'],[data-home-skin='pure']) :is(.shortcut,.heroLink,.shortcutsHead button,.actions>*){
+  transition:transform 120ms ease-out, background-color 120ms ease-out;
+}
+.page :is(.shortcut,.heroLink,.shortcutsHead button,.actions a,.actions button,.cardHead a,.journalTurn):active { filter:brightness(.9); }
+:global([data-theme='dark']) .page :is(.shortcut,.heroLink,.shortcutsHead button,.actions a,.actions button,.cardHead a,.journalTurn):active { filter:brightness(1.18); }
+@media(prefers-reduced-motion:no-preference) {
+  .page:is([data-home-skin='classic'],[data-home-skin='companion'],[data-home-skin='handdrawn'],[data-home-skin='pure']) :is(.shortcut,.heroLink,.shortcutsHead button,.actions>*):active { transform:scale(.985); }
+}
+
+/* 微绿版先显示功能网格，常用入口用同一线宽的绿图标。 */
+.page[data-home-skin='companion'] { gap:12px; padding-top:18px; }
+.page[data-home-skin='companion'] .header { margin-bottom:2px; }
+.page[data-home-skin='companion'] .shortcutsSection { border-block:1px solid var(--line); padding-block:4px 10px; }
+.page[data-home-skin='companion'] .shortcuts { gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.page[data-home-skin='companion'] .shortcut { min-height:80px; border:0; border-radius:0; background:var(--card); }
+.page[data-home-skin='companion'] .shortcut:focus-visible { outline-offset:-3px; }
+.page[data-home-skin='companion'] .shortcutGlyph { width:34px; height:34px; border-radius:9px; }
+.page[data-home-skin='companion'] :is(.hero,.card) { border-radius:12px; }
+.page[data-home-skin='companion'] .hero { border-inline-start:3px solid var(--green); }
+
+/* 经典版把阿狐与今日课表放在一张暖色大卡中。 */
+.page[data-home-skin='classic'] .hero { overflow:hidden; padding-block:20px; border-radius:22px 26px 18px 22px; background:linear-gradient(118deg,var(--card) 40%,color-mix(in srgb,var(--service-amber) 64%,var(--card))); }
+.page[data-home-skin='classic'] .heroArt { width:clamp(68px,23vw,110px); }
+.page[data-home-skin='classic'] .heroArt img { border-radius:0; }
+.page[data-home-skin='classic'] .eyebrow { color:var(--green-text); }
+.page[data-home-skin='classic'] .shortcuts { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.page[data-home-skin='classic'] .shortcut { display:flex; justify-content:flex-start; min-height:55px; gap:9px; padding:8px 12px; text-align:start; }
+
+/* 手绘版用手账行和日期旁的狐狸印章标识今日区域。 */
+.page[data-home-skin='handdrawn'] .journal { border-radius:7px 19px 10px 15px; border-inline-start:3px solid var(--green); }
+.page[data-home-skin='handdrawn'] .journal .infoRow { min-height:42px; border-bottom:1px dashed var(--warm-line); }
+.page[data-home-skin='handdrawn'] .journal .cardHead b { font:700 21px/1.3 var(--display); }
+.journalProgress { display:grid; gap:5px; color:var(--text-2); margin:0; font-size:13px; }
+.journalProgress progress { width:100%; height:8px; accent-color:var(--green); }
+:global(html[data-font-family='default']) .page[data-home-skin='handdrawn'] :is(.hero p,.journalProgress,.rowMain,.dueText,.emptyText) {
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+.journalBox { width:16px; height:16px; flex:none; border:1.5px solid var(--green-text); border-radius:3px 4px 2px 4px; }
+.page[data-home-skin='handdrawn'] .hero { border-radius:6px 19px 9px 16px; }
+.page[data-home-skin='handdrawn'] .heroArt { width:clamp(62px,22vw,92px); }
+.page[data-home-skin='handdrawn'] .heroArt img { width:100%; height:auto; border-radius:0; }
+.page[data-home-skin='handdrawn'] .shortcut { border-radius:5px 16px 8px 12px; }
+.page[data-home-skin='handdrawn'] .shortcut:nth-child(even) { background:color-mix(in srgb,var(--service-amber) 35%,var(--card)); }
+
+/* 简单版优先用可重排的清单，后续信息依靠分隔线分组。 */
+/* 简单版沿用早期的课表概览和三列常用入口。 */
+.page[data-home-skin='pure'] .heroArt { width:0; }
+.page[data-home-skin='pure'] .heroArt span { inset-inline-end:6px; }
+.page[data-home-skin='pure'] .shortcutsSection .shortcut { white-space:normal; text-align:center; }
+.page[data-home-skin='handdrawn'] .journal { position:relative; isolation:isolate; }
+.journalTurn {
+  min-height:44px; padding:0 6px; border:0; background:transparent;
+  color:var(--green-text); font:inherit; font-size:12px; white-space:nowrap; cursor:pointer;
+}
+
+.layoutDialog { color:var(--text); }
+.layoutHead,.layoutActions { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.layoutHead h2 { margin:0; font-size:21px; }
+.layoutDialog p,.layoutMessage { color:var(--text-2); font-size:13px; margin:6px 0 12px; }
+.layoutDialog fieldset { margin:0 0 16px; padding:8px 0 0; border:0; }
+.layoutDialog legend { font-weight:700; font-size:14px; }
+.layoutDialog ol { list-style:none; margin:0; padding:0; }
+.layoutDialog li { display:flex; gap:4px; align-items:center; min-height:48px; border-bottom:1px solid var(--line); }
+.layoutDialog li>span { flex:1; min-width:0; overflow-wrap:anywhere; font-size:14px; }
+.layoutDialog :is(button,select) { min-height:44px; min-width:44px; padding-inline:6px; color:var(--text); background:var(--card); border:1px solid var(--line); border-radius:8px; font:inherit; font-size:13px; }
+.layoutDialog button:disabled { opacity:.45; }
+.layoutAdd { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:10px; font-size:13px; }
+.layoutActions button { flex:1; }
+.layoutActions button:last-child { background:var(--green); color:var(--on-primary); border-color:var(--green); font-weight:700; }
+@supports(backdrop-filter:blur(1px)) {
+  :global(html:is([data-ui-variant='classic'],[data-ui-variant='companion'],[data-ui-variant='handdrawn'])) .layoutDialog { background:color-mix(in srgb,var(--card) 94%,transparent); backdrop-filter:blur(8px); }
+}
+
+.focusCard { display: grid; gap: 10px; margin: 10px 0 4px; padding: 14px 16px; border: 1px solid var(--paper-binding, var(--line)); border-radius: var(--paper-radius, 14px); background: var(--paper-bg, var(--card)); box-shadow: var(--paper-shadow, none); }
+.focusHead { display: flex; align-items: center; gap: 8px; }
+.focusHead small { margin-left: auto; color: var(--text-3); font-size: 11px; }
+.focusList { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.focusList li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.focusAdvice { font-size: 14px; line-height: 1.5; color: var(--text); min-width: 0; }
+.focusList a { flex-shrink: 0; font-size: 13px; color: var(--green); font-weight: 600; text-decoration: none; }
+.focusList a:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 6px; }

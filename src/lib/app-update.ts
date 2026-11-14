@@ -47,6 +47,9 @@ export type UpdateCheckResult =
 
 const HOSTING_UPDATE =
   'https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/update.json'
+/** 学生端独立清单；共享清单含管理端，不随学生端单独发布。 */
+const HOSTING_UPDATE_USER =
+  'https://jou-d4gq7a3cqf51e6caa-1394316826.tcloudbaseapp.com/update-user.json'
 
 async function fetchManifest(url: string, timeoutMs = 8000): Promise<UpdateManifest> {
   const ctrl = new AbortController()
@@ -70,13 +73,14 @@ export async function checkAppUpdate(): Promise<UpdateCheckResult> {
   }
   const installed = await getNativeAppVersion()
   if (!installed) return { status: 'error', message: '无法读取安装包版本，请重新打开 App 后重试' }
-  const urls = [HOSTING_UPDATE, `${import.meta.env.BASE_URL}update.json`]
+  const bundled = `${import.meta.env.BASE_URL}update.json`
+  const urls = getAppShell() === 'user' ? [HOSTING_UPDATE_USER, HOSTING_UPDATE, bundled] : [HOSTING_UPDATE, bundled]
   let lastErr = 'update check failed'
   for (const url of urls) {
     try {
       const manifest = await fetchManifest(url)
       if (manifest.latestBuild <= installed.build) {
-        return { status: 'up_to_date', manifest, verifiedRemote: url === HOSTING_UPDATE }
+        return { status: 'up_to_date', manifest, verifiedRemote: url !== bundled }
       }
       return {
         status: manifest.force ? 'forced' : 'available',

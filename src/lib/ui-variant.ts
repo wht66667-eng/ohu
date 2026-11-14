@@ -5,21 +5,30 @@ import { IMMERSIVE_PACK_HASHES } from './immersive-pack-manifest'
 
 /** 无狐新皮肤（迁入自 ui-design-preview 五套设计：清简/花间/澄光/晴野/星栖）。
  *  纯 CSS 令牌主题，无需 .ohfox 包，选即用；不渲染任何狐狸角色。 */
-export type SkinVariant = 'companion' | 'pure' | 'bloom' | 'glass' | 'meadow' | 'night'
+export type SkinVariant = 'companion' | 'pure' | 'bloom' | 'glass' | 'meadow' | 'night' | 'handdrawn' | 'ink'
 export type UiVariant = 'classic' | 'fox' | 'cute' | 'minimal' | 'immersive' | SkinVariant
 export type PackVariant = Exclude<UiVariant, 'classic' | SkinVariant>
+export const SELECTABLE_UI_VARIANTS = ['classic', 'pure', 'companion', 'handdrawn', 'ink'] as const
+export type SelectableUiVariant = typeof SELECTABLE_UI_VARIANTS[number]
+
+function isSelectableUiVariant(value: string | null): value is SelectableUiVariant {
+  return SELECTABLE_UI_VARIANTS.some(id => id === value)
+}
+
 export const UI_SKINS = [
   { id: 'companion', title: '微绿版', description: '白色背景 · 绿色操作 · 自定义陪伴' },
+  { id: 'handdrawn', title: '手绘版', description: '暖纸底 · 笔刷标题 · 手写字体层级' },
+  { id: 'ink', title: '水墨版', description: '墨滴阿狐 · 黑白纸面 · 纵向目录' },
   { id: 'pure', title: '第 6 版 · 清简', description: '从容克制 · 细线分隔 · 无狐' },
   { id: 'bloom', title: '第 7 版 · 花间', description: '花瓣粉 · 随身手账 · 无狐' },
   { id: 'glass', title: '第 8 版 · 澄光', description: '轻盈通透 · 磨砂浮层 · 无狐' },
   { id: 'meadow', title: '第 9 版 · 晴野', description: '森林绿 · 明快活力 · 无狐' },
   { id: 'night', title: '第 10 版 · 星栖', description: '墨蓝夜色 · 沉浸阅读 · 无狐' },
 ] as const
-const SKIN_IDS: readonly string[] = UI_SKINS.map(s => s.id)
-/** 无狐皮肤：界面中不允许出现狐狸角色、狐徽与陪伴文案。 */
+/** 无狐皮肤：界面中不允许出现狐狸角色、狐徽与陪伴文案。手绘版与经典版一样保留狐狸插画。 */
+const FOX_FREE_SKINS: readonly string[] = ['companion', 'pure', 'bloom', 'glass', 'meadow', 'night']
 export function isFoxFreeVariant(v: UiVariant | string | null | undefined): boolean {
-  return !!v && SKIN_IDS.includes(v)
+  return !!v && FOX_FREE_SKINS.includes(v)
 }
 export const UI_PACKS = [
   { id: 'fox', title: '第 2 版 · 狐狸主题', description: '校园绿与狐狸插画', file: 'ohfox-theme-v1.ohfox' },
@@ -98,13 +107,13 @@ export async function installUiPack(file: File): Promise<PackVariant> {
 }
 export const installFoxPack = installUiPack
 export function chooseUiVariant(next: UiVariant) {
-  if (next !== 'classic' && next !== 'pure' && next !== 'companion') throw new Error('该界面版本已不再提供，请选择经典版、简单版或微绿版')
+  if (!isSelectableUiVariant(next)) throw new Error('该皮肤暂不可用，请选择外观设置中的版本')
   localStorage.setItem(KEY, next); variant = next; emit()
 }
 async function restore() {
   try {
     const saved = localStorage.getItem(KEY)
-    variant = saved === 'classic' || saved === 'pure' || saved === 'companion' ? saved : 'companion'
+    variant = isSelectableUiVariant(saved) ? saved : 'companion'
     if (saved && saved !== variant) localStorage.setItem(KEY, variant)
   } catch { variant = 'companion' }
   emit()

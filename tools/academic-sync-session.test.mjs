@@ -61,7 +61,7 @@ test('late automatic academic responses cannot persist courses, grades or exams 
   response.resolve(schoolData)
   const result = await pending
   assert.equal(result.ok, false)
-  assert.match(result.message, /账号已切换/)
+  assert.match(result.message, /较早的同步结果已忽略|账号或同步请求已更新/)
   for (const writes of [f.calls.schedule, f.calls.grades, f.calls.exams]) assert.equal(writes.length, 0)
 })
 
@@ -70,7 +70,7 @@ test('guest automatic and captcha submissions never contact the school or save p
   for (const result of [await f.api.runAutoSync(), await f.api.runAutoSync({ stuid: 'synthetic', password: 'synthetic' }),
     await f.api.runCaptchaSync({ stuid: 'synthetic', password: 'synthetic', sid: 'synthetic', captcha: '1234' })]) {
     assert.equal(result.ok, false)
-    assert.match(result.message, /手机号登录/)
+    assert.match(result.message, /学号登录/)
   }
   assert.equal(f.calls.queries, 0); assert.equal(f.calls.captchas, 0)
   for (const writes of [f.calls.schedule, f.calls.grades, f.calls.exams]) assert.equal(writes.length, 0)
@@ -181,6 +181,57 @@ test('a replacement captcha failure after identity switching does not reopen the
     response.reject(new Error('old replacement error'))
     const result = await pending
     assert.equal(result.needCaptcha, false)
-    assert.match(result.message, /账号已切换/)
+    assert.match(result.message, /较早的同步结果已忽略|账号或同步请求已更新/)
+  }
+})
+
+test('a 1006 upstream failure retries the academic query once and succeeds on the second attempt', async () => {
+  const f = fixture()
+  let attempts = 0
+  f.setQuery(async () => {
+    attempts += 1
+    if (attempts === 1) throw { code: '1006', message: '上游超时' }
+    return schoolData
+  })
+  const result = await f.api.runAutoSync({ stuid: '20260001', password: 'school-password' })
+  assert.equal(attempts, 2)
+  assert.equal(result.ok, true)
+  assert.equal(f.calls.schedule.length, 1)
+})
+
+test('a persistent 1006 fails after exactly one retry and falls back to the captcha flow', async () => {
+  const f = fixture()
+  let attempts = 0
+  f.setQuery(async () => { attempts += 1; throw { code: '1006', message: '上游超时' } })
+  const result = await f.api.runAutoSync({ stuid: '20260001', password: 'school-password' })
+  assert.equal(attempts, 2, '1006 must retry at most once')
+  assert.equal(result.ok, false)
+  assert.equal(result.needCaptcha, true)
+  assert.equal(f.calls.captchas, 1)
+})
+
+test('a 1006 retry is skipped once the session is no longer current', async () => {
+  const f = fixture(), response = deferred()
+  f.setQuery(() => response.promise)
+  const pending = f.api.runAutoSync({ stuid: '20260001', password: 'school-password' })
+  await Promise.resolve()
+  f.switchUid('student-b')
+  response.reject({ code: '1006', message: 'old upstream timeout' })
+  const result = await pending
+  assert.equal(f.calls.queries, 1, 'stale 1006 must not trigger a second school request')
+  assert.equal(result.ok, false)
+  assert.equal(result.needCaptcha, false)
+  assert.equal(f.calls.captchas, 0)
+  assert.match(result.message, /账号或同步请求已更新/)
+})
+
+test('non-1006 academic failures never retry the query', async () => {
+  for (const code of ['1001', '1002', '1004', '1010']) {
+    const f = fixture()
+    let attempts = 0
+    f.setQuery(async () => { attempts += 1; throw { code, message: 'fixture failure' } })
+    const result = await f.api.runAutoSync({ stuid: '20260001', password: 'school-password' })
+    assert.equal(attempts, 1, `code ${code} must not retry`)
+    assert.equal(result.ok, false)
   }
 })
